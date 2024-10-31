@@ -5,6 +5,7 @@
 package horsmanagementclient;
 
 import ejb.stateless.EmployeeSessionBeanRemote;
+import ejb.stateless.PartnerSessionBeanRemote;
 import entity.Employee;
 import java.util.Scanner;
 import javax.ejb.EJB;
@@ -20,6 +21,8 @@ public class Main {
 
     @EJB
     private static EmployeeSessionBeanRemote employeeSessionBean;
+    @EJB
+    private static PartnerSessionBeanRemote partnerSessionBean;
     
     private Employee currentEmployee;
     private HotelOperationModule hotelOpsModule;
@@ -55,7 +58,7 @@ public class Main {
                     doLogin(); 
                     System.out.println("Login successful!\n");
                     if (currentEmployee.getRole().equals(EmployeeEnum.SYSADMIN)) {
-                        sysAdminModule = new SystemAdministrationModule();
+                        sysAdminModule = new SystemAdministrationModule(employeeSessionBean, partnerSessionBean);
                         sysAdminModule.menu();
                     } else if (currentEmployee.getRole().equals(EmployeeEnum.OPMANAGER)) {
                         hotelOpsModule = new HotelOperationModule();

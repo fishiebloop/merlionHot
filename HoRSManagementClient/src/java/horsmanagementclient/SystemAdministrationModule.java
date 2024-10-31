@@ -5,7 +5,10 @@
 package horsmanagementclient;
 
 import ejb.stateless.EmployeeSessionBeanRemote;
+import ejb.stateless.PartnerSessionBeanRemote;
 import entity.Employee;
+import entity.Partner;
+import java.util.List;
 import java.util.Scanner;
 import util.enumeration.EmployeeEnum;
 
@@ -16,12 +19,14 @@ import util.enumeration.EmployeeEnum;
 public class SystemAdministrationModule {
     private Scanner scanner = new Scanner(System.in);
     private EmployeeSessionBeanRemote employeeSessionBean;
+    private PartnerSessionBeanRemote partnerSessionBean;
 
     public SystemAdministrationModule() {
     }
 
-    public SystemAdministrationModule(EmployeeSessionBeanRemote employeeSessionBean) {
+    public SystemAdministrationModule(EmployeeSessionBeanRemote employeeSessionBean, PartnerSessionBeanRemote partnerSessionBean) {
         this.employeeSessionBean = employeeSessionBean;
+        this.partnerSessionBean = partnerSessionBean;
     }
     
     public void menu() {
@@ -42,6 +47,7 @@ public class SystemAdministrationModule {
                 System.out.print("> ");
 
                 response = scanner.nextInt();
+                scanner.nextLine();
 
                 if(response == 1)
                 {
@@ -49,15 +55,15 @@ public class SystemAdministrationModule {
                 }
                 else if(response == 2)
                 {
-                    //doViewAllEmployees();
+                    doViewAllEmployees();
                 }
                 else if(response == 3)
                 {
-                    //doCreateNewPartner();
+                    doCreateNewPartner();
                 }
                 else if(response == 4)
                 {
-                    //doViewAllPartners();
+                    doViewAllPartners();
                 }
                 else if(response == 5) {
                     break;
@@ -78,8 +84,7 @@ public class SystemAdministrationModule {
     public void doCreateNewEmployee() {
         Employee staff = new Employee();
         System.out.println("*** HoRS Management System :: System Administration Operation :: Create Employee ***\n");
-
-        scanner.nextLine();
+        
         System.out.print("Enter Username> ");
         staff.setUsername(scanner.nextLine().trim());
         System.out.print("Enter Password> ");
@@ -110,5 +115,59 @@ public class SystemAdministrationModule {
         }
         
         employeeSessionBean.createEmployee(staff);
+    }
+    
+     public void doViewAllEmployees() {
+        System.out.println("*** HoRS Management System :: System Administration Operation :: View All Employees ***\n");
+        
+        List<Employee> list = employeeSessionBean.retrieveAllEmployees();
+        if (list.size() == 0) {
+            System.out.println("There are no employees!\n");
+        } else {
+            for (Employee e : list) {
+                System.out.print("Employee Username: " + e.getUsername());
+                if (e.getRole().equals(EmployeeEnum.GUESTOFF)) {
+                    System.out.println(", Employee Role: Guest Relation Officer\n");
+                } else if (e.getRole().equals(EmployeeEnum.OPMANAGER)) {
+                    System.out.println(", Employee Role: Operation Manager\n");
+                } else if (e.getRole().equals(EmployeeEnum.SALESMANAGER)) {
+                    System.out.println(", Employee Role: Sales Manager\n");
+                } else if (e.getRole().equals(EmployeeEnum.SYSADMIN)) {
+                    System.out.println(", Employee Role: System Administrator\n");
+                } else {
+                    System.out.println(", Employee Role: No role given!\n");
+                }
+            }
+        }
+    }
+    
+    public void doCreateNewPartner() {
+        Partner partner = new Partner();
+        System.out.println("*** HoRS Management System :: System Administration Operation :: Create Partner ***\n");
+
+        System.out.print("Enter Username> ");
+        partner.setUsername(scanner.nextLine().trim());
+        System.out.print("Enter Password> ");
+        partner.setPassword(scanner.nextLine().trim());
+        
+        Long newPart = partnerSessionBean.createPartner(partner);
+        if (newPart != null) {
+            System.out.println("Partner created successfully!\n");
+        } else {
+            System.out.println("Error occurred during partner account creation!\n");
+        }
+    }
+    
+    public void doViewAllPartners() {
+        System.out.println("*** HoRS Management System :: System Administration Operation :: View All Partners ***\n");
+        
+        List<Partner> list = partnerSessionBean.retrieveAllPartners();
+        if (list.size() == 0) {
+            System.out.println("There are no partners!\n");
+        } else {
+            for (Partner e : list) {
+                System.out.println("Partner Username: " + e.getUsername() + ", Partner ID: " + e.getPartnerId() + "\n");
+            }
+        }
     }
 }
