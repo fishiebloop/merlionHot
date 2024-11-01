@@ -6,6 +6,7 @@ package horsmanagementclient;
 
 import ejb.stateless.EmployeeSessionBeanRemote;
 import ejb.stateless.PartnerSessionBeanRemote;
+import ejb.stateless.RoomTypeSessionBeanRemote;
 import entity.Employee;
 import java.util.Scanner;
 import javax.ejb.EJB;
@@ -23,6 +24,8 @@ public class Main {
     private static EmployeeSessionBeanRemote employeeSessionBean;
     @EJB
     private static PartnerSessionBeanRemote partnerSessionBean;
+    @EJB
+    private static RoomTypeSessionBeanRemote roomTypeSessionBean;
     
     private Employee currentEmployee;
     private HotelOperationModule hotelOpsModule;
@@ -41,50 +44,57 @@ public class Main {
     
     private void runApp() {
         Integer response = 0;
-        System.out.println("*** Welcome to the Teller Terminal Application ***\n");
-        System.out.println("1: Login");
-        System.out.println("2: Exit\n");
-        
-        while(response < 1 || response > 2)
-        {
-            System.out.print("> ");
-            response = scanner.nextInt();
-            scanner.nextLine(); 
+        while(true) {
+            System.out.println("*** Welcome to the Teller Terminal Application ***\n");
+            System.out.println("1: Login");
+            System.out.println("2: Exit\n");
+            response = 0;
             
-            if(response == 1)
+            while(response < 1 || response > 2)
             {
-                try
+                System.out.print("> ");
+                response = scanner.nextInt();
+                scanner.nextLine(); 
+
+                if(response == 1)
                 {
-                    doLogin(); 
-                    System.out.println("Login successful!\n");
-                    if (currentEmployee.getRole().equals(EmployeeEnum.SYSADMIN)) {
-                        sysAdminModule = new SystemAdministrationModule(employeeSessionBean, partnerSessionBean);
-                        sysAdminModule.menu();
-                    } else if (currentEmployee.getRole().equals(EmployeeEnum.OPMANAGER)) {
-                        hotelOpsModule = new HotelOperationModule();
-                        //hotelOpsModule.menuOps();
-                    } else if (currentEmployee.getRole().equals(EmployeeEnum.SALESMANAGER)) {
-                        hotelOpsModule = new HotelOperationModule();
-                        //hotelOpsModule.menuSales();
-                    } else if (currentEmployee.getRole().equals(EmployeeEnum.GUESTOFF)) {
-                        frontOffModule = new FrontOfficeModule();
-                        //frontOffModule.menu();
-                    } 
-                   
+                    try
+                    {
+                        doLogin(); 
+                        System.out.println("Login successful! Logged in as: "+ currentEmployee.getUsername()+ "\n");
+                        if (currentEmployee.getRole().equals(EmployeeEnum.SYSADMIN)) {
+                            sysAdminModule = new SystemAdministrationModule(employeeSessionBean, partnerSessionBean);
+                            sysAdminModule.menu();
+                        } else if (currentEmployee.getRole().equals(EmployeeEnum.OPMANAGER)) {
+                            hotelOpsModule = new HotelOperationModule(roomTypeSessionBean);
+                            hotelOpsModule.menuOps();
+                        } else if (currentEmployee.getRole().equals(EmployeeEnum.SALESMANAGER)) {
+                            hotelOpsModule = new HotelOperationModule();
+                            //hotelOpsModule.menuSales();
+                        } else if (currentEmployee.getRole().equals(EmployeeEnum.GUESTOFF)) {
+                            frontOffModule = new FrontOfficeModule();
+                            //frontOffModule.menu();
+                        } 
+
+                    }
+                    catch(InvalidLoginCredentialException | EmployeeErrorException ex) 
+                    {
+                        System.out.println("Login failed: " + ex.getMessage() + "\n");
+                    }
                 }
-                catch(InvalidLoginCredentialException | EmployeeErrorException ex) 
+                else if (response == 2)
                 {
-                    System.out.println("Login failed: " + ex.getMessage() + "\n");
+                    break;
+                }
+                else
+                {
+                    System.out.println("Invalid option, please try again!\n");                
                 }
             }
-            else if (response == 2)
+            if(response == 2)
             {
                 System.out.println("Exiting application.");
                 break;
-            }
-            else
-            {
-                System.out.println("Invalid option, please try again!\n");                
             }
         }
     }

@@ -39,7 +39,7 @@ public class SystemAdministrationModule {
             System.out.println("2: View All Employees");
             System.out.println("3: Create New Partner");
             System.out.println("4: View All Partner");
-            System.out.println("5: Back\n");
+            System.out.println("5: Logout\n");
             response = 0;
             
             while(response < 1 || response > 4)
@@ -114,7 +114,12 @@ public class SystemAdministrationModule {
             }
         }
         
-        employeeSessionBean.createEmployee(staff);
+        Long newStaff = employeeSessionBean.createEmployee(staff);
+        if (newStaff != null) {
+            System.out.println("New employee created successfully!\n");
+        } else {
+            System.out.println("Error occurred during employee account creation!\n");
+        }
     }
     
      public void doViewAllEmployees() {
