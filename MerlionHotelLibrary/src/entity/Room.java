@@ -17,6 +17,7 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
+import javax.persistence.ManyToOne;
 import util.enumeration.EmployeeEnum;
 import util.enumeration.RoomStatusEnum;
 
@@ -26,17 +27,20 @@ import util.enumeration.RoomStatusEnum;
  */
 @Entity
 public class Room implements Serializable {
-
+    
     private static final long serialVersionUID = 1L;
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long roomId;
-    @Column(length = 4, nullable = false)
+    @Column(length = 4, nullable = false, unique = true)
     private Integer roomNumber;
     @Enumerated(EnumType.STRING)
     private RoomStatusEnum status;
     @ManyToMany
     private List<RoomAllocation> roomAllocation;
+    @ManyToOne
+    @JoinColumn(nullable = false, name = "roomTypeId")
+    private RoomType roomType;
     
     public Room() {
         List<RoomAllocation> rooms = new ArrayList<>();
@@ -48,6 +52,21 @@ public class Room implements Serializable {
         this.roomNumber = roomNumber;
     }
 
+    
+    
+    /**
+     * @return the roomAllocation
+     */
+    public List<RoomAllocation> getRoomAllocation() {
+        return roomAllocation;
+    }
+
+    /**
+     * @param roomAllocation the roomAllocation to set
+     */
+    public void setRoomAllocation(List<RoomAllocation> roomAllocation) {
+        this.roomAllocation = roomAllocation;
+    }
     
     @Override
     public int hashCode() {
@@ -114,6 +133,20 @@ public class Room implements Serializable {
      */
     public void setStatus(RoomStatusEnum status) {
         this.status = status;
+    }
+
+    /**
+     * @return the roomType
+     */
+    public RoomType getRoomType() {
+        return roomType;
+    }
+
+    /**
+     * @param roomType the roomType to set
+     */
+    public void setRoomType(RoomType roomType) {
+        this.roomType = roomType;
     }
     
 }

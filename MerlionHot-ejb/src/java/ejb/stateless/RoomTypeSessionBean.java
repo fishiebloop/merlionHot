@@ -30,6 +30,8 @@ public class RoomTypeSessionBean implements RoomTypeSessionBeanRemote, RoomTypeS
             List<RoomType> rtLi = query.getResultList();
             for (RoomType rt : rtLi) {
                 rt.getRooms().size();
+                rt.getReservations().size();
+                rt.getRoomrates().size();
             }
             return rtLi;
         } catch (Exception ex) {
@@ -52,6 +54,8 @@ public class RoomTypeSessionBean implements RoomTypeSessionBeanRemote, RoomTypeS
         try {
             RoomType rt = (RoomType) query.getSingleResult();
             rt.getRooms().size();
+            rt.getReservations().size();
+            rt.getRoomrates().size();
             return rt;
         } catch (NoResultException | NonUniqueResultException ex) {
             throw new RoomTypeErrorException("Cannot find room type from name!");
@@ -66,6 +70,11 @@ public class RoomTypeSessionBean implements RoomTypeSessionBeanRemote, RoomTypeS
     
     @Override
     public void deleteRoomType(RoomType roomType) {
-        
+        roomType = em.merge(roomType);
+        if (roomType.getReservations().size() > 0) {
+            roomType.setIsDisabled(true);
+        } else {
+            em.remove(roomType);
+        }
     } 
 }

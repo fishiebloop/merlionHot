@@ -8,6 +8,7 @@ import entity.Room;
 import entity.RoomType;
 import java.util.List;
 import javax.ejb.Local;
+import util.exception.RoomErrorException;
 
 /**
  *
@@ -18,14 +19,16 @@ public interface RoomSessionBeanLocal {
 
     public Long createRoom(Room newRoom, RoomType rt);
 
-    public List<Room> retrieveAllRooms();
+    public List<Room> retrieveAllRooms() throws RoomErrorException;
 
     public Room retrieveRoomById(Long roomId);
 
-    public Room retrieveRoomByNumber(String roomNumber);
+    public Room retrieveRoomByNumber(Integer roomNumber) throws RoomErrorException;
 
-    public void updateRoom(Room room);
+    public void updateRoomTypeOfRoom(Room room, RoomType newRt);
 
     public void deleteRoom(Room room);
+    
+    public void updateRoom(Room room);
     
 }
