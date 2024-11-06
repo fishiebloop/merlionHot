@@ -9,7 +9,11 @@ import entity.RoomType;
 import java.util.List;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
+import javax.persistence.NoResultException;
+import javax.persistence.NonUniqueResultException;
 import javax.persistence.PersistenceContext;
+import javax.persistence.Query;
+import util.exception.RoomErrorException;
 
 /**
  *
@@ -28,6 +32,7 @@ public class RoomSessionBean implements RoomSessionBeanRemote, RoomSessionBeanLo
         List<Room> li = rt.getRooms();
         li.add(newRoom);
         rt.setRooms(li);
+        newRoom.setRoomType(rt);
         em.flush();
         return newRoom.getRoomId();    
     }
@@ -48,10 +53,16 @@ public class RoomSessionBean implements RoomSessionBeanRemote, RoomSessionBeanLo
     }
 
     @Override
-    public Room retrieveRoomByNumber(String roomNumber) {
-        
-        return null;
-        
+    public Room retrieveRoomByNumber(Integer roomNumber) throws RoomErrorException {
+        Query query = em.createQuery("SELECT r from Room r WHERE r.roomNumber = :no");
+        query.setParameter("no", roomNumber);
+        try {
+            Room r = (Room) query.getSingleResult();
+            r.getRoomAllocation().size();
+            return r;
+        } catch (NoResultException | NonUniqueResultException ex) {
+            throw new RoomErrorException("Cannot find room from room number!");
+        }
     }
     
     @Override

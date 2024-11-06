@@ -30,9 +30,9 @@ public class RoomType implements Serializable {
     @Column(length = 255)
     private String amenities;
 
-    @OneToMany 
+    @OneToMany (mappedBy = "roomType")
     private List<Room> rooms;
-    @OneToMany 
+    @OneToMany //unidirectional
     private List<RoomRate> roomrates;
     @OneToMany (mappedBy = "roomType")
     private List<Reservation> reservations;
@@ -121,6 +121,34 @@ public class RoomType implements Serializable {
     @Override
     public String toString() {
         return "entity.RoomType[ roomTypeId=" + roomTypeId + " ]";
+    }
+
+    /**
+     * @return the roomrates
+     */
+    public List<RoomRate> getRoomrates() {
+        return roomrates;
+    }
+
+    /**
+     * @param roomrates the roomrates to set
+     */
+    public void setRoomrates(List<RoomRate> roomrates) {
+        this.roomrates = roomrates;
+    }
+
+    /**
+     * @return the reservations
+     */
+    public List<Reservation> getReservations() {
+        return reservations;
+    }
+
+    /**
+     * @param reservations the reservations to set
+     */
+    public void setReservations(List<Reservation> reservations) {
+        this.reservations = reservations;
     }
 
 }

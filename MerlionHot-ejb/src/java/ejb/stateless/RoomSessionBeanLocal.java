@@ -8,6 +8,7 @@ import entity.Room;
 import entity.RoomType;
 import java.util.List;
 import javax.ejb.Local;
+import util.exception.RoomErrorException;
 
 /**
  *
@@ -22,7 +23,7 @@ public interface RoomSessionBeanLocal {
 
     public Room retrieveRoomById(Long roomId);
 
-    public Room retrieveRoomByNumber(String roomNumber);
+    public Room retrieveRoomByNumber(Integer roomNumber) throws RoomErrorException;
 
     public void updateRoom(Room room);
 
