@@ -3,6 +3,7 @@ package entity;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Convert;
 import javax.persistence.Entity;
@@ -29,18 +30,21 @@ public class RoomType implements Serializable {
     private int capacity;
     @Column(length = 255)
     private String amenities;
+    @Column(nullable = false)
+    private Boolean isDisabled;
 
-    @OneToMany (mappedBy = "roomType")
+    @OneToMany (mappedBy = "roomType", cascade = CascadeType.REMOVE, orphanRemoval = true)
     private List<Room> rooms;
-    @OneToMany //unidirectional
+    @OneToMany (cascade = CascadeType.REMOVE, orphanRemoval = true) //unidirectional
     private List<RoomRate> roomrates;
     @OneToMany (mappedBy = "roomType")
     private List<Reservation> reservations;
     
     public RoomType() {
-        List<Room> rooms = new ArrayList<>();
-        List<RoomRate> roomrates = new ArrayList<>();
-        List<Reservation> reservations = new ArrayList<>();
+        this.rooms = new ArrayList<>();
+        this.roomrates = new ArrayList<>();
+        this.reservations = new ArrayList<>();
+        this.isDisabled = false;
     }
 
     public Long getRoomTypeId() {
@@ -149,6 +153,20 @@ public class RoomType implements Serializable {
      */
     public void setReservations(List<Reservation> reservations) {
         this.reservations = reservations;
+    }
+
+    /**
+     * @return the isDisabled
+     */
+    public Boolean getIsDisabled() {
+        return isDisabled;
+    }
+
+    /**
+     * @param isDisabled the isDisabled to set
+     */
+    public void setIsDisabled(Boolean isDisabled) {
+        this.isDisabled = isDisabled;
     }
 
 }

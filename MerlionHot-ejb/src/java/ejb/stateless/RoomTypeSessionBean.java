@@ -70,6 +70,11 @@ public class RoomTypeSessionBean implements RoomTypeSessionBeanRemote, RoomTypeS
     
     @Override
     public void deleteRoomType(RoomType roomType) {
-        
+        roomType = em.merge(roomType);
+        if (roomType.getReservations().size() > 0) {
+            roomType.setIsDisabled(true);
+        } else {
+            em.remove(roomType);
+        }
     } 
 }

@@ -20,7 +20,7 @@ import util.exception.InvalidLoginCredentialException;
  * @author eliseoh
  */
 public class Main {
-
+    
     @EJB
     private static RoomSessionBeanRemote roomSessionBean;
 
@@ -37,7 +37,6 @@ public class Main {
     private FrontOfficeModule frontOffModule;
     private SystemAdministrationModule sysAdminModule;
     private static Scanner scanner = new Scanner(System.in);
-
     /**
      * @param args the command line arguments
      */

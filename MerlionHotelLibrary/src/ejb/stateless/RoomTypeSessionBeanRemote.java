@@ -19,4 +19,5 @@ public interface RoomTypeSessionBeanRemote {
     public RoomType retrieveRoomTypeByName(String roomTypeName) throws RoomTypeErrorException;
     public List<RoomType> retrieveAllRoomTypes() throws RoomTypeErrorException;
     public void updateRoomType(RoomType roomType);
+    public void deleteRoomType(RoomType roomType);
 }
