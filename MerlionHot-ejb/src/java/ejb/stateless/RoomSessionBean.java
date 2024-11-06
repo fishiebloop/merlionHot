@@ -5,6 +5,7 @@
 package ejb.stateless;
 
 import entity.Room;
+import entity.RoomType;
 import java.util.List;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
@@ -21,8 +22,12 @@ public class RoomSessionBean implements RoomSessionBeanRemote, RoomSessionBeanLo
     private EntityManager em;
 
     @Override
-    public Long createRoom(Room newRoom) {
+    public Long createRoom(Room newRoom, RoomType rt) {
         em.persist(newRoom);
+        rt = em.merge(rt);
+        List<Room> li = rt.getRooms();
+        li.add(newRoom);
+        rt.setRooms(li);
         em.flush();
         return newRoom.getRoomId();    
     }

@@ -5,7 +5,9 @@
 package ejb.stateless;
 
 import entity.RoomType;
+import java.util.List;
 import javax.ejb.Remote;
+import util.exception.RoomTypeErrorException;
 
 /**
  *
@@ -14,4 +16,7 @@ import javax.ejb.Remote;
 @Remote
 public interface RoomTypeSessionBeanRemote {
     public Long createRoomType(RoomType newRoomType);
+    public RoomType retrieveRoomTypeByName(String roomTypeName) throws RoomTypeErrorException;
+    public List<RoomType> retrieveAllRoomTypes() throws RoomTypeErrorException;
+    public void updateRoomType(RoomType roomType);
 }

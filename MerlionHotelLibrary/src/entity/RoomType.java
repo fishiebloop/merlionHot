@@ -25,7 +25,7 @@ public class RoomType implements Serializable {
     private String description;
     @Column(length = 30)
     private String bed;
-    @Column(length = 10, nullable = false)
+    @Column(length = 8, nullable = false)
     private int capacity;
     @Column(length = 255)
     private String amenities;

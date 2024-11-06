@@ -5,7 +5,9 @@
 package entity;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -29,24 +31,21 @@ public class Room implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long roomId;
+    @Column(length = 4, nullable = false)
     private Integer roomNumber;
     @Enumerated(EnumType.STRING)
     private RoomStatusEnum status;
     @ManyToMany
-    @JoinTable(
-        name = "room_allocation_rooms", // name of the join table
-        joinColumns = @JoinColumn(name = "room_id"), // foreign key for Room
-        inverseJoinColumns = @JoinColumn(name = "allocation_id") // foreign key for RoomAllocation
-    )
     private List<RoomAllocation> roomAllocation;
     
     public Room() {
+        List<RoomAllocation> rooms = new ArrayList<>();
+        this.status = RoomStatusEnum.AVAIL;
     }
 
-    public Room(Long roomId, Integer roomNumber, RoomStatusEnum status) {
-        this.roomId = roomId;
+    public Room(Integer roomNumber) {
+        this();
         this.roomNumber = roomNumber;
-        this.status = status;
     }
 
     
