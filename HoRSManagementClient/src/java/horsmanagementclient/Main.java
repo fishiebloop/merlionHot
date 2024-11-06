@@ -6,6 +6,7 @@ package horsmanagementclient;
 
 import ejb.stateless.EmployeeSessionBeanRemote;
 import ejb.stateless.PartnerSessionBeanRemote;
+import ejb.stateless.RoomSessionBeanRemote;
 import ejb.stateless.RoomTypeSessionBeanRemote;
 import entity.Employee;
 import java.util.Scanner;
@@ -21,11 +22,15 @@ import util.exception.InvalidLoginCredentialException;
 public class Main {
 
     @EJB
+    private static RoomSessionBeanRemote roomSessionBean;
+
+    @EJB
     private static EmployeeSessionBeanRemote employeeSessionBean;
     @EJB
     private static PartnerSessionBeanRemote partnerSessionBean;
     @EJB
     private static RoomTypeSessionBeanRemote roomTypeSessionBean;
+    
     
     private Employee currentEmployee;
     private HotelOperationModule hotelOpsModule;
@@ -66,7 +71,7 @@ public class Main {
                             sysAdminModule = new SystemAdministrationModule(employeeSessionBean, partnerSessionBean);
                             sysAdminModule.menu();
                         } else if (currentEmployee.getRole().equals(EmployeeEnum.OPMANAGER)) {
-                            hotelOpsModule = new HotelOperationModule(roomTypeSessionBean);
+                            hotelOpsModule = new HotelOperationModule(roomTypeSessionBean, roomSessionBean);
                             hotelOpsModule.menuOps();
                         } else if (currentEmployee.getRole().equals(EmployeeEnum.SALESMANAGER)) {
                             hotelOpsModule = new HotelOperationModule();

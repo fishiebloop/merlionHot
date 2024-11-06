@@ -5,15 +5,21 @@
 package entity;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
 
 /**
  *
@@ -26,20 +32,28 @@ public class Reservation implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long reservationId;
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column(nullable = false)
     private Date checkInDate;
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column(nullable = false)
     private Date checkOutDate;
+    @Column(length = 20, nullable = false)
     private Integer guestNo;
-    @ManyToOne
+    @ManyToOne (optional = false)
+    @JoinColumn(nullable = false)
     private Guest guest;
+    @OneToMany(mappedBy = "reserveId")
+    private List<RoomAllocation> roomAllocation;
     @OneToOne
-    private RoomAllocation roomAllocation;
-    @ManyToOne
     private RoomType roomType;
 
     public Reservation() {
+        this.roomAllocation = new ArrayList<>();
     }
 
     public Reservation(Date checkInDate, Date checkOutDate, Integer guestNo, Guest guest) {
+        this();
         this.checkInDate = checkInDate;
         this.checkOutDate = checkOutDate;
         this.guestNo = guestNo;

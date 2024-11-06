@@ -5,6 +5,7 @@
 package ejb.stateless;
 
 import entity.Room;
+import entity.RoomType;
 import java.util.List;
 import javax.ejb.Local;
 
@@ -15,7 +16,7 @@ import javax.ejb.Local;
 @Local
 public interface RoomSessionBeanLocal {
 
-    public Long createRoom(Room newRoom);
+    public Long createRoom(Room newRoom, RoomType rt);
 
     public List<Room> retrieveAllRooms();
 
