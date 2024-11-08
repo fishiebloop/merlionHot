@@ -13,8 +13,10 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
-import util.enumeration.rateTypeEnum;
 import com.merlionhotel.utils.DateUtil;
+import java.time.LocalDate;
+import javax.persistence.ManyToOne;
+import util.enumeration.RateTypeEnum;
 
 @Entity
 public class RoomRate implements Serializable {
@@ -24,7 +26,7 @@ public class RoomRate implements Serializable {
     private Long roomRateId;
     private String name;
     @Enumerated(EnumType.STRING)
-    private rateTypeEnum rateType;
+    private RateTypeEnum rateType;
     @Column(nullable = false)
     private BigDecimal ratePerNight;
     @Temporal(TemporalType.TIMESTAMP)
@@ -33,6 +35,16 @@ public class RoomRate implements Serializable {
     @Temporal(TemporalType.TIMESTAMP)
     @Column
     private Date endDate;
+    @ManyToOne
+    private RoomType roomType;
+
+    public RoomType getRoomType() {
+        return roomType;
+    }
+
+    public void setRoomType(RoomType roomType) {
+        this.roomType = roomType;
+    }
 
     public Long getRoomRateId() {
         return roomRateId;
@@ -50,11 +62,11 @@ public class RoomRate implements Serializable {
         this.name = name;
     }
 
-    public rateTypeEnum getRateType() {
+    public RateTypeEnum getRateType() {
         return rateType;
     }
 
-    public void setRateType(rateTypeEnum rateType) {
+    public void setRateType(RateTypeEnum rateType) {
         this.rateType = rateType;
     }
 

@@ -6,6 +6,7 @@ package horsmanagementclient;
 
 import ejb.stateless.EmployeeSessionBeanRemote;
 import ejb.stateless.PartnerSessionBeanRemote;
+import ejb.stateless.RoomRateSessionBeanRemote;
 import ejb.stateless.RoomSessionBeanRemote;
 import ejb.stateless.RoomTypeSessionBeanRemote;
 import entity.Employee;
@@ -30,6 +31,8 @@ public class Main {
     private static PartnerSessionBeanRemote partnerSessionBean;
     @EJB
     private static RoomTypeSessionBeanRemote roomTypeSessionBean;
+    @EJB
+    private static RoomRateSessionBeanRemote roomRateSessionBean;
     
     
     private Employee currentEmployee;
@@ -70,11 +73,11 @@ public class Main {
                             sysAdminModule = new SystemAdministrationModule(employeeSessionBean, partnerSessionBean);
                             sysAdminModule.menu();
                         } else if (currentEmployee.getRole().equals(EmployeeEnum.OPMANAGER)) {
-                            hotelOpsModule = new HotelOperationModule(roomTypeSessionBean, roomSessionBean);
+                            hotelOpsModule = new HotelOperationModule(roomTypeSessionBean, roomSessionBean, roomRateSessionBean);
                             hotelOpsModule.menuOps();
                         } else if (currentEmployee.getRole().equals(EmployeeEnum.SALESMANAGER)) {
-                            hotelOpsModule = new HotelOperationModule();
-                            //hotelOpsModule.menuSales();
+                            hotelOpsModule = new HotelOperationModule(roomTypeSessionBean, roomSessionBean, roomRateSessionBean);
+                            hotelOpsModule.menuSales();
                         } else if (currentEmployee.getRole().equals(EmployeeEnum.GUESTOFF)) {
                             frontOffModule = new FrontOfficeModule();
                             //frontOffModule.menu();

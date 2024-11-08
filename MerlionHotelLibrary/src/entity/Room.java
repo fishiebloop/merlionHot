@@ -41,6 +41,16 @@ public class Room implements Serializable {
     @ManyToOne
     @JoinColumn(nullable = false, name = "roomTypeId")
     private RoomType roomType;
+    @Column
+    private Boolean isDisabled = false;
+
+    public boolean getIsDisabled() {
+        return isDisabled;
+    }
+
+    public void setIsDisabled(boolean isDisabled) {
+        this.isDisabled = isDisabled;
+    }
     
     public Room() {
         List<RoomAllocation> rooms = new ArrayList<>();

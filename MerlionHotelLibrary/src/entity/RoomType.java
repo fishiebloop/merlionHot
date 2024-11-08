@@ -31,11 +31,11 @@ public class RoomType implements Serializable {
     @Column(length = 255)
     private String amenities;
     @Column(nullable = false)
-    private Boolean isDisabled;
+    private Boolean isDisabled = false;
 
     @OneToMany (mappedBy = "roomType", cascade = CascadeType.REMOVE, orphanRemoval = true)
     private List<Room> rooms;
-    @OneToMany (cascade = CascadeType.REMOVE, orphanRemoval = true) //unidirectional
+    @OneToMany (cascade = CascadeType.REMOVE, orphanRemoval = true, mappedBy = "roomType") //unidirectional
     private List<RoomRate> roomrates;
     @OneToMany (mappedBy = "roomType")
     private List<Reservation> reservations;

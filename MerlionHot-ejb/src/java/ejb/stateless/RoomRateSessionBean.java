@@ -5,10 +5,12 @@
 package ejb.stateless;
 
 import entity.RoomRate;
+import entity.RoomType;
 import java.util.List;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import javax.persistence.Query;
 
 /**
  *
@@ -29,28 +31,28 @@ public class RoomRateSessionBean implements RoomRateSessionBeanRemote, RoomRateS
 
     @Override
     public List<RoomRate> retrieveAllRoomRates() {
-
-        return null;
-
+        Query query = em.createQuery("SELECT rr from RoomRate rr");
+        return query.getResultList();
     }
 
     @Override
     public RoomRate retrieveRoomRateById(Long roomRateId) {
-
-        return null;
+        Query query = em.createQuery("SELECT rr from RoomRate rr WHERE rr.roomRateId = :inID");
+        query.setParameter("inID", roomRateId);
+        return (RoomRate) query.getSingleResult();
 
     }
 
     @Override
     public RoomRate retrieveRoomRateByName(String roomRateName) {
-
-        return null;
-
+        Query query = em.createQuery("SELECT rr from RoomRate rr WHERE rr.name = :inName");
+        query.setParameter("inName", roomRateName);
+        return (RoomRate) query.getSingleResult();
     }
 
     @Override
     public void updateRoomRate(RoomRate roomRate) {
-
+        em.merge(roomRate);
     }
 
     @Override

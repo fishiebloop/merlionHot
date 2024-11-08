@@ -5,6 +5,7 @@
 package ejb.stateless;
 
 import entity.RoomRate;
+import entity.RoomType;
 import java.util.List;
 import javax.ejb.Local;
 
