@@ -5,6 +5,8 @@
 package ejb.stateless;
 
 import entity.Guest;
+import entity.Reservation;
+import java.util.List;
 import java.util.Set;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
@@ -73,6 +75,17 @@ public class GuestSessionBean implements GuestSessionBeanRemote, GuestSessionBea
     public Guest createGuest(Guest g) {
         em.persist(g);
         return g;
+    }
+
+    @Override
+    public List<Reservation> retrieveAllReservations(Long guestId) throws GuestErrorException {
+        try {
+            Guest g = em.find(Guest.class, guestId);
+            g.getReservation().size();
+            return g.getReservation();
+        } catch (Exception ex) {
+            throw new GuestErrorException("Unable to find Guest!");
+        }
     }
     
     

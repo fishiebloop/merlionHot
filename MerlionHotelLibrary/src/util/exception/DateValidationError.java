@@ -8,23 +8,22 @@ package util.exception;
  *
  * @author eliseoh
  */
-public class RoomTypeErrorException extends Exception{
+public class DateValidationError extends Exception{
 
     /**
-     * Creates a new instance of <code>RoomTypeErrorException</code> without
-     * detail message.
+     * Creates a new instance of <code>DateValidationError</code> without detail
+     * message.
      */
-    public RoomTypeErrorException() {
+    public DateValidationError() {
     }
 
     /**
-     * Constructs an instance of <code>RoomTypeErrorException</code> with the
+     * Constructs an instance of <code>DateValidationError</code> with the
      * specified detail message.
      *
      * @param msg the detail message.
      */
-    public RoomTypeErrorException(String msg) {
+    public DateValidationError(String msg) {
         super(msg);
     }
-
 }

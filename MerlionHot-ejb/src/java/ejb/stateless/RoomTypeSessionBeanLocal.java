@@ -5,6 +5,7 @@
 package ejb.stateless;
 
 import entity.RoomType;
+import java.util.Date;
 import java.util.List;
 import javax.ejb.Local;
 import util.exception.RoomTypeErrorException;
@@ -20,12 +21,14 @@ public interface RoomTypeSessionBeanLocal {
 
     public List<RoomType> retrieveAllRoomTypes() throws RoomTypeErrorException;
 
-    public RoomType retrieveRoomTypeById(Long roomTypeId);
+    public RoomType retrieveRoomTypeById(Long roomTypeId) throws RoomTypeErrorException;
 
     public RoomType retrieveRoomTypeByName(String roomTypeName) throws RoomTypeErrorException;
 
     public void updateRoomType(RoomType roomType);
 
     public void deleteRoomType(RoomType roomType);
+
+    List<RoomType> retrieveAllAvailRoomType(Date checkIn, Date checkOut, Integer guests) throws RoomTypeErrorException;
     
 }

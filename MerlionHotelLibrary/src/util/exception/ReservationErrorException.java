@@ -8,23 +8,22 @@ package util.exception;
  *
  * @author eliseoh
  */
-public class RoomTypeErrorException extends Exception{
+public class ReservationErrorException extends Exception{
 
     /**
-     * Creates a new instance of <code>RoomTypeErrorException</code> without
+     * Creates a new instance of <code>ReservationErrorException</code> without
      * detail message.
      */
-    public RoomTypeErrorException() {
+    public ReservationErrorException() {
     }
 
     /**
-     * Constructs an instance of <code>RoomTypeErrorException</code> with the
+     * Constructs an instance of <code>ReservationErrorException</code> with the
      * specified detail message.
      *
      * @param msg the detail message.
      */
-    public RoomTypeErrorException(String msg) {
+    public ReservationErrorException(String msg) {
         super(msg);
     }
-
 }
