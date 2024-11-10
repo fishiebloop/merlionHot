@@ -20,6 +20,7 @@ import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+import javax.validation.constraints.Future;
 
 /**
  *
@@ -28,18 +29,23 @@ import javax.persistence.TemporalType;
 @Entity
 public class Reservation implements Serializable {
 
+    
     private static final long serialVersionUID = 1L;
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long reservationId;
     @Temporal(TemporalType.TIMESTAMP)
     @Column(nullable = false)
+    @Future
     private Date checkInDate;
     @Temporal(TemporalType.TIMESTAMP)
     @Column(nullable = false)
+    @Future
     private Date checkOutDate;
     @Column(length = 20, nullable = false)
     private Integer guestNo;
+    
+    
     @ManyToOne (optional = false)
     @JoinColumn(nullable = false)
     private Guest guest;
@@ -52,12 +58,40 @@ public class Reservation implements Serializable {
         this.roomAllocation = new ArrayList<>();
     }
 
-    public Reservation(Date checkInDate, Date checkOutDate, Integer guestNo, Guest guest) {
+    public Reservation(Date checkInDate, Date checkOutDate, Integer guestNo) {
         this();
         this.checkInDate = checkInDate;
         this.checkOutDate = checkOutDate;
         this.guestNo = guestNo;
-        this.guest = guest;
+    }
+    
+    
+    /**
+     * @return the roomAllocation
+     */
+    public List<RoomAllocation> getRoomAllocation() {
+        return roomAllocation;
+    }
+
+    /**
+     * @param roomAllocation the roomAllocation to set
+     */
+    public void setRoomAllocation(List<RoomAllocation> roomAllocation) {
+        this.roomAllocation = roomAllocation;
+    }
+
+    /**
+     * @return the roomType
+     */
+    public RoomType getRoomType() {
+        return roomType;
+    }
+
+    /**
+     * @param roomType the roomType to set
+     */
+    public void setRoomType(RoomType roomType) {
+        this.roomType = roomType;
     }
     
 

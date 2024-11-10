@@ -5,6 +5,8 @@
 package ejb.stateless;
 
 import entity.Guest;
+import entity.Reservation;
+import java.util.List;
 import javax.ejb.Remote;
 import util.exception.BeanValidationError;
 import util.exception.GuestErrorException;
@@ -21,4 +23,6 @@ public interface GuestSessionBeanRemote {
     public Boolean validateGuest(Guest g) throws BeanValidationError;
 
     Guest createGuest(Guest g);
+
+    List<Reservation> retrieveAllReservations(Long guestId) throws GuestErrorException;
 }
