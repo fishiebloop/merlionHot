@@ -37,6 +37,18 @@ public class RoomRate implements Serializable {
     private Date endDate;
     @ManyToOne
     private RoomType roomType;
+    private Boolean isDisabled = false;
+
+    public Boolean getIsDisabled() {
+        return isDisabled;
+    }
+
+    public RoomRate() {
+    }
+
+    public void setIsDisabled(Boolean isDisabled) {
+        this.isDisabled = isDisabled;
+    }
 
     public RoomType getRoomType() {
         return roomType;

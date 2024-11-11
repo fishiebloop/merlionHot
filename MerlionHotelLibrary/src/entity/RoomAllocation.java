@@ -27,18 +27,18 @@ public class RoomAllocation implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long allocationId;
-    @ManyToOne (optional = false)
+    @OneToOne (optional = false)
     @JoinColumn(nullable = false)
     private Reservation reserveId;
-    @ManyToMany (mappedBy="roomAllocation")
-    private List<Room> rooms;
+    @ManyToOne 
+    private Room room;
 
     public RoomAllocation() {
     }
 
     public RoomAllocation(Reservation reserveId, List<Room> rooms) {
         this.reserveId = reserveId;
-        this.rooms = rooms;
+        this.room = room;
     }
     
 
@@ -92,15 +92,15 @@ public class RoomAllocation implements Serializable {
     /**
      * @return the rooms
      */
-    public List<Room> getRooms() {
-        return rooms;
+    public Room getRoom() {
+        return room;
     }
 
     /**
      * @param rooms the rooms to set
      */
-    public void setRooms(List<Room> rooms) {
-        this.rooms = rooms;
+    public void setRoom(Room room) {
+        this.room = room;
     }
     
 }

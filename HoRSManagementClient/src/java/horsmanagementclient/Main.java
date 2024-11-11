@@ -4,8 +4,13 @@
  */
 package horsmanagementclient;
 
+import ejb.singleton.ScheduledAllocationSessionBeanRemote;
 import ejb.stateless.EmployeeSessionBeanRemote;
+import ejb.stateless.ExceptionReportSessionBeanRemote;
+import ejb.stateless.GuestSessionBeanRemote;
 import ejb.stateless.PartnerSessionBeanRemote;
+import ejb.stateless.ReservationSessionBeanRemote;
+import ejb.stateless.RoomAllocationSessionBeanRemote;
 import ejb.stateless.RoomRateSessionBeanRemote;
 import ejb.stateless.RoomSessionBeanRemote;
 import ejb.stateless.RoomTypeSessionBeanRemote;
@@ -21,10 +26,17 @@ import util.exception.InvalidLoginCredentialException;
  * @author eliseoh
  */
 public class Main {
-    
+
+    @EJB
+    private static RoomAllocationSessionBeanRemote roomAllocationSessionBean;
+    @EJB
+    private static ReservationSessionBeanRemote reservationSessionBean;
+    @EJB
+    private static ExceptionReportSessionBeanRemote exceptionReportSessionBean;
+    @EJB
+    private static ScheduledAllocationSessionBeanRemote scheduledAllocationSessionBean;
     @EJB
     private static RoomSessionBeanRemote roomSessionBean;
-
     @EJB
     private static EmployeeSessionBeanRemote employeeSessionBean;
     @EJB
@@ -33,6 +45,12 @@ public class Main {
     private static RoomTypeSessionBeanRemote roomTypeSessionBean;
     @EJB
     private static RoomRateSessionBeanRemote roomRateSessionBean;
+    @EJB
+    private static GuestSessionBeanRemote guestSessionBean;
+    
+    
+    
+    
     
     
     private Employee currentEmployee;
@@ -79,8 +97,8 @@ public class Main {
                             hotelOpsModule = new HotelOperationModule(roomTypeSessionBean, roomSessionBean, roomRateSessionBean);
                             hotelOpsModule.menuSales();
                         } else if (currentEmployee.getRole().equals(EmployeeEnum.GUESTOFF)) {
-                            frontOffModule = new FrontOfficeModule();
-                            //frontOffModule.menu();
+                            frontOffModule = new FrontOfficeModule(reservationSessionBean, roomSessionBean, roomTypeSessionBean, roomRateSessionBean, roomAllocationSessionBean, exceptionReportSessionBean, guestSessionBean);
+                            frontOffModule.menu();
                         } 
 
                     }

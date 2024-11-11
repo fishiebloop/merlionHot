@@ -24,7 +24,7 @@ public interface RoomRateSessionBeanLocal {
 
     public void updateRoomRate(RoomRate roomRate);
 
-    public void deleteRoomRate(RoomRate roomRate);
+    public String deleteRoomRate(RoomRate roomRate);
 
     public RoomRate retrieveRoomRateByName(String roomRateName);
     

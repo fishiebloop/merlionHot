@@ -4,17 +4,154 @@
  */
 package ejb.stateless;
 
+import entity.ExceptionReport;
+import entity.Reservation;
+import entity.Room;
+import entity.RoomAllocation;
+import entity.RoomType;
+import java.util.Date;
+import java.util.List;
+import javax.ejb.EJB;
+import javax.ejb.Schedule;
+import javax.ejb.Singleton;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
+import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
+import javax.persistence.Query;
+import util.enumeration.ExceptionTypeEnum;
+import util.enumeration.RateTypeEnum;
+import util.enumeration.RoomStatusEnum;
+import util.exception.NoAvailableRoomException;
+import util.exception.RoomAllocationNotFoundException;
 
-/**
- *
- * @author qiuyutong
- */
 @Stateless
 public class RoomAllocationSessionBean implements RoomAllocationSessionBeanRemote, RoomAllocationSessionBeanLocal {
 
+    @EJB
+    private ExceptionReportSessionBeanRemote exceptionReportBean;
+
+    @EJB
+    private ReservationSessionBeanRemote reservationBean;
+
+    @EJB
+    private RoomSessionBeanRemote roomBean;
+
     @PersistenceContext(unitName = "MerlionHot-ejbPU")
     private EntityManager em;
+
+    @Override
+    public RoomAllocation retrieveAllocationById(Long id) throws RoomAllocationNotFoundException {
+        try {
+            Query query = em.createQuery("SELECT a FROM RoomAllocation a WHERE a.allocationId = :inID");
+            query.setParameter("inID", id);
+            return (RoomAllocation) query.getSingleResult();
+        } catch (NoResultException e) {
+            throw new RoomAllocationNotFoundException("Room allocation not found for ID: " + id);
+        }
+    }
+
+    @Override
+    public RoomAllocation retrieveAllocationByReservation(Reservation r) throws RoomAllocationNotFoundException {
+        try {
+            Query query = em.createQuery("SELECT a FROM RoomAllocation a WHERE a.reserveId = :inReserve");
+            query.setParameter("inReserve", r);
+            return (RoomAllocation) query.getSingleResult();
+        } catch (NoResultException e) {
+            throw new RoomAllocationNotFoundException("Room allocation not found for reservation: " + r.getReservationId());
+        }
+    }
+
+    @Override
+    public Long createAllocation(Reservation reservation) throws NoAvailableRoomException {
+        RoomType requestedType = reservation.getRoomType();
+        Date startDate = reservation.getCheckInDate();
+        Date endDate = reservation.getCheckOutDate();
+
+        // Step 1: Attempt to find an available room of the requested room type
+        Room availableRoom = findAvailableRoom(requestedType, startDate, endDate);
+
+        if (availableRoom != null) {
+            // Room of requested type is available; allocate it directly
+            return allocateRoom(reservation, availableRoom);
+        } else {
+            // Step 2: No room of requested type available, check for the next higher room type
+            RoomType nextHigherType = requestedType.getNextHigherRoomType();
+            if (nextHigherType != null) {
+                Room upgradedRoom = findAvailableRoom(nextHigherType, startDate, endDate);
+                if (upgradedRoom != null) {
+                    // Allocate the guest to the next higher room type and log an exception
+                    Long allocationId = allocateRoom(reservation, upgradedRoom);
+                    throw new NoAvailableRoomException("Upgraded to next higher room type due to lack of availability.", true);
+                }
+            }
+
+            // Step 3: No available room of requested or next higher type; log an exception without allocation
+            throw new NoAvailableRoomException("No available rooms for requested or next higher room type.", false);
+        }
+    }
+
+    @Override
+    public Room findAvailableRoom(RoomType type, Date startDate, Date endDate) {
+        Query query = em.createQuery("SELECT r FROM Room r WHERE r.roomType = :roomType AND r.isDisabled = false AND r.status = :inStatus AND r NOT IN ("
+                + "SELECT a.room FROM RoomAllocation a JOIN a.reserveId res WHERE "
+                + "res.checkInDate < :endDate AND res.checkOutDate > :startDate)");
+        query.setParameter("roomType", type);
+        query.setParameter("startDate", startDate);
+        query.setParameter("endDate", endDate);
+        query.setParameter("inStatus", RoomStatusEnum.AVAIL);
+
+        List<Room> availableRooms = query.getResultList();
+        return availableRooms.isEmpty() ? null : availableRooms.get(0);
+    }
+    
+
+    @Override
+    public Long allocateRoom(Reservation reservation, Room room) {
+        RoomAllocation allocation = new RoomAllocation();
+        allocation.setRoom(room);
+        allocation.setReserveId(reservation);
+        room.getRoomAllocation().add(allocation);
+        reservation.setRoomAllocation(allocation);
+
+        em.persist(allocation);
+        em.flush();
+        roomBean.updateRoom(room);
+        reservationBean.updateReservation(reservation);
+
+        return allocation.getAllocationId();
+    }
+
+    @Override
+    public void performRoomAllocations() {
+        Date today = new Date();
+
+        List<Reservation> reservations = em.createQuery("SELECT r FROM Reservation r WHERE r.checkInDate = :today", Reservation.class)
+                .setParameter("today", today)
+                .getResultList();
+
+        for (Reservation reservation : reservations) {
+            try {
+                createAllocation(reservation);
+                System.out.println("Room allocated for reservation ID: " + reservation.getReservationId());
+            } catch (NoAvailableRoomException e) {
+                // Log the exception in the report
+                createRoomAllocationException(reservation, e);
+                System.out.println("Exception occurred for reservation ID: " + reservation.getReservationId() + " - " + e.getMessage());
+            }
+        }
+    }
+
+    @Override
+    public void createRoomAllocationException(Reservation r, NoAvailableRoomException exception) {
+        ExceptionReport report = new ExceptionReport();
+        report.setReservation(r);
+        report.setExceptionType(exception.isUpgradeAvailable() ? ExceptionTypeEnum.HIGHERAVAIL : ExceptionTypeEnum.NOHIGHERAVAIL);
+        report.setTimestamp(new Date());
+        report.setMessage(exception.getMessage());
+        report.setResolved(false);
+        exceptionReportBean.createExceptionReport(report);
+
+    }
+
 }

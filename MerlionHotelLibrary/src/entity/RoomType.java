@@ -9,10 +9,12 @@ import javax.persistence.Convert;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
 
 @Entity
 public class RoomType implements Serializable {
@@ -33,12 +35,22 @@ public class RoomType implements Serializable {
     @Column(nullable = false)
     private Boolean isDisabled = false;
 
-    @OneToMany (mappedBy = "roomType", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    @OneToMany (mappedBy = "roomType", cascade = CascadeType.REMOVE, orphanRemoval = true, fetch = FetchType.EAGER)
     private List<Room> rooms;
-    @OneToMany (cascade = CascadeType.REMOVE, orphanRemoval = true, mappedBy = "roomType") //unidirectional
+    @OneToMany (cascade = CascadeType.REMOVE, orphanRemoval = true, mappedBy = "roomType", fetch = FetchType.EAGER) 
     private List<RoomRate> roomrates;
-    @OneToMany (mappedBy = "roomType")
+    @OneToMany (mappedBy = "roomType", fetch = FetchType.EAGER)
     private List<Reservation> reservations;
+    @OneToOne
+    private RoomType nextHigherRoomType;
+
+    public RoomType getNextHigherRoomType() {
+        return nextHigherRoomType;
+    }
+
+    public void setNextHigherRoomType(RoomType nextHigherRoomType) {
+        this.nextHigherRoomType = nextHigherRoomType;
+    }
     
     public RoomType() {
         this.rooms = new ArrayList<>();

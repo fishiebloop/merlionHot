@@ -459,7 +459,7 @@ public class HotelOperationModule {
         try {
             List<Room> roomList = roomBean.retrieveAllRooms();
             for (Room r : roomList) {
-                System.out.println("Room Number: " + r.getRoomNumber() + " , Room Type: " + r.getRoomType() + " . Room STatus: " + r.getStatus());
+                System.out.println("Room Number: " + r.getRoomNumber() + " , Room Type: " + r.getRoomType().getRoomTypeName() + " . Room Status: " + r.getStatus());
                 List<RoomAllocation> alloList = r.getRoomAllocation();
                 System.out.println("Number of room allocations: " + alloList.size());
             }
@@ -492,10 +492,6 @@ public class HotelOperationModule {
             scanner.nextLine();
 
             RoomType rt = li.get(rtNo - 1);
-            r.setRoomType(rt);
-
-            System.out.print("Enter room rate name> ");
-            r.setName(scanner.nextLine().trim());
 
             System.out.println("List of Rate Types");
             int j = 1;
@@ -508,7 +504,19 @@ public class HotelOperationModule {
             int response = scanner.nextInt();
             scanner.nextLine();
             RateTypeEnum rateType = RateTypeEnum.values()[response - 1];
+
+            // Check if a RoomRate of the chosen RateType already exists for this RoomType
+            boolean rateExists = roomTypeBean.roomRateExistsForType(rt.getRoomTypeId(), rateType);
+            if (rateExists) {
+                System.out.println("A room rate of type " + rateType + " already exists for the selected room type.\n");
+                return;
+            }
+
+            r.setRoomType(rt);
             r.setRateType(rateType);
+
+            System.out.print("Enter room rate name> ");
+            r.setName(scanner.nextLine().trim());
 
             System.out.print("Enter rate per night> ");
             r.setRatePerNight(new BigDecimal(scanner.nextLine().trim()));
@@ -520,11 +528,10 @@ public class HotelOperationModule {
                 r.setEndDate(parseDate(scanner.nextLine().trim(), formatter));
             }
 
-            // Persist the RoomRate first
+            // Persist the RoomRate if no duplicate rate type exists
             Long newRateId = rateBean.createRoomRate(r);
-            RoomRate roomrate = rateBean.retrieveRoomRateById(newRateId);
             if (newRateId != null) {
-                // Now add RoomRate to RoomType and update RoomType only if successful
+                RoomRate roomrate = rateBean.retrieveRoomRateById(newRateId);
                 rt.getRoomrates().add(roomrate);
                 roomTypeBean.updateRoomType(rt);
                 System.out.println("Room Rate " + r.getName() + " created successfully!\n");
@@ -569,7 +576,7 @@ public class HotelOperationModule {
         String name = scanner.nextLine().trim();
         RoomRate rate = rateBean.retrieveRoomRateByName(name);
         System.out.println("Room Rate Name: " + name);
-        System.out.println("Room Type: " + rate.getRoomType());
+        System.out.println("Room Type: " + rate.getRoomType().getRoomTypeName());
         System.out.println("Rate Type: " + rate.getRateType());
         System.out.println("Rate Per Night: " + rate.getRatePerNight());
         if (rate.getRateType().equals(RateTypeEnum.PEAK) || rate.getRateType().equals(RateTypeEnum.PROMOTION)) {
@@ -696,6 +703,17 @@ public class HotelOperationModule {
     }
 
     public void doDeleteRoomRate(RoomRate rate) {
-        return;
+        scanner.nextLine();
+        String res = "";
+        System.out.println("*** HoRS Management System :: Room Rate Operations :: Delete Room Rate ***\n");
+        System.out.print("Enter Y to delete room rate, N to exit> ");
+        res = scanner.nextLine().trim();
+
+        if (res.equalsIgnoreCase("Y")) {
+            String resultMessage = rateBean.deleteRoomRate(rate);
+            System.out.println(resultMessage); // Display the result to the client
+        } else {
+            System.out.println("Room rate deletion canceled.");
+        }
     }
 }

@@ -5,8 +5,11 @@
 package entity;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
+import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -23,13 +26,25 @@ public class Guest implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long guestId;
+    @Column(nullable = false)
     private String name;
+    @Column(nullable = false, unique = true)
     private String email;
-    @OneToMany(mappedBy="guest", orphanRemoval = true)
+    @Column
+    private String password;
+    @OneToMany(mappedBy = "guest", orphanRemoval = true, fetch = FetchType.EAGER)
     private List<Reservation> reservation;
-    
 
     public Guest() {
+        this.reservation = new ArrayList<>();
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
     }
 
     public Guest(Long guestId, String name, String email, List<Reservation> reservation) {
@@ -38,8 +53,7 @@ public class Guest implements Serializable {
         this.email = email;
         this.reservation = reservation;
     }
-    
-    
+
     @Override
     public int hashCode() {
         int hash = 0;
@@ -120,5 +134,5 @@ public class Guest implements Serializable {
     public void setReservation(List<Reservation> reservation) {
         this.reservation = reservation;
     }
-    
+
 }

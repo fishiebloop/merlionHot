@@ -6,7 +6,12 @@ package ejb.stateless;
 
 import entity.Room;
 import entity.RoomType;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
@@ -36,9 +41,8 @@ public class RoomSessionBean implements RoomSessionBeanRemote, RoomSessionBeanLo
         rt.setRooms(li);
         newRoom.setRoomType(rt);
         em.flush();
-        return newRoom.getRoomId();    
+        return newRoom.getRoomId();
     }
-
 
     @Override
     public List<Room> retrieveAllRooms() throws RoomErrorException {
@@ -53,12 +57,12 @@ public class RoomSessionBean implements RoomSessionBeanRemote, RoomSessionBeanLo
             throw new RoomErrorException("Error occured while retrieving Room Type List!");
         }
     }
-    
+
     @Override
     public Room retrieveRoomById(Long roomId) {
-        
+
         return null;
-        
+
     }
 
     @Override
@@ -73,7 +77,7 @@ public class RoomSessionBean implements RoomSessionBeanRemote, RoomSessionBeanLo
             throw new RoomErrorException("Cannot find room from room number!");
         }
     }
-    
+
     @Override
     public void updateRoomTypeOfRoom(Room room, RoomType newRt) {
         room = em.merge(room);
@@ -87,17 +91,43 @@ public class RoomSessionBean implements RoomSessionBeanRemote, RoomSessionBeanLo
             }
         }
         oldRt.setRooms(newRtList);
-        
+
         room.setRoomType(newRt);
         List<Room> newList = newRt.getRooms();
         newList.add(room);
         newRt.setRooms(newList);
-    } 
-    
+    }
+
+    @Override
     public void updateRoom(Room room) {
         em.merge(room);
     }
-    
+
+    @Override
+    public int getAvailableRoomCountByTypeAndDate(RoomType roomType, Date startDate, Date endDate) {
+        // Query to get the total count of rooms for the specified RoomType that are not disabled
+        Query totalRoomsQuery = em.createQuery("SELECT COUNT(r) FROM Room r WHERE r.roomType = :roomType AND r.isDisabled = false");
+        totalRoomsQuery.setParameter("roomType", roomType);
+        long totalRooms = (long) totalRoomsQuery.getSingleResult();
+
+        // Query to count the number of reservations for this RoomType that overlap with the date range
+        Query reservedRoomsQuery = em.createQuery("SELECT COUNT(res) FROM Reservation res "
+                + "WHERE res.roomType = :roomType "
+                + "AND res.checkInDate < :endDate "
+                + "AND res.checkOutDate > :startDate "
+                + "AND (res.checkOutDate != CURRENT_DATE OR res.roomAllocation.room.status != :occupiedStatus)");
+        reservedRoomsQuery.setParameter("roomType", roomType);
+        reservedRoomsQuery.setParameter("startDate", startDate);
+        reservedRoomsQuery.setParameter("endDate", endDate);
+        reservedRoomsQuery.setParameter("occupiedStatus", RoomStatusEnum.OCCUPIED);
+
+        long reservedRooms = (long) reservedRoomsQuery.getSingleResult();
+
+        // Calculate available rooms by subtracting reserved rooms from total rooms
+        int availableRooms = (int) (totalRooms - reservedRooms);
+        return availableRooms > 0 ? availableRooms : 0; // Ensure it doesn't return a negative value
+    }
+
     @Override
     public void deleteRoom(Room room) {
         room = em.merge(room);
@@ -106,5 +136,24 @@ public class RoomSessionBean implements RoomSessionBeanRemote, RoomSessionBeanLo
         } else {
             em.remove(room);
         }
-    } 
+    }
+
+    @Override
+    public boolean isRoomAvailable(Room room, LocalDate date) {
+        // Convert LocalDate to Date range for start and end of the day
+        ZonedDateTime startOfDay = date.atStartOfDay(ZoneId.systemDefault());
+        ZonedDateTime endOfDay = date.atTime(LocalTime.MAX).atZone(ZoneId.systemDefault());
+
+        // Query to check if there is any reservation or allocation for the room on the specified date
+        Query query = em.createQuery("SELECT COUNT(a) FROM RoomAllocation a JOIN a.reserveId res WHERE a.room = :room AND "
+                + "res.checkInDate < :endOfDay AND res.checkOutDate > :startOfDay");
+        query.setParameter("room", room);
+        query.setParameter("startOfDay", Date.from(startOfDay.toInstant()));
+        query.setParameter("endOfDay", Date.from(endOfDay.toInstant()));
+
+        // If count is 0, it means there are no reservations or allocations for the room on that date
+        Long count = (Long) query.getSingleResult();
+        return count == 0;
+    }
+
 }

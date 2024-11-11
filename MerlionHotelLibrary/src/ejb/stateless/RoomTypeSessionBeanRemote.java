@@ -5,8 +5,10 @@
 package ejb.stateless;
 
 import entity.RoomType;
+import java.util.Date;
 import java.util.List;
 import javax.ejb.Remote;
+import util.enumeration.RateTypeEnum;
 import util.exception.RoomTypeErrorException;
 
 /**
@@ -20,4 +22,8 @@ public interface RoomTypeSessionBeanRemote {
     public List<RoomType> retrieveAllRoomTypes() throws RoomTypeErrorException;
     public void updateRoomType(RoomType roomType);
     public void deleteRoomType(RoomType roomType);
+
+    public List<RoomType> retrieveAvailableRoomTypes(Date startDate, Date endDate);
+
+    public boolean roomRateExistsForType(Long roomTypeId, RateTypeEnum rateType);
 }

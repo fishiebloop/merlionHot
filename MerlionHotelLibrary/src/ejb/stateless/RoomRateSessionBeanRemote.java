@@ -20,4 +20,5 @@ public interface RoomRateSessionBeanRemote {
     public List<RoomRate> retrieveAllRoomRates();
     public RoomRate retrieveRoomRateByName(String roomRateName);
     public RoomRate retrieveRoomRateById(Long roomRateId);
+    public String deleteRoomRate(RoomRate rate);
 }
