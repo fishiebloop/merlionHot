@@ -107,6 +107,7 @@ public class GuestSessionBean implements GuestSessionBeanRemote, GuestSessionBea
 
     @Override
     public void deleteGuest(Guest guest) {
+        guest = em.merge(guest);
         em.remove(guest);
     }
 

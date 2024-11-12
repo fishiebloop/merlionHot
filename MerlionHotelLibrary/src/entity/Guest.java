@@ -36,7 +36,7 @@ public class Guest implements Serializable {
     @Email(message = "Invalid email format")
     @Size(max = 255, message = "Email cannot be longer than 255 characters")
     private String email;
-    @Column(length = 20, nullable = false)
+    @Column(length = 20, nullable = true)
     private String password;
     @OneToMany(mappedBy = "guest", orphanRemoval = true, fetch = FetchType.EAGER)
     private List<Reservation> reservation;
@@ -139,17 +139,4 @@ public class Guest implements Serializable {
         this.reservation = reservation;
     }
 
-    /**
-     * @return the password
-     */
-    public String getPassword() {
-        return password;
-    }
-
-    /**
-     * @param password the password to set
-     */
-    public void setPassword(String password) {
-        this.password = password;
-    }
 }

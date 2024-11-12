@@ -109,7 +109,7 @@ public class HotelOperationModule {
                 }
             }
 
-            if (response == 8) {
+            if (response == 9) {
                 break;
             }
         }
@@ -149,7 +149,7 @@ public class HotelOperationModule {
                 break;
             }
         }
-    
+    }
     public void doViewRoomTypeDetails() {
         System.out.print("Enter Room Type ID >");
         Long id = scanner.nextLong();

@@ -16,7 +16,7 @@
       <property name="javax.persistence.schema-generation.database.action" value="create"/>
       <property name="javax.persistence.jdbc.url" value="jdbc:mysql://localhost:3306/merlionhotel"/>
       <property name="javax.persistence.jdbc.user" value="root"/>
-      <property name="javax.persistence.jdbc.password" value="password"/>
+      <property name="javax.persistence.jdbc.password" value="I_am_elise1234"/>
       <property name="javax.persistence.jdbc.driver" value="com.mysql.cj.jdbc.Driver"/>
     </properties>
   </persistence-unit>

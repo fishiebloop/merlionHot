@@ -45,13 +45,14 @@ public class RoomTypeSessionBean implements RoomTypeSessionBeanRemote, RoomTypeS
 
     }
 
-    @Override
+    /*@Override
     public RoomType retrieveRoomTypeById(Long roomTypeId) {
         Query query = em.createQuery("SELECT rt from RoomType rt WHERE rt.roomTypeId = :inID");
         query.setParameter("inID", roomTypeId);
         return (RoomType) query.getSingleResult();
-
-
+    }*/
+    
+    @Override
     public RoomType retrieveRoomTypeById(Long roomTypeId) throws RoomTypeErrorException{
         
         try {

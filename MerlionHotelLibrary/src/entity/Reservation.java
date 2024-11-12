@@ -36,15 +36,15 @@ public class Reservation implements Serializable {
     private Long reservationId;
     @Temporal(TemporalType.TIMESTAMP)
     @Column(nullable = false)
-    @Future
     private Date checkInDate;
     @Temporal(TemporalType.TIMESTAMP)
     @Column(nullable = false)
-    @Future
     private Date checkOutDate;
     @Column(length = 20, nullable = false)
     private Integer guestNo;
-    
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column(nullable = false)
+    private Date reserveDate;
     
     @ManyToOne (optional = false)
     @JoinColumn(nullable = false)
@@ -71,7 +71,7 @@ public class Reservation implements Serializable {
     private RoomType roomType;
 
     public Reservation() {
-       
+       this.reserveDate = new Date();
     }
 
     public Reservation(Date checkInDate, Date checkOutDate, Integer guestNo) {
@@ -80,36 +80,7 @@ public class Reservation implements Serializable {
         this.checkOutDate = checkOutDate;
         this.guestNo = guestNo;
     }
-    
-    
-    /**
-     * @return the roomAllocation
-     */
-    public List<RoomAllocation> getRoomAllocation() {
-        return roomAllocation;
-    }
-
-    /**
-     * @param roomAllocation the roomAllocation to set
-     */
-    public void setRoomAllocation(List<RoomAllocation> roomAllocation) {
-        this.roomAllocation = roomAllocation;
-    }
-
-    /**
-     * @return the roomType
-     */
-    public RoomType getRoomType() {
-        return roomType;
-    }
-
-    /**
-     * @param roomType the roomType to set
-     */
-    public void setRoomType(RoomType roomType) {
-        this.roomType = roomType;
-    }
-    
+   
 
     
     public Long getReservationId() {

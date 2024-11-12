@@ -28,7 +28,6 @@ public interface RoomTypeSessionBeanRemote {
     public boolean roomRateExistsForType(Long roomTypeId, RateTypeEnum rateType);
 
     public RoomType retrieveRoomTypeById(Long roomTypeId) throws RoomTypeErrorException;
-    public RoomType retrieveRoomTypeById(Long roomTypeId)
   
   //modify to be same as above 
     List<RoomType> retrieveAllAvailRoomType(Date checkIn, Date checkOut, Integer guests) throws RoomTypeErrorException;

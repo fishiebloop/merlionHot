@@ -6,13 +6,6 @@ package ejb.stateless;
 
 
 import javax.ejb.Local;
-
-/**
- *
- * @author qiuyutong
- */
-@Local
-public interface GuestSessionBeanLocal {
 import entity.Guest;
 import entity.Reservation;
 import java.util.List;
