@@ -5,12 +5,18 @@
 package entity;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
+import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
+import javax.validation.constraints.Email;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 
 /**
  *
@@ -23,23 +29,35 @@ public class Guest implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long guestId;
+    @Column(length = 40, nullable = false)
     private String name;
+    @Column(length = 255, nullable = false, unique = true)
+    @NotNull(message = "Email cannot be null")
+    @Email(message = "Invalid email format")
+    @Size(max = 255, message = "Email cannot be longer than 255 characters")
     private String email;
-    @OneToMany(mappedBy="guest", orphanRemoval = true)
+    @Column(length = 20, nullable = true)
+    private String password;
+    @OneToMany(mappedBy = "guest", orphanRemoval = true, fetch = FetchType.EAGER)
     private List<Reservation> reservation;
-    
 
     public Guest() {
+        this.reservation = new ArrayList<>();
     }
 
-    public Guest(Long guestId, String name, String email, List<Reservation> reservation) {
-        this.guestId = guestId;
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public Guest(String name, String email, String password) {
         this.name = name;
         this.email = email;
-        this.reservation = reservation;
     }
-    
-    
+
     @Override
     public int hashCode() {
         int hash = 0;
@@ -120,5 +138,5 @@ public class Guest implements Serializable {
     public void setReservation(List<Reservation> reservation) {
         this.reservation = reservation;
     }
-    
+
 }

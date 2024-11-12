@@ -20,6 +20,7 @@ import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+import javax.validation.constraints.Future;
 
 /**
  *
@@ -28,6 +29,7 @@ import javax.persistence.TemporalType;
 @Entity
 public class Reservation implements Serializable {
 
+    
     private static final long serialVersionUID = 1L;
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -40,26 +42,45 @@ public class Reservation implements Serializable {
     private Date checkOutDate;
     @Column(length = 20, nullable = false)
     private Integer guestNo;
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column(nullable = false)
+    private Date reserveDate;
+    
     @ManyToOne (optional = false)
     @JoinColumn(nullable = false)
     private Guest guest;
-    @OneToMany(mappedBy = "reserveId")
-    private List<RoomAllocation> roomAllocation;
+    @OneToOne(mappedBy = "reserveId")
+    private RoomAllocation roomAllocation;
+
+    public RoomAllocation getRoomAllocation() {
+        return roomAllocation;
+    }
+
+    public void setRoomAllocation(RoomAllocation roomAllocation) {
+        this.roomAllocation = roomAllocation;
+    }
+
+    public RoomType getRoomType() {
+        return roomType;
+    }
+
+    public void setRoomType(RoomType roomType) {
+        this.roomType = roomType;
+    }
     @OneToOne
     private RoomType roomType;
 
     public Reservation() {
-        this.roomAllocation = new ArrayList<>();
+       this.reserveDate = new Date();
     }
 
-    public Reservation(Date checkInDate, Date checkOutDate, Integer guestNo, Guest guest) {
+    public Reservation(Date checkInDate, Date checkOutDate, Integer guestNo) {
         this();
         this.checkInDate = checkInDate;
         this.checkOutDate = checkOutDate;
         this.guestNo = guestNo;
-        this.guest = guest;
     }
-    
+   
 
     
     public Long getReservationId() {

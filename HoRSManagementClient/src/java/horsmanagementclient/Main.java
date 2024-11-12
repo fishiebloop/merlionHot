@@ -4,8 +4,14 @@
  */
 package horsmanagementclient;
 
+import ejb.singleton.ScheduledAllocationSessionBeanRemote;
 import ejb.stateless.EmployeeSessionBeanRemote;
+import ejb.stateless.ExceptionReportSessionBeanRemote;
+import ejb.stateless.GuestSessionBeanRemote;
 import ejb.stateless.PartnerSessionBeanRemote;
+import ejb.stateless.ReservationSessionBeanRemote;
+import ejb.stateless.RoomAllocationSessionBeanRemote;
+import ejb.stateless.RoomRateSessionBeanRemote;
 import ejb.stateless.RoomSessionBeanRemote;
 import ejb.stateless.RoomTypeSessionBeanRemote;
 import entity.Employee;
@@ -20,16 +26,31 @@ import util.exception.InvalidLoginCredentialException;
  * @author eliseoh
  */
 public class Main {
-    
+
+    @EJB
+    private static RoomAllocationSessionBeanRemote roomAllocationSessionBean;
+    @EJB
+    private static ReservationSessionBeanRemote reservationSessionBean;
+    @EJB
+    private static ExceptionReportSessionBeanRemote exceptionReportSessionBean;
+    @EJB
+    private static ScheduledAllocationSessionBeanRemote scheduledAllocationSessionBean;
     @EJB
     private static RoomSessionBeanRemote roomSessionBean;
-
     @EJB
     private static EmployeeSessionBeanRemote employeeSessionBean;
     @EJB
     private static PartnerSessionBeanRemote partnerSessionBean;
     @EJB
     private static RoomTypeSessionBeanRemote roomTypeSessionBean;
+    @EJB
+    private static RoomRateSessionBeanRemote roomRateSessionBean;
+    @EJB
+    private static GuestSessionBeanRemote guestSessionBean;
+    
+    
+    
+    
     
     
     private Employee currentEmployee;
@@ -49,7 +70,7 @@ public class Main {
     private void runApp() {
         Integer response = 0;
         while(true) {
-            System.out.println("*** Welcome to the Teller Terminal Application ***\n");
+            System.out.println("*** Welcome to the HoRS Management Application ***\n");
             System.out.println("1: Login");
             System.out.println("2: Exit\n");
             response = 0;
@@ -70,14 +91,14 @@ public class Main {
                             sysAdminModule = new SystemAdministrationModule(employeeSessionBean, partnerSessionBean);
                             sysAdminModule.menu();
                         } else if (currentEmployee.getRole().equals(EmployeeEnum.OPMANAGER)) {
-                            hotelOpsModule = new HotelOperationModule(roomTypeSessionBean, roomSessionBean);
+                            hotelOpsModule = new HotelOperationModule(roomTypeSessionBean, roomSessionBean, roomRateSessionBean);
                             hotelOpsModule.menuOps();
                         } else if (currentEmployee.getRole().equals(EmployeeEnum.SALESMANAGER)) {
-                            hotelOpsModule = new HotelOperationModule();
-                            //hotelOpsModule.menuSales();
+                            hotelOpsModule = new HotelOperationModule(roomTypeSessionBean, roomSessionBean, roomRateSessionBean);
+                            hotelOpsModule.menuSales();
                         } else if (currentEmployee.getRole().equals(EmployeeEnum.GUESTOFF)) {
-                            frontOffModule = new FrontOfficeModule();
-                            //frontOffModule.menu();
+                            frontOffModule = new FrontOfficeModule(reservationSessionBean, roomSessionBean, roomTypeSessionBean, roomRateSessionBean, roomAllocationSessionBean, exceptionReportSessionBean, guestSessionBean);
+                            frontOffModule.menu();
                         } 
 
                     }

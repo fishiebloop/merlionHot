@@ -4,7 +4,14 @@
  */
 package ejb.stateless;
 
+import entity.Reservation;
+import entity.Room;
+import entity.RoomAllocation;
+import entity.RoomType;
+import java.util.Date;
 import javax.ejb.Remote;
+import util.exception.NoAvailableRoomException;
+import util.exception.RoomAllocationNotFoundException;
 
 /**
  *
@@ -12,5 +19,16 @@ import javax.ejb.Remote;
  */
 @Remote
 public interface RoomAllocationSessionBeanRemote {
+
+    public Room findAvailableRoom(RoomType type, Date startDate, Date endDate);
+
+    public Long allocateRoom(Reservation reservation, Room room);
+    
+    public void createRoomAllocationException(Reservation r, NoAvailableRoomException exception);
+    public void performRoomAllocations();
+    public RoomAllocation retrieveAllocationById(Long id) throws RoomAllocationNotFoundException;
+    public RoomAllocation retrieveAllocationByReservation(Reservation r) throws RoomAllocationNotFoundException;
+
+    public Long createAllocation(Reservation reservation) throws NoAvailableRoomException;
     
 }

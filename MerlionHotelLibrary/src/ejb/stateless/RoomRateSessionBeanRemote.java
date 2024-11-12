@@ -4,6 +4,9 @@
  */
 package ejb.stateless;
 
+import entity.RoomRate;
+import entity.RoomType;
+import java.util.List;
 import javax.ejb.Remote;
 
 /**
@@ -12,5 +15,10 @@ import javax.ejb.Remote;
  */
 @Remote
 public interface RoomRateSessionBeanRemote {
-    
+    public Long createRoomRate(RoomRate newRoomRate);
+    public void updateRoomRate(RoomRate newRoomRate);
+    public List<RoomRate> retrieveAllRoomRates();
+    public RoomRate retrieveRoomRateByName(String roomRateName);
+    public RoomRate retrieveRoomRateById(Long roomRateId);
+    public String deleteRoomRate(RoomRate rate);
 }
