@@ -64,3 +64,9 @@ MerlionHot-ejb/build/
 MerlionHot-ejb/dist/
 MerlionHotelLibrary/build/
 nbproject/private/
+
+# Ignore all .DS_Store files
+**/.DS_Store
+
+# Ignore all .jar files
+**/*.jar

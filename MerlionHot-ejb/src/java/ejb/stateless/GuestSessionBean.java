@@ -109,4 +109,5 @@ public class GuestSessionBean implements GuestSessionBeanRemote, GuestSessionBea
     public void deleteGuest(Guest guest) {
         em.remove(guest);
     }
+
 }

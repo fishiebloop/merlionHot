@@ -56,15 +56,17 @@ public class HotelOperationModule {
             System.out.println("*** Hotel Operation System :: Operations Management ***\n");
             System.out.println("1: Create New Room Type");
             System.out.println("2: View All Room Types");
-            System.out.println("3: Create New Rooms");
-            System.out.println("4: Update Room");
-            System.out.println("5: Delete Room");
-            System.out.println("6: View All Rooms");
-            System.out.println("7: View Room Allocation Exception Report");
-            System.out.println("8: Logout\n");
+            System.out.println("3: View Room Type Details");
+            System.out.println("4: Create New Rooms");
+            System.out.println("5: Update Room");
+            System.out.println("6: Delete Room");
+            System.out.println("7: View All Rooms");
+            System.out.println("8: View Room Allocation Exception Report");
+            System.out.println("9: Logout\n");
             response = 0;
-
-            while (response < 1 || response > 8) {
+            
+            while(response < 1 || response > 9)
+            {
                 System.out.print("> ");
 
                 response = scanner.nextInt();
@@ -74,17 +76,33 @@ public class HotelOperationModule {
                     doCreateRoomType();
                 } else if (response == 2) {
                     doViewAllRoomTypes();
-                } else if (response == 3) {
+                } 
+                else if(response == 3)
+                {
+                    doViewRoomTypeDetails();
+                }
+                else if(response == 4)
+                {
                     doCreateRoom();
-                } else if (response == 4) {
+                }
+                else if(response == 5)
+                {
                     doUpdateRoom();
-                } else if (response == 5) {
+                }
+                else if(response == 6)
+                {
                     doDeleteRoom();
-                } else if (response == 6) {
+                }
+                else if(response == 7)
+                {
                     doViewAllRooms();
-                } else if (response == 7) {
+                }
+                else if(response == 8)
+                {
                     //doViewRoomAllocationReport();
-                } else if (response == 8) {
+                }
+                else if(response == 9)
+                {
                     break;
                 } else {
                     System.out.println("Invalid option, please try again!\n");
@@ -131,6 +149,19 @@ public class HotelOperationModule {
                 break;
             }
         }
+    
+    public void doViewRoomTypeDetails() {
+        System.out.print("Enter Room Type ID >");
+        Long id = scanner.nextLong();
+        scanner.nextLine();
+        
+        try {
+            RoomType type = roomTypeBean.retrieveRoomTypeById(id);
+            getRoomTypeDetails(type);
+        } catch (Exception ex) {
+            System.out.println(ex.getMessage());
+        }
+        
     }
 
     public void doViewAllRoomTypes() {
@@ -143,37 +174,23 @@ public class HotelOperationModule {
             } else {
                 System.out.println("List of Room Types: ");
                 for (int i = 1; i <= li.size(); i++) {
-                    System.out.println(i + ": " + li.get(i - 1).getRoomTypeName());
+
+                    System.out.println("Room Type ID: " + li.get(i-1).getRoomTypeId() + ", Room Type Name: " + li.get(i-1).getRoomTypeName());
                 }
                 System.out.println();
 
-                while (true) {
-                    System.out.println("Enter numbers 1 to " + li.size() + " to view details of a Room Type. Enter " + (li.size() + 1) + " to complete operation.");
-                    res = 0;
-                    while (res < 1 || res > li.size()) {
-                        System.out.print("> ");
-                        res = scanner.nextInt();
-                        scanner.nextLine();
-                        if (res > 0 && res <= li.size()) {
-                            RoomType type = li.get(res - 1);
-                            doViewRoomTypeDetails(type);
-                        } else if (res == li.size() + 1) {
-                            break;
-                        } else {
-                            System.out.println("Invalid option, please try again!\n");
-                        }
-                    }
-                    if (res == li.size() + 1) {
-                        break;
-                    }
+                System.out.print("Want to view specific Room Type details? (Enter 'Y' for Yes) > "); 
+                String ans = scanner.nextLine().trim();
+                if (ans.equals("Y")) {
+                    doViewRoomTypeDetails();
                 }
             }
         } catch (RoomTypeErrorException ex) {
             System.out.println(ex.getMessage());
         }
     }
-
-    public void doViewRoomTypeDetails(RoomType type) {
+    
+    public void getRoomTypeDetails(RoomType type) {
         Integer response = 0;
 
         System.out.println("Room Type Name: " + type.getRoomTypeName());

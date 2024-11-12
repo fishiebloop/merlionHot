@@ -26,4 +26,5 @@ public class RoomTypeErrorException extends Exception{
     public RoomTypeErrorException(String msg) {
         super(msg);
     }
+
 }

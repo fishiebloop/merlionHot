@@ -1,6 +1,8 @@
 package ejb.stateless;
 
+import entity.Reservation;
 import entity.RoomType;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import javax.ejb.Stateless;
@@ -48,6 +50,20 @@ public class RoomTypeSessionBean implements RoomTypeSessionBeanRemote, RoomTypeS
         Query query = em.createQuery("SELECT rt from RoomType rt WHERE rt.roomTypeId = :inID");
         query.setParameter("inID", roomTypeId);
         return (RoomType) query.getSingleResult();
+
+
+    public RoomType retrieveRoomTypeById(Long roomTypeId) throws RoomTypeErrorException{
+        
+        try {
+            RoomType rt = em.find(RoomType.class, roomTypeId);
+            rt.getRooms().size();
+            rt.getReservations().size();
+            rt.getRoomrates().size();
+            return rt;
+        } catch (Exception ex) {
+            throw new RoomTypeErrorException("Error occured while retrieving Room Type List!");
+        }
+        
 
     }
 
@@ -110,5 +126,29 @@ public class RoomTypeSessionBean implements RoomTypeSessionBeanRemote, RoomTypeS
 
         Long count = (Long) query.getSingleResult();
         return count > 0;
+
+    } 
+
+    @Override
+    public List<RoomType> retrieveAllAvailRoomType(Date checkIn, Date checkOut, Integer guests) throws RoomTypeErrorException {
+        try {
+            List<RoomType> all = retrieveAllRoomTypes();
+            List<RoomType> avail = new ArrayList<>();
+            for (RoomType rt : all) {
+                Query q = em.createQuery("SELECT COUNT(r) FROM Reservation r WHERE r.roomType = :rt AND r.checkInDate < :out AND r.checkOutDate > :in");
+                q.setParameter("rt", rt);
+                q.setParameter("in", checkIn);
+                q.setParameter("out", checkOut);
+
+                Integer noRooms = (int) Math.ceil((float) guests / rt.getCapacity());
+                long count = (long) q.getSingleResult();
+                if (count + noRooms <= rt.getRooms().size()) {
+                    avail.add(rt);
+                }
+            }
+            return avail;
+        } catch (Exception ex) {
+            throw new RoomTypeErrorException("Error occured while retrieving Available Room Type List!" + ex.getMessage());
+        }
     }
 }

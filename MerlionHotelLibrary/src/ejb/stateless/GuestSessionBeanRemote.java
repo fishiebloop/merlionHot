@@ -14,6 +14,7 @@ import util.exception.GuestErrorException;
 /**
  *
  * @author qiuyutong
+
  */
 @Remote
 public interface GuestSessionBeanRemote {
@@ -28,5 +29,4 @@ public interface GuestSessionBeanRemote {
     public void updateGuest(Guest guest);
 
     public void deleteGuest(Guest guest);
-    
 }

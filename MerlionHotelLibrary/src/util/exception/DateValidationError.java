@@ -8,22 +8,22 @@ package util.exception;
  *
  * @author eliseoh
  */
-public class GuestErrorException extends Exception {
+public class DateValidationError extends Exception{
 
     /**
-     * Creates a new instance of <code>GuestErrorException</code> without detail
+     * Creates a new instance of <code>DateValidationError</code> without detail
      * message.
      */
-    public GuestErrorException() {
+    public DateValidationError() {
     }
 
     /**
-     * Constructs an instance of <code>GuestErrorException</code> with the
+     * Constructs an instance of <code>DateValidationError</code> with the
      * specified detail message.
      *
      * @param msg the detail message.
      */
-    public GuestErrorException(String msg) {
+    public DateValidationError(String msg) {
         super(msg);
     }
 }

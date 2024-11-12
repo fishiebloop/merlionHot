@@ -4,6 +4,7 @@
  */
 package ejb.stateless;
 
+
 import javax.ejb.Local;
 
 /**
@@ -12,5 +13,25 @@ import javax.ejb.Local;
  */
 @Local
 public interface GuestSessionBeanLocal {
+import entity.Guest;
+import entity.Reservation;
+import java.util.List;
+import javax.ejb.Local;
+import util.exception.BeanValidationError;
+import util.exception.GuestErrorException;
+
+/**
+ *
+ * @author eliseoh
+ */
+@Local
+public interface GuestSessionBeanLocal {
+
+    Guest guestAuth(String email, String password) throws GuestErrorException;
     
+    public Boolean validateGuest(Guest g) throws BeanValidationError;
+
+    Guest createGuest(Guest g);
+
+    List<Reservation> retrieveAllReservations(Long guestId) throws GuestErrorException;
 }

@@ -4,7 +4,11 @@
  */
 package ejb.stateless;
 
+import entity.Guest;
+import entity.Reservation;
+import entity.RoomType;
 import javax.ejb.Local;
+import util.exception.ReservationErrorException;
 
 /**
  *
@@ -12,5 +16,9 @@ import javax.ejb.Local;
  */
 @Local
 public interface ReservationSessionBeanLocal {
+
+    Reservation createReservation(Reservation newR, Guest guest, RoomType rt);
+
+    Reservation retrieveReservationByIdForGuest(Long id, Guest g) throws ReservationErrorException;
     
 }

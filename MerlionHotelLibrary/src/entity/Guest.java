@@ -14,6 +14,9 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
+import javax.validation.constraints.Email;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 
 /**
  *
@@ -26,11 +29,14 @@ public class Guest implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long guestId;
-    @Column(nullable = false)
+    @Column(length = 40, nullable = false)
     private String name;
-    @Column(nullable = false, unique = true)
+    @Column(length = 255, nullable = false, unique = true)
+    @NotNull(message = "Email cannot be null")
+    @Email(message = "Invalid email format")
+    @Size(max = 255, message = "Email cannot be longer than 255 characters")
     private String email;
-    @Column
+    @Column(length = 20, nullable = false)
     private String password;
     @OneToMany(mappedBy = "guest", orphanRemoval = true, fetch = FetchType.EAGER)
     private List<Reservation> reservation;
@@ -47,11 +53,9 @@ public class Guest implements Serializable {
         this.password = password;
     }
 
-    public Guest(Long guestId, String name, String email, List<Reservation> reservation) {
-        this.guestId = guestId;
+    public Guest(String name, String email, String password) {
         this.name = name;
         this.email = email;
-        this.reservation = reservation;
     }
 
     @Override
@@ -135,4 +139,17 @@ public class Guest implements Serializable {
         this.reservation = reservation;
     }
 
+    /**
+     * @return the password
+     */
+    public String getPassword() {
+        return password;
+    }
+
+    /**
+     * @param password the password to set
+     */
+    public void setPassword(String password) {
+        this.password = password;
+    }
 }

@@ -27,6 +27,7 @@ public class Employee implements Serializable {
     private Long employeeId;
     @Column(length = 20, nullable = false)
     private String username;
+    @Column(length = 20, nullable = false)
     private String password;
     @Enumerated(EnumType.STRING)
     private EmployeeEnum role;

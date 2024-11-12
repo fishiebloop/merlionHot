@@ -5,7 +5,10 @@
 package ejb.stateless;
 
 import entity.Reservation;
+import entity.Guest;
+import entity.RoomType;
 import javax.ejb.Remote;
+import util.exception.ReservationErrorException;
 
 /**
  *
@@ -19,6 +22,10 @@ public interface ReservationSessionBeanRemote {
     public Long createReservation(Reservation reservation);
 
     public Reservation retrieveReservationById(Long id);
+  
+    Reservation createReservation(Reservation newR, Guest guest, RoomType rt);
+
+    Reservation retrieveReservationByIdForGuest(Long id, Guest g) throws ReservationErrorException;
     
 }
 

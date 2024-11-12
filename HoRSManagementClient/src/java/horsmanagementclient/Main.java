@@ -70,7 +70,7 @@ public class Main {
     private void runApp() {
         Integer response = 0;
         while(true) {
-            System.out.println("*** Welcome to the Teller Terminal Application ***\n");
+            System.out.println("*** Welcome to the HoRS Management Application ***\n");
             System.out.println("1: Login");
             System.out.println("2: Exit\n");
             response = 0;
