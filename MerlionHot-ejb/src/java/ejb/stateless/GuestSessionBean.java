@@ -10,7 +10,9 @@ import java.util.List;
 import java.util.Set;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
+import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
+import javax.persistence.Query;
 import javax.validation.ConstraintViolation;
 import javax.validation.Validation;
 import javax.validation.Validator;
@@ -27,7 +29,6 @@ public class GuestSessionBean implements GuestSessionBeanRemote, GuestSessionBea
 
     @PersistenceContext(unitName = "MerlionHot-ejbPU")
     private EntityManager em;
-    
 
     @Override
     public Guest guestAuth(String email, String password) throws GuestErrorException {
@@ -44,7 +45,6 @@ public class GuestSessionBean implements GuestSessionBeanRemote, GuestSessionBea
 
     // Add business logic below. (Right-click in editor and choose
     // "Insert Code > Add Business Method")
-    
     @Override
     public Boolean validateGuest(Guest g) throws BeanValidationError {
         // Initialize ValidatorFactory and Validator
@@ -58,12 +58,12 @@ public class GuestSessionBean implements GuestSessionBeanRemote, GuestSessionBea
             StringBuilder errorMessage = new StringBuilder("Validation Errors:\n");
             for (ConstraintViolation<Guest> violation : violations) {
                 errorMessage.append("Field: ")
-                            .append(violation.getPropertyPath())
-                            .append(", Invalid Value: ")
-                            .append(violation.getInvalidValue())
-                            .append(", Message: ")
-                            .append(violation.getMessage())
-                            .append("\n");
+                        .append(violation.getPropertyPath())
+                        .append(", Invalid Value: ")
+                        .append(violation.getInvalidValue())
+                        .append(", Message: ")
+                        .append(violation.getMessage())
+                        .append("\n");
             }
             throw new BeanValidationError(errorMessage.toString());
         }
@@ -87,7 +87,27 @@ public class GuestSessionBean implements GuestSessionBeanRemote, GuestSessionBea
             throw new GuestErrorException("Unable to find Guest!");
         }
     }
-    
-    
-    
+
+    @Override
+    public Guest retrieveGuestByEmail(String guestEmail) {
+        try {
+            Query query = em.createQuery("SELECT g FROM Guest g WHERE g.email = :inEmail");
+            query.setParameter("inEmail", guestEmail);
+
+            return (Guest) query.getSingleResult();
+        } catch (NoResultException e) {
+            return null;  // Return null if no guest with that email is found
+        }
+    }
+
+    @Override
+    public void updateGuest(Guest guest) {
+        em.merge(guest);
+    }
+
+    @Override
+    public void deleteGuest(Guest guest) {
+        em.remove(guest);
+    }
+
 }

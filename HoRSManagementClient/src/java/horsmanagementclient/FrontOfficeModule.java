@@ -4,10 +4,400 @@
  */
 package horsmanagementclient;
 
+import ejb.stateless.ExceptionReportSessionBeanRemote;
+import ejb.stateless.GuestSessionBeanRemote;
+import ejb.stateless.ReservationSessionBeanRemote;
+import ejb.stateless.RoomAllocationSessionBeanRemote;
+import ejb.stateless.RoomRateSessionBeanRemote;
+import ejb.stateless.RoomSessionBeanRemote;
+import ejb.stateless.RoomTypeSessionBeanRemote;
+import entity.ExceptionReport;
+import entity.Guest;
+import entity.Reservation;
+import entity.Room;
+import entity.RoomAllocation;
+import entity.RoomRate;
+import entity.RoomType;
+import java.math.BigDecimal;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.ZoneId;
+import java.util.Date;
+import java.util.List;
+import java.util.Scanner;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.persistence.NoResultException;
+import util.enumeration.ExceptionTypeEnum;
+import util.enumeration.RateTypeEnum;
+import util.enumeration.RoomStatusEnum;
+import util.exception.NoAvailableRoomException;
+import util.exception.RoomAllocationNotFoundException;
+
 /**
  *
  * @author eliseoh
  */
 public class FrontOfficeModule {
-    
+
+    private Scanner scanner = new Scanner(System.in);
+    SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+    private ReservationSessionBeanRemote reservationBean;
+    private RoomSessionBeanRemote roomBean;
+    private RoomTypeSessionBeanRemote roomTypeBean;
+    private RoomRateSessionBeanRemote rateBean;
+    private GuestSessionBeanRemote guestBean;
+    private RoomAllocationSessionBeanRemote roomAllocationBean;
+    private ExceptionReportSessionBeanRemote exceptionReportBean;
+
+    public FrontOfficeModule() {
+
+    }
+
+    public FrontOfficeModule(ReservationSessionBeanRemote reservationBean, RoomSessionBeanRemote roomBean, RoomTypeSessionBeanRemote roomTypeBean, RoomRateSessionBeanRemote rateBean, RoomAllocationSessionBeanRemote roomAllocationBean, ExceptionReportSessionBeanRemote exceptionReportBean, GuestSessionBeanRemote guestBean) {
+        this.reservationBean = reservationBean;
+        this.roomBean = roomBean;
+        this.roomTypeBean = roomTypeBean;
+        this.rateBean = rateBean;
+        this.guestBean = guestBean;
+        this.roomAllocationBean = roomAllocationBean;
+        this.exceptionReportBean = exceptionReportBean;
+    }
+
+    public void menu() {
+        Integer response = 0;
+
+        while (true) {
+            System.out.println("*** Front Office System :: Guest Relations Management ***\n");
+            System.out.println("1: Walk-in Search Room");
+            System.out.println("2: Check-in guest");
+            System.out.println("3: Check-out guest");
+            System.out.println("4: Logout\n");
+            response = 0;
+
+            while (response < 1 || response > 4) {
+                System.out.print("> ");
+
+                response = scanner.nextInt();
+                scanner.nextLine();
+
+                if (response == 1) {
+                    doSearchRoom();
+                } else if (response == 2) {
+                    doCheckin();
+                } else if (response == 3) {
+                    doCheckout();
+                } else if (response == 4) {
+                    break;
+                } else {
+                    System.out.println("Invalid option, please try again!\n");
+                }
+            }
+
+            if (response == 4) {
+                break;
+            }
+        }
+    }
+
+    public void doSearchRoom() {
+        System.out.println("*** HoRS Management System :: Guest Relations :: Search/Reserve Room ***\n");
+        System.out.print("Enter start date (yyyy-MM-dd)> ");
+        Date startDate = parseDate(scanner.nextLine(), formatter);
+        System.out.print("Enter end date (yyyy-MM-dd)> ");
+        Date endDate = parseDate(scanner.nextLine(), formatter);
+
+        long diffInMillies = endDate.getTime() - startDate.getTime();
+        long numberOfNights = diffInMillies / (1000 * 60 * 60 * 24);
+        if (startDate.equals(endDate)) {
+            numberOfNights = 1;
+        }
+        System.out.println("Number of nights: " + numberOfNights);
+        List<RoomType> types = roomTypeBean.retrieveAvailableRoomTypes(startDate, endDate);
+        if (types.isEmpty()) {
+            System.out.println("No available room types.");
+            return;
+        }
+        BigDecimal[] amounts = new BigDecimal[types.size()];
+
+        int i = 1; // Index for displaying room types
+        for (RoomType type : types) {
+            BigDecimal totalAmount = BigDecimal.ZERO;
+
+            List<RoomRate> rates = type.getRoomrates();
+            for (RoomRate rate : rates) {
+                if (rate.getRateType().equals(RateTypeEnum.PUBLISHED)) {
+                    BigDecimal ratePerNight = rate.getRatePerNight();
+                    totalAmount = ratePerNight.multiply(BigDecimal.valueOf(numberOfNights));
+                    break;
+                }
+            }
+
+            amounts[i - 1] = totalAmount;
+
+            System.out.println("Room Type " + i + ": " + type.getRoomTypeName());
+            System.out.println("Total amount for " + numberOfNights + " nights: " + totalAmount);
+            i++;
+        }
+        if (!types.isEmpty()) {
+            System.out.print("Reserve a room? Type Y to reserve, N to exit> ");
+            String res = scanner.nextLine().trim();
+            if (res.equalsIgnoreCase("Y")) {
+                System.out.print("Enter number of guests> ");
+                int numGuests = scanner.nextInt();
+                scanner.nextLine();
+
+                System.out.print("Enter main guest name> ");
+                String name = scanner.nextLine().trim();
+                System.out.print("Enter main guest email> ");
+                String email = scanner.nextLine().trim();
+
+                System.out.print("Choose room type to reserve (1 to " + types.size() + ")> ");
+                int choiceIndex = scanner.nextInt();
+                scanner.nextLine();
+
+                if (choiceIndex >= 1 && choiceIndex <= types.size()) {
+                    RoomType chosenType = types.get(choiceIndex - 1);
+                    int roomCapacity = chosenType.getCapacity();
+                    int requiredRooms = (int) Math.ceil((double) numGuests / roomCapacity);
+
+                    int availableRooms = roomBean.getAvailableRoomCountByTypeAndDate(chosenType, startDate, endDate);
+
+                    if (availableRooms >= requiredRooms) {
+                        System.out.println("Sufficient rooms available for reservation.");
+                        BigDecimal chosenAmount = amounts[choiceIndex - 1];
+                        createReservations(requiredRooms, chosenType, startDate, endDate, name, email, numGuests, chosenAmount);
+                    } else {
+                        int maxGuestsAccommodated = availableRooms * chosenType.getCapacity();
+                        System.out.println("Only " + availableRooms + " rooms are available for the chosen room type.");
+                        System.out.println("Maximum number of guests that can be accommodated: " + maxGuestsAccommodated);
+
+                        System.out.print("Do you want to reserve rooms for " + maxGuestsAccommodated + " guests? Type Y for yes, N for no> ");
+                        String partialRes = scanner.nextLine().trim();
+
+                        if (partialRes.equalsIgnoreCase("Y")) {
+                            BigDecimal chosenAmount = amounts[choiceIndex - 1];
+                            createReservations(availableRooms, chosenType, startDate, endDate, name, email, maxGuestsAccommodated, chosenAmount);
+                        } else {
+                            System.out.println("Reservation canceled.");
+                        }
+                    }
+                } else {
+                    System.out.println("Invalid room type choice.");
+                }
+            } else {
+                System.out.println("Reservation process exited.");
+            }
+        }
+    }
+
+    private void createReservations(int numRooms, RoomType roomType, Date startDate, Date endDate, String guestName, String guestEmail, int totalGuests, BigDecimal chosenAmount) {
+        Guest guest = guestBean.retrieveGuestByEmail(guestEmail);
+        boolean isNewGuest = false;
+
+        if (guest == null) {
+            // If guest doesn't exist, create a new one
+            guest = new Guest();
+            guest.setName(guestName);
+            guest.setEmail(guestEmail);
+            guest = guestBean.createGuest(guest); // Persist the new guest
+            isNewGuest = true;
+            System.out.println("New guest created with email: " + guestEmail);
+        } else {
+            System.out.println("Existing guest found with email: " + guestEmail);
+        }
+
+        LocalDate startLocalDate = startDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+        int remainingGuests = totalGuests;
+        int roomCapacity = roomType.getCapacity();
+        BigDecimal totalReservationFee = chosenAmount.multiply(BigDecimal.valueOf(numRooms));
+        
+        try {
+            // Step 2: Create and persist each reservation, up to the number of available rooms
+            for (int i = 0; i < numRooms; i++) {
+                Reservation reservation = new Reservation();
+                reservation.setCheckInDate(startDate);
+                reservation.setCheckOutDate(endDate);
+                reservation.setRoomType(roomType);
+
+                // Determine the number of guests for this reservation
+                int guestsForThisReservation = Math.min(remainingGuests, roomCapacity);
+                reservation.setGuestNo(guestsForThisReservation);
+                remainingGuests -= guestsForThisReservation;
+
+                // Set the guest for each reservation and add the reservation to the guest's list
+                reservation.setGuest(guest);
+
+                // Persist the reservation
+                Long reserveID = reservationBean.createReservation(reservation);
+                Reservation managedReservation = reservationBean.retrieveReservationById(reserveID);
+                guest.getReservation().add(managedReservation);
+                roomTypeBean.updateRoomType(roomType);
+                guestBean.updateGuest(guest);
+
+                System.out.println("Reserved " + roomType.getRoomTypeName() + " for " + guestName + " with reservation ID " + reserveID + " and guest count: " + guestsForThisReservation);
+
+                // Check if it's a same-day check-in after 2 AM
+                LocalTime currentTime = LocalTime.now();
+                if (startLocalDate.equals(LocalDate.now()) && currentTime.isAfter(LocalTime.of(2, 0))) {
+                    System.out.println("Performing same-day check-in allocation...");
+                    try {
+                        Long allocationID = roomAllocationBean.createAllocation(managedReservation);
+                        RoomAllocation allocation = roomAllocationBean.retrieveAllocationById(allocationID);
+                        Room allocatedRoom = allocation.getRoom();
+                        allocatedRoom.setStatus(RoomStatusEnum.OCCUPIED);
+                        roomBean.updateRoom(allocatedRoom);
+
+                        System.out.println("Allocated guest to room number " + allocatedRoom.getRoomNumber() + " of room type " + allocatedRoom.getRoomType().getRoomTypeName());
+                    } catch (NoAvailableRoomException ex) {
+                        roomAllocationBean.createRoomAllocationException(reservation, ex);
+                        if (ex.isUpgradeAvailable()) {
+                            RoomAllocation upgradedAllocation = roomAllocationBean.retrieveAllocationByReservation(managedReservation);
+                            Room upgradedRoom = upgradedAllocation.getRoom();
+                            upgradedRoom.setStatus(RoomStatusEnum.OCCUPIED);
+                            roomBean.updateRoom(upgradedRoom);
+
+                            System.out.println("Room type unavailable. Guest was upgraded to room number " + upgradedRoom.getRoomNumber()
+                                    + " of room type " + upgradedRoom.getRoomType().getRoomTypeName());
+                        } else {
+                            System.out.println("Room type unavailable and no upgrade available. No room could be allocated.");
+                        }
+                    } catch (RoomAllocationNotFoundException ex) {
+                        System.out.println("Unexpected error: could not retrieve allocation.");
+                    }
+                }
+
+                // Stop if there are no remaining guests to allocate
+                if (remainingGuests <= 0) {
+                    break;
+                }
+            }
+            System.out.println("Total reservation fee for " + numRooms + " rooms: " + totalReservationFee);
+        } catch (Exception e) {
+            // If reservation fails, delete the guest if it is newly created and has no reservations
+            System.out.println("Reservation process failed: " + e.getMessage());
+            //e.printStackTrace();
+            if (isNewGuest && guest.getReservation().isEmpty()) {
+                guestBean.deleteGuest(guest);
+                System.out.println("New guest with no reservations has been deleted.");
+            }
+        }
+    }
+
+    public void doCheckin() {
+        System.out.println("*** HoRS Management System :: Guest Relations :: Check In ***\n");
+        System.out.print("Enter guest email> ");
+        String email = scanner.nextLine().trim();
+        Guest g = guestBean.retrieveGuestByEmail(email);
+
+        if (g == null) {
+            System.out.println("No guest found with the email: " + email);
+            return;  // Exit the check-in method if no guest is found
+        }
+
+        List<Reservation> reservations = g.getReservation();
+        if (reservations.isEmpty()) {
+            System.out.println("No reservations found for the guest with email: " + email);
+            return;  // Exit if there are no reservations
+        }
+
+        for (Reservation r : reservations) {
+            LocalDate checkinDate = r.getCheckInDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+            LocalTime currentTime = LocalTime.now();
+
+            if (checkinDate.equals(LocalDate.now())) {
+                try {
+                    RoomAllocation allocation = roomAllocationBean.retrieveAllocationByReservation(r);
+                    Room allocatedRoom = allocation.getRoom();
+
+                    if (currentTime.isBefore(LocalTime.of(14, 0))) {
+                        // Early check-in: only allow if room status is available
+                        if (allocatedRoom.getStatus() == RoomStatusEnum.AVAIL) {
+                            allocatedRoom.setStatus(RoomStatusEnum.OCCUPIED);
+                            roomBean.updateRoom(allocatedRoom);
+                            System.out.println("Early check-in successful. Allocated to room number " + allocatedRoom.getRoomNumber() + " of room type " + allocatedRoom.getRoomType().getRoomTypeName());
+                        } else {
+                            System.out.println("Early check-in not possible. Room is not available at this time.");
+                        }
+                    } else {
+                        // Regular check-in: mark room as occupied
+                        allocatedRoom.setStatus(RoomStatusEnum.OCCUPIED);
+                        roomBean.updateRoom(allocatedRoom);
+                        System.out.println("Checked in to room number " + allocatedRoom.getRoomNumber() + " of room type " + allocatedRoom.getRoomType().getRoomTypeName());
+                    }
+                } catch (RoomAllocationNotFoundException ex) {
+                    System.out.println("Room allocation not found for reservation ID: " + r.getReservationId());
+
+                    ExceptionReport exceptionReport = exceptionReportBean.retrieveExceptionByReservation(r);
+                    if (exceptionReport != null && exceptionReport.getExceptionType() == ExceptionTypeEnum.NOHIGHERAVAIL) {
+                        System.out.println("Unfortunately, no room was available for your reservation.");
+                    }
+                }
+            } else {
+                System.out.println("Check-in date is not today for reservation ID: " + r.getReservationId() + ". Cannot check in.");
+            }
+        }
+    }
+
+    public void doCheckout() {
+        System.out.println("*** HoRS Management System :: Guest Relations :: Check Out ***\n");
+        System.out.println("Enter guest email> ");
+        String email = scanner.nextLine().trim();
+        Guest g = guestBean.retrieveGuestByEmail(email);
+        if (g == null) {
+            System.out.println("No guest found with the email: " + email);
+            return;  // Exit the check-in method if no guest is found
+        }
+        List<Reservation> reservations = g.getReservation();
+        if (reservations.isEmpty()) {
+            System.out.println("No reservations found for the guest with email: " + email);
+            return;  // Exit if there are no reservations
+        }
+
+        for (Reservation r : reservations) {
+            LocalDate checkoutDate = r.getCheckOutDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+            LocalTime currentTime = LocalTime.now();
+
+            if (checkoutDate.equals(LocalDate.now())) {
+                try {
+                    RoomAllocation allocation = roomAllocationBean.retrieveAllocationByReservation(r);
+                    Room allocatedRoom = allocation.getRoom();
+
+                    if (currentTime.isAfter(LocalTime.of(12, 0))) {
+                        // Late check-out: only allow if no new reservation for this room today
+                        boolean isRoomAvailableLater = roomBean.isRoomAvailable(allocatedRoom, LocalDate.now());
+                        if (isRoomAvailableLater) {
+                            allocatedRoom.setStatus(RoomStatusEnum.AVAIL);
+                            roomBean.updateRoom(allocatedRoom);
+                            System.out.println("Late check-out successful. Room number " + allocatedRoom.getRoomNumber() + " is now available.");
+                        } else {
+                            System.out.println("Late check-out not possible. Room is already reserved for another guest today.");
+                        }
+                    } else {
+                        // Regular check-out
+                        allocatedRoom.setStatus(RoomStatusEnum.AVAIL);
+                        roomBean.updateRoom(allocatedRoom);
+                        System.out.println("Checked out. Room number " + allocatedRoom.getRoomNumber() + " is now available.");
+                    }
+                } catch (RoomAllocationNotFoundException ex) {
+                    System.out.println("Room allocation not found for reservation ID: " + r.getReservationId());
+                }
+            } else {
+                System.out.println("Check-out date is not today for reservation ID: " + r.getReservationId() + ". Cannot check out.");
+            }
+        }
+    }
+
+    private Date parseDate(String dateStr, SimpleDateFormat formatter1) {
+        try {
+            DateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+            return formatter.parse(dateStr);
+        } catch (ParseException e) {
+            System.out.println("Invalid date format. Please use yyyy-MM-dd.");
+            return null;
+        }
+    }
 }

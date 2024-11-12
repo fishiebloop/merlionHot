@@ -49,13 +49,29 @@ public class Reservation implements Serializable {
     @ManyToOne (optional = false)
     @JoinColumn(nullable = false)
     private Guest guest;
-    @OneToMany(mappedBy = "reserveId")
-    private List<RoomAllocation> roomAllocation;
+    @OneToOne(mappedBy = "reserveId")
+    private RoomAllocation roomAllocation;
+
+    public RoomAllocation getRoomAllocation() {
+        return roomAllocation;
+    }
+
+    public void setRoomAllocation(RoomAllocation roomAllocation) {
+        this.roomAllocation = roomAllocation;
+    }
+
+    public RoomType getRoomType() {
+        return roomType;
+    }
+
+    public void setRoomType(RoomType roomType) {
+        this.roomType = roomType;
+    }
     @OneToOne
     private RoomType roomType;
 
     public Reservation() {
-        this.roomAllocation = new ArrayList<>();
+       
     }
 
     public Reservation(Date checkInDate, Date checkOutDate, Integer guestNo) {

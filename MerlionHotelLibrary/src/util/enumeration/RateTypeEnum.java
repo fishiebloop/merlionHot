@@ -8,7 +8,7 @@ package util.enumeration;
  *
  * @author qiuyutong
  */
-public enum rateTypeEnum {
+public enum RateTypeEnum {
     PUBLISHED,
     NORMAL,
     PEAK,

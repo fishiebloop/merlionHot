@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -28,29 +29,35 @@ public class Guest implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long guestId;
-    @Column(length = 20, nullable = false)
+    @Column(length = 40, nullable = false)
     private String name;
-    @Column(length = 30, nullable = false, unique = true)
+    @Column(length = 255, nullable = false, unique = true)
     @NotNull(message = "Email cannot be null")
     @Email(message = "Invalid email format")
-    @Size(max = 30, message = "Email cannot be longer than 30 characters")
+    @Size(max = 255, message = "Email cannot be longer than 255 characters")
     private String email;
     @Column(length = 20, nullable = false)
     private String password;
-    @OneToMany(mappedBy="guest", orphanRemoval = true)
+    @OneToMany(mappedBy = "guest", orphanRemoval = true, fetch = FetchType.EAGER)
     private List<Reservation> reservation;
-    
 
     public Guest() {
         this.reservation = new ArrayList<>();
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
     }
 
     public Guest(String name, String email, String password) {
         this.name = name;
         this.email = email;
     }
-    
-    
+
     @Override
     public int hashCode() {
         int hash = 0;
@@ -145,5 +152,4 @@ public class Guest implements Serializable {
     public void setPassword(String password) {
         this.password = password;
     }
-    
 }

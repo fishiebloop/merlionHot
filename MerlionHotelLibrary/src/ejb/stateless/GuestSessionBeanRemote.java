@@ -13,16 +13,20 @@ import util.exception.GuestErrorException;
 
 /**
  *
- * @author eliseoh
+ * @author qiuyutong
+
  */
 @Remote
 public interface GuestSessionBeanRemote {
 
-    Guest guestAuth(String email, String password) throws GuestErrorException;
-    
+    public Guest createGuest(Guest g);
+    public List<Reservation> retrieveAllReservations(Long guestId) throws GuestErrorException;
     public Boolean validateGuest(Guest g) throws BeanValidationError;
+    public Guest guestAuth(String email, String password) throws GuestErrorException;
 
-    Guest createGuest(Guest g);
+    public Guest retrieveGuestByEmail(String guestEmail);
 
-    List<Reservation> retrieveAllReservations(Long guestId) throws GuestErrorException;
+    public void updateGuest(Guest guest);
+
+    public void deleteGuest(Guest guest);
 }

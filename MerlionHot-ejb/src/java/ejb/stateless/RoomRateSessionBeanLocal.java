@@ -5,6 +5,7 @@
 package ejb.stateless;
 
 import entity.RoomRate;
+import entity.RoomType;
 import java.util.List;
 import javax.ejb.Local;
 
@@ -23,7 +24,7 @@ public interface RoomRateSessionBeanLocal {
 
     public void updateRoomRate(RoomRate roomRate);
 
-    public void deleteRoomRate(RoomRate roomRate);
+    public String deleteRoomRate(RoomRate roomRate);
 
     public RoomRate retrieveRoomRateByName(String roomRateName);
     

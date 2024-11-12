@@ -6,6 +6,8 @@ package ejb.stateless;
 
 import entity.Room;
 import entity.RoomType;
+import java.time.LocalDate;
+import java.util.Date;
 import java.util.List;
 import javax.ejb.Remote;
 import util.exception.RoomErrorException;
@@ -22,4 +24,8 @@ public interface RoomSessionBeanRemote {
     public void deleteRoom(Room room);
     public List<Room> retrieveAllRooms() throws RoomErrorException;
     public void updateRoom(Room room);
+
+    public boolean isRoomAvailable(Room room, LocalDate date);
+
+    public int getAvailableRoomCountByTypeAndDate(RoomType roomType, Date startDate, Date endDate);
 }

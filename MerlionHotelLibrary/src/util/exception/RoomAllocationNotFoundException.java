@@ -8,22 +8,22 @@ package util.exception;
  *
  * @author eliseoh
  */
-public class BeanValidationError extends Exception{
+public class RoomAllocationNotFoundException extends Exception {
 
     /**
-     * Creates a new instance of <code>BeanValidationError</code> without detail
+     * Creates a new instance of <code>RoomErrorException</code> without detail
      * message.
      */
-    public BeanValidationError() {
+    public RoomAllocationNotFoundException() {
     }
 
     /**
-     * Constructs an instance of <code>BeanValidationError</code> with the
+     * Constructs an instance of <code>RoomErrorException</code> with the
      * specified detail message.
      *
      * @param msg the detail message.
      */
-    public BeanValidationError(String msg) {
+    public RoomAllocationNotFoundException(String msg) {
         super(msg);
     }
 }

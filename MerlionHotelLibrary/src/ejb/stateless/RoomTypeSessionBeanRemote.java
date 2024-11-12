@@ -8,6 +8,7 @@ import entity.RoomType;
 import java.util.Date;
 import java.util.List;
 import javax.ejb.Remote;
+import util.enumeration.RateTypeEnum;
 import util.exception.RoomTypeErrorException;
 
 /**
@@ -21,7 +22,15 @@ public interface RoomTypeSessionBeanRemote {
     public List<RoomType> retrieveAllRoomTypes() throws RoomTypeErrorException;
     public void updateRoomType(RoomType roomType);
     public void deleteRoomType(RoomType roomType);
-    public RoomType retrieveRoomTypeById(Long roomTypeId) throws RoomTypeErrorException;
 
+    public List<RoomType> retrieveAvailableRoomTypes(Date startDate, Date endDate);
+
+    public boolean roomRateExistsForType(Long roomTypeId, RateTypeEnum rateType);
+
+    public RoomType retrieveRoomTypeById(Long roomTypeId) throws RoomTypeErrorException;
+    public RoomType retrieveRoomTypeById(Long roomTypeId)
+  
+  //modify to be same as above 
     List<RoomType> retrieveAllAvailRoomType(Date checkIn, Date checkOut, Integer guests) throws RoomTypeErrorException;
+
 }
