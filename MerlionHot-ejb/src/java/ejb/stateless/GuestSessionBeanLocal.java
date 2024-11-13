@@ -27,4 +27,8 @@ public interface GuestSessionBeanLocal {
     Guest createGuest(Guest g)throws BeanValidationError;
 
     List<Reservation> retrieveAllReservations(Long guestId) throws GuestErrorException;
+
+    public Guest retrieveGuestById(Long id);
+    
+    public Guest retrieveGuestByEmail(String guestEmail);
 }

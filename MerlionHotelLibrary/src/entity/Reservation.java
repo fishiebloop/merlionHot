@@ -45,7 +45,7 @@ public class Reservation implements Serializable {
     @Column(nullable = false)
     private Date reserveDate;
     @Column(nullable = false)
-    private Boolean isDisabled;
+    private Boolean isDisabled = false;
     
     @ManyToOne (optional = false)
     @JoinColumn(nullable = false)

@@ -6,6 +6,7 @@ package ejb.stateless;
 
 import entity.Room;
 import entity.RoomType;
+import java.util.Date;
 import java.util.List;
 import javax.ejb.Local;
 import util.exception.RoomErrorException;
@@ -22,6 +23,8 @@ public interface RoomSessionBeanLocal {
     public List<Room> retrieveAllRooms() throws RoomErrorException;
 
     public Room retrieveRoomById(Long roomId);
+    
+    public int getAvailableRoomCountByTypeAndDate(RoomType roomType, Date startDate, Date endDate);
 
     public Room retrieveRoomByNumber(Integer roomNumber) throws RoomErrorException;
 
