@@ -7,15 +7,21 @@ package ejb.stateless;
 import entity.RoomRate;
 import entity.RoomType;
 import java.util.List;
+import java.util.Set;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.NonUniqueResultException;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
+import javax.validation.ConstraintViolation;
+import javax.validation.Validation;
+import javax.validation.Validator;
+import javax.validation.ValidatorFactory;
 import util.enumeration.RoomStatusEnum;
 import util.exception.RoomRateErrorException;
 import util.exception.RoomTypeErrorException;
+import util.exception.BeanValidationError;
 
 /**
  *
@@ -27,11 +33,12 @@ public class RoomRateSessionBean implements RoomRateSessionBeanRemote, RoomRateS
     @PersistenceContext(unitName = "MerlionHot-ejbPU")
     private EntityManager em;
 
+    //throw room rate bean validation
     @Override
-    public Long createRoomRate(RoomRate newRoomRate) {
+    public RoomRate createRoomRate(RoomRate newRoomRate) {
         em.persist(newRoomRate);
         em.flush();
-        return newRoomRate.getRoomRateId();
+        return newRoomRate;
     }
 
     @Override
@@ -94,5 +101,30 @@ public class RoomRateSessionBean implements RoomRateSessionBeanRemote, RoomRateS
             em.flush();
             return "Room rate is in use and has been disabled.";
         }
+    }
+
+    @Override
+    public Boolean validateRoomRate(RoomRate rr) throws BeanValidationError {
+        ValidatorFactory validatorFactory = Validation.buildDefaultValidatorFactory();
+        Validator validator = validatorFactory.getValidator();
+
+        // Validate the Guest object and store violations
+        Set<ConstraintViolation<RoomRate>> violations = validator.validate(rr);
+
+        if (!violations.isEmpty()) {
+            StringBuilder errorMessage = new StringBuilder("Validation Errors:\n");
+            for (ConstraintViolation<RoomRate> violation : violations) {
+                errorMessage.append("Field: ")
+                        .append(violation.getPropertyPath())
+                        .append(", Invalid Value: ")
+                        .append(violation.getInvalidValue())
+                        .append(", Message: ")
+                        .append(violation.getMessage())
+                        .append("\n");
+            }
+            throw new BeanValidationError(errorMessage.toString());
+        }
+
+        return true;
     }
 }

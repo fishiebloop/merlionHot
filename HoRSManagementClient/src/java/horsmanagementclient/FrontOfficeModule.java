@@ -4,6 +4,7 @@
  */
 package horsmanagementclient;
 
+import com.merlionhotel.utils.DateUtil;
 import ejb.stateless.ExceptionReportSessionBeanRemote;
 import ejb.stateless.GuestSessionBeanRemote;
 import ejb.stateless.ReservationSessionBeanRemote;
@@ -34,6 +35,7 @@ import javax.persistence.NoResultException;
 import util.enumeration.ExceptionTypeEnum;
 import util.enumeration.RateTypeEnum;
 import util.enumeration.RoomStatusEnum;
+import util.exception.DateValidationError;
 import util.exception.NoAvailableRoomException;
 import util.exception.RoomAllocationNotFoundException;
 
@@ -85,7 +87,11 @@ public class FrontOfficeModule {
                 scanner.nextLine();
 
                 if (response == 1) {
-                    doSearchRoom();
+                    try {
+                        doSearchRoom();
+                    } catch (DateValidationError ex) {
+                        System.out.println(ex.getMessage());
+                    }
                 } else if (response == 2) {
                     doCheckin();
                 } else if (response == 3) {
@@ -103,27 +109,49 @@ public class FrontOfficeModule {
         }
     }
 
-    public void doSearchRoom() {
+    public void doSearchRoom() throws DateValidationError {
         System.out.println("*** HoRS Management System :: Guest Relations :: Search/Reserve Room ***\n");
-        System.out.print("Enter start date (yyyy-MM-dd)> ");
-        Date startDate = parseDate(scanner.nextLine(), formatter);
-        System.out.print("Enter end date (yyyy-MM-dd)> ");
-        Date endDate = parseDate(scanner.nextLine(), formatter);
+        Date out;
+        Date in;
 
-        long diffInMillies = endDate.getTime() - startDate.getTime();
+        while (true) {
+            System.out.print("Enter Check in Date! Please format in dd-MM-yyyy > ");
+            String checkIn = scanner.nextLine().trim();
+            try {
+                in = DateUtil.convertToDate(checkIn);
+                break;
+            } catch (ParseException ex) {
+                throw new DateValidationError("Date formatted wrongly! Try again!");
+            }
+        }
+
+        while (true) {
+            System.out.print("Enter Check out Date! Please format in dd-MM-yyyy > ");
+            String checkOut = scanner.nextLine().trim();
+            try {
+                out = DateUtil.convertToDate(checkOut);
+                break;
+            } catch (ParseException ex) {
+                throw new DateValidationError("Date formatted wrongly! Try again!");
+            }
+        }
+
+        long diffInMillies = out.getTime() - in.getTime();
         long numberOfNights = diffInMillies / (1000 * 60 * 60 * 24);
-        if (startDate.equals(endDate)) {
+        if (in.equals(out)) {
             numberOfNights = 1;
         }
-        Date today = new Date();
-        
-        if (endDate.before(startDate) || startDate.before(today)) { //12am issue
-            System.out.println("Invalid start date and end date! Please try again.");
-            return;
+
+        System.out.print("Enter No of Guest(s) > ");
+        Integer guests = scanner.nextInt();
+
+        //same day booking must have check in time after current time
+        if (!out.equals(in) && out.before(in)) {
+            throw new DateValidationError("Dates entered wrongly!");
         }
-        
+
         System.out.println("Number of nights: " + numberOfNights);
-        List<RoomType> types = roomTypeBean.retrieveAvailableRoomTypes(startDate, endDate);
+        List<RoomType> types = roomTypeBean.retrieveAvailableRoomTypes(in, out);
         if (types.isEmpty()) {
             System.out.println("No available room types.");
             return;
@@ -171,13 +199,13 @@ public class FrontOfficeModule {
                     int roomCapacity = chosenType.getCapacity();
                     int requiredRooms = (int) Math.ceil((double) numGuests / roomCapacity);
 
-                    int availableRooms = roomBean.getAvailableRoomCountByTypeAndDate(chosenType, startDate, endDate);
+                    int availableRooms = roomBean.getAvailableRoomCountByTypeAndDate(chosenType, in, out);
 
                     if (availableRooms >= requiredRooms) {
                         System.out.println("Sufficient rooms available for reservation.");
                         BigDecimal chosenAmount = amounts[choiceIndex - 1];
                         System.out.println();
-                        createReservations(requiredRooms, chosenType, startDate, endDate, name, email, numGuests, chosenAmount);
+                        createReservations(requiredRooms, chosenType, in, out, name, email, numGuests, chosenAmount);
                     } else {
                         int maxGuestsAccommodated = availableRooms * chosenType.getCapacity();
                         System.out.println("Only " + availableRooms + " rooms are available for the chosen room type.");
@@ -188,7 +216,7 @@ public class FrontOfficeModule {
 
                         if (partialRes.equalsIgnoreCase("Y")) {
                             BigDecimal chosenAmount = amounts[choiceIndex - 1];
-                            createReservations(availableRooms, chosenType, startDate, endDate, name, email, maxGuestsAccommodated, chosenAmount);
+                            createReservations(availableRooms, chosenType, in, out, name, email, maxGuestsAccommodated, chosenAmount);
                         } else {
                             System.out.println("Reservation canceled.");
                         }
@@ -222,7 +250,7 @@ public class FrontOfficeModule {
         int remainingGuests = totalGuests;
         int roomCapacity = roomType.getCapacity();
         BigDecimal totalReservationFee = chosenAmount.multiply(BigDecimal.valueOf(numRooms));
-        
+
         try {
             // Step 2: Create and persist each reservation, up to the number of available rooms
             for (int i = 0; i < numRooms; i++) {
@@ -339,8 +367,7 @@ public class FrontOfficeModule {
                     }
                 } catch (RoomAllocationNotFoundException ex) {
                     System.out.println("Room allocation not found for reservation ID: " + r.getReservationId());
-
-                    ExceptionReport exceptionReport = exceptionReportBean.retrieveExceptionByReservation(r);
+                    ExceptionReport exceptionReport = exceptionReportBean.retrieveExceptionByReservation(r); // edit 
                     if (exceptionReport != null && exceptionReport.getExceptionType() == ExceptionTypeEnum.NOHIGHERAVAIL) {
                         System.out.println("Unfortunately, no room was available for your reservation.");
                     }

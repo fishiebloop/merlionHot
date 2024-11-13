@@ -5,6 +5,7 @@
 package ejb.stateless;
 
 import entity.RoomType;
+import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 import javax.ejb.Remote;
@@ -17,7 +18,7 @@ import util.exception.RoomTypeErrorException;
  */
 @Remote
 public interface RoomTypeSessionBeanRemote {
-    public Long createRoomType(RoomType newRoomType);
+    public RoomType createRoomType(RoomType newRoomType);
     public RoomType retrieveRoomTypeByName(String roomTypeName) throws RoomTypeErrorException;
     public List<RoomType> retrieveAllRoomTypes() throws RoomTypeErrorException;
     public void updateRoomType(RoomType roomType);
@@ -30,6 +31,8 @@ public interface RoomTypeSessionBeanRemote {
     public RoomType retrieveRoomTypeById(Long roomTypeId) throws RoomTypeErrorException;
   
   //modify to be same as above 
-    List<RoomType> retrieveAllAvailRoomType(Date checkIn, Date checkOut, Integer guests) throws RoomTypeErrorException;
+    List<RoomType> retrieveAllAvailRoomTypeOnline(Date checkIn, Date checkOut) throws RoomTypeErrorException;
+
+    BigDecimal getPriceOfRoomTypeOnline(Date checkIn, Date checkOut, RoomType rt);
 
 }

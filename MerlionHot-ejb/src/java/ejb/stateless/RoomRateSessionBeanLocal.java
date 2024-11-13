@@ -9,6 +9,7 @@ import entity.RoomType;
 import java.util.List;
 import javax.ejb.Local;
 import util.exception.RoomRateErrorException;
+import util.exception.BeanValidationError;
 
 /**
  *
@@ -17,7 +18,7 @@ import util.exception.RoomRateErrorException;
 @Local
 public interface RoomRateSessionBeanLocal {
 
-    public Long createRoomRate(RoomRate newRoomRate);
+    public RoomRate createRoomRate(RoomRate newRoomRate);
 
     public List<RoomRate> retrieveAllRoomRates();
 
@@ -28,5 +29,7 @@ public interface RoomRateSessionBeanLocal {
     public String deleteRoomRate(RoomRate roomRate);
 
     public RoomRate retrieveRoomRateByName(String roomRateName) throws RoomRateErrorException;
-    
+
+    Boolean validateRoomRate(RoomRate rr) throws BeanValidationError;
+
 }

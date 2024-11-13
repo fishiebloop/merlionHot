@@ -28,4 +28,6 @@ public interface RoomSessionBeanRemote {
     public boolean isRoomAvailable(Room room, LocalDate date);
 
     public int getAvailableRoomCountByTypeAndDate(RoomType roomType, Date startDate, Date endDate);
+
+    Room createRoom2(Room room);
 }

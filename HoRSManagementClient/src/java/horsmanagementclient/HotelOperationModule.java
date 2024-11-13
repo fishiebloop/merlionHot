@@ -282,8 +282,8 @@ public class HotelOperationModule {
         System.out.print("Enter Room Type's Amenities Description> ");
         type.setAmenities(scanner.nextLine().trim());
 
-        Long newType = roomTypeBean.createRoomType(type);
-        if (newType != null) {
+        type = roomTypeBean.createRoomType(type);
+        if (type.getRoomTypeId() != null) {
             System.out.println("Room Type " + type.getRoomTypeName() + " created successfully!\n");
         } else {
             System.out.println("Error occurred during room type creation!\n");
@@ -549,9 +549,9 @@ public class HotelOperationModule {
             }
 
             // Persist the RoomRate if no duplicate rate type exists
-            Long newRateId = rateBean.createRoomRate(r);
-            if (newRateId != null) {
-                RoomRate roomrate = rateBean.retrieveRoomRateById(newRateId);
+            RoomRate newRateId = rateBean.createRoomRate(r);
+            if (newRateId.getRoomRateId() != null) {
+                RoomRate roomrate = rateBean.retrieveRoomRateById(newRateId.getRoomRateId());
                 rt.getRoomrates().add(roomrate);
                 roomTypeBean.updateRoomType(rt);
                 System.out.println("Room Rate: " + r.getName() + " created successfully!\n");

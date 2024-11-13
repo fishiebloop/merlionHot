@@ -5,6 +5,7 @@
 package ejb.stateless;
 
 import entity.RoomType;
+import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 import javax.ejb.Local;
@@ -17,7 +18,7 @@ import util.exception.RoomTypeErrorException;
 @Local
 public interface RoomTypeSessionBeanLocal {
 
-    public Long createRoomType(RoomType newRoomType);
+    public RoomType createRoomType(RoomType newRoomType);
 
     public List<RoomType> retrieveAllRoomTypes() throws RoomTypeErrorException;
 
@@ -29,6 +30,8 @@ public interface RoomTypeSessionBeanLocal {
 
     public String deleteRoomType(RoomType roomType);
 
-    List<RoomType> retrieveAllAvailRoomType(Date checkIn, Date checkOut, Integer guests) throws RoomTypeErrorException;
+    List<RoomType> retrieveAllAvailRoomTypeOnline(Date checkIn, Date checkOut) throws RoomTypeErrorException;
+
+    BigDecimal getPriceOfRoomTypeOnline(Date checkIn, Date checkOut, RoomType rt);
     
 }

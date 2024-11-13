@@ -15,7 +15,9 @@ import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import com.merlionhotel.utils.DateUtil;
 import java.time.LocalDate;
+import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.validation.constraints.Digits;
 import util.enumeration.RateTypeEnum;
 
 @Entity
@@ -24,10 +26,12 @@ public class RoomRate implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long roomRateId;
+    @Column(nullable = false, length = 64)
     private String name;
     @Enumerated(EnumType.STRING)
     private RateTypeEnum rateType;
-    @Column(nullable = false)
+    @Column(nullable = false, scale=2)
+    @Digits(integer = 5,fraction = 2)
     private BigDecimal ratePerNight;
     @Temporal(TemporalType.TIMESTAMP)
     @Column
@@ -35,7 +39,8 @@ public class RoomRate implements Serializable {
     @Temporal(TemporalType.TIMESTAMP)
     @Column
     private Date endDate;
-    @ManyToOne
+    @ManyToOne (optional = false)
+    @JoinColumn(nullable = false)
     private RoomType roomType;
     private Boolean isDisabled = false;
 
@@ -46,6 +51,14 @@ public class RoomRate implements Serializable {
     public RoomRate() {
     }
 
+    
+    public RoomRate(String name, RateTypeEnum rateType, BigDecimal ratePerNight, RoomType roomType) {
+        this.name = name;
+        this.rateType = rateType;
+        this.ratePerNight = ratePerNight;
+        this.roomType = roomType;
+    }
+    
     public void setIsDisabled(Boolean isDisabled) {
         this.isDisabled = isDisabled;
     }
