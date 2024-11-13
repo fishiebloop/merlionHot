@@ -18,7 +18,7 @@ import util.exception.RoomTypeErrorException;
  */
 @Remote
 public interface RoomTypeSessionBeanRemote {
-    public RoomType createRoomType(RoomType newRoomType);
+    public RoomType createRoomType(RoomType newRoomType)  throws RoomTypeErrorException;
     public RoomType retrieveRoomTypeByName(String roomTypeName) throws RoomTypeErrorException;
     public List<RoomType> retrieveAllRoomTypes() throws RoomTypeErrorException;
     public void updateRoomType(RoomType roomType);

@@ -6,6 +6,7 @@ package ejb.stateless;
 
 import entity.Reservation;
 import entity.Guest;
+import entity.Partner;
 import entity.RoomType;
 import java.util.Date;
 import javax.ejb.Remote;
@@ -24,15 +25,15 @@ public interface ReservationSessionBeanRemote {
 
     public Long createReservation(Reservation reservation);
 
-    public Reservation retrieveReservationById(Long id);
+    public Reservation retrieveReservationById(Long id) throws ReservationErrorException;
   
-    Reservation createReservation(Reservation newR, Guest guest, RoomType rt);
+    // Reservation createReservation(Reservation newR, Guest guest, RoomType rt);
 
     Reservation retrieveReservationByIdForGuest(Long id, Guest g) throws ReservationErrorException;
 
     //public Reservation createNotSameDayReservation(Reservation newR, Guest guest, RoomType rt) throws NoAvailableRoomException, CannotUpgradeException;
 
-    public Reservation createSameDayReservation(Reservation newR) throws NoAvailableRoomException, CannotUpgradeException;
+    public Reservation createSameDayReservation(RoomType type, Guest guest, Partner partner, Date in, Date out, Integer guestNo) throws NoAvailableRoomException, CannotUpgradeException;
 
     Reservation detachReservation(Reservation res);
     

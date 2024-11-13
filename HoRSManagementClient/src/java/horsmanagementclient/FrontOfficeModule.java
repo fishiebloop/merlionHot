@@ -178,6 +178,7 @@ public class FrontOfficeModule {
             System.out.println("Total amount for " + numberOfNights + " nights: " + totalAmount);
             i++;
         }
+        scanner.nextLine();
         if (!types.isEmpty()) {
             System.out.print("Reserve a room? Type Y to reserve, N to exit> ");
             String res = scanner.nextLine().trim();

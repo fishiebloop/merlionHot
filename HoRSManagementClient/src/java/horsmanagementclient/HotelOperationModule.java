@@ -91,13 +91,9 @@ public class HotelOperationModule {
                     doDeleteRoom();
                 } else if (response == 7) {
                     doViewAllRooms();
-                }
-                else if(response == 8)
-                {
+                } else if (response == 8) {
                     doViewRoomAllocationReport();
-                }
-                else if(response == 9)
-                {
+                } else if (response == 9) {
                     break;
                 } else {
                     System.out.println("Invalid option, please try again!\n");
@@ -111,48 +107,49 @@ public class HotelOperationModule {
     }
 
     public void doViewRoomAllocationReport() {
-         Integer response = 0;
+        Integer response = 0;
 
-            System.out.println("*** Hotel Operation System :: Operations Management :: View Room Allocation Report ***\n");
-            List<ExceptionReport> higherAvail = exceptionReportSessionBean.retrieveHigherAvailList();
-            if (higherAvail.size() < 1) {
-                System.out.println("No reservations allocated to next higher room type.");
-            } else {
-                System.out.println("List of reservations allocated to next higher room type:");
-                Integer i = 1;
-                for (ExceptionReport er : higherAvail) {
-                    Reservation r = er.getReservation();
-                    Guest g = r.getGuest();
-                    System.out.println(i + ".");
-                    System.out.println("    Reservation ID: " + r.getReservationId());
-                    System.out.println("    Guest Name: " + g.getName());
-                    System.out.println("    Guest Email: " + g.getEmail());
-                    System.out.println("    Allocated Room Type: " + r.getRoomType().getRoomTypeName());
-                    System.out.println("    Allocated Room Number: " + r.getRoomAllocation().getRoom().getRoomNumber());
-                    System.out.println();
-                    i++;
-                }
+        System.out.println("*** Hotel Operation System :: Operations Management :: View Room Allocation Report ***\n");
+        List<ExceptionReport> higherAvail = exceptionReportSessionBean.retrieveHigherAvailList();
+        if (higherAvail.size() < 1) {
+            System.out.println("No reservations allocated to next higher room type.");
+        } else {
+            System.out.println("List of reservations allocated to next higher room type:");
+            Integer i = 1;
+            for (ExceptionReport er : higherAvail) {
+                Reservation r = er.getReservation();
+                Guest g = r.getGuest();
+                System.out.println(i + ".");
+                System.out.println("    Reservation ID: " + r.getReservationId());
+                System.out.println("    Guest Name: " + g.getName());
+                System.out.println("    Guest Email: " + g.getEmail());
+                System.out.println("    Allocated Room Type: " + r.getRoomType().getRoomTypeName());
+                System.out.println("    Allocated Room Number: " + r.getRoomAllocation().getRoom().getRoomNumber());
+                System.out.println();
+                i++;
             }
-            
-            List<ExceptionReport> noHigherAvail = exceptionReportSessionBean.retrieveNoUpgradeList();
-            if (noHigherAvail.size() < 1) {
-                System.out.println("No reservations with no allocated rooms.");
-            } else {
-                System.out.println("List of reservations with no allocated rooms:");
-                Integer i = 1;
-                for (ExceptionReport er : noHigherAvail) {
-                    Reservation r = er.getReservation();
-                    Guest g = r.getGuest();
-                    System.out.println(i + ".");
-                    System.out.println("    Reservation ID: " + r.getReservationId());
-                    System.out.println("    Guest Name: " + g.getName());
-                    System.out.println("    Guest Email: " + g.getEmail());
-                    System.out.println();
-                    i++;
-                }
+        }
+
+        List<ExceptionReport> noHigherAvail = exceptionReportSessionBean.retrieveNoUpgradeList();
+        if (noHigherAvail.size() < 1) {
+            System.out.println("No reservations with no allocated rooms.");
+        } else {
+            System.out.println("List of reservations with no allocated rooms:");
+            Integer i = 1;
+            for (ExceptionReport er : noHigherAvail) {
+                Reservation r = er.getReservation();
+                Guest g = r.getGuest();
+                System.out.println(i + ".");
+                System.out.println("    Reservation ID: " + r.getReservationId());
+                System.out.println("    Guest Name: " + g.getName());
+                System.out.println("    Guest Email: " + g.getEmail());
+                System.out.println();
+                i++;
             }
-            
+        }
+
     }
+
     public void menuSales() {
         Integer response = 0;
 
@@ -190,7 +187,7 @@ public class HotelOperationModule {
     }
 
     public void doViewRoomTypeDetails() {
-        System.out.print("Enter Room Type ID (You may retrieve ID details from 'View All Room Types')> " );
+        System.out.print("Enter Room Type ID (You may retrieve ID details from 'View All Room Types')> ");
         Long id = scanner.nextLong();
         scanner.nextLine();
 
@@ -334,11 +331,11 @@ public class HotelOperationModule {
         System.out.print("Enter Room Type's Amenities Description> ");
         type.setAmenities(scanner.nextLine().trim());
 
-        type = roomTypeBean.createRoomType(type);
-        if (type.getRoomTypeId() != null) {
+        try {
+            type = roomTypeBean.createRoomType(type);
             System.out.println("Room Type " + type.getRoomTypeName() + " created successfully!\n");
-        } else {
-            System.out.println("Error occurred during room type creation!\n");
+        } catch (RoomTypeErrorException e) {
+            System.out.println("Error: " + e.getMessage() + "\n");
         }
     }
 
@@ -378,6 +375,7 @@ public class HotelOperationModule {
             }
         } catch (RoomTypeErrorException ex) {
             System.out.println(ex.getMessage() + "\n");
+            //ex.printStackTrace();
         }
     }
 

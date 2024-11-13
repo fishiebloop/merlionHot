@@ -26,13 +26,23 @@ public class RoomTypeSessionBean implements RoomTypeSessionBeanRemote, RoomTypeS
     private EntityManager em;
 
     @Override
-    public RoomType createRoomType(RoomType newRoomType) {
-        em.persist(newRoomType);
-        em.flush();
-        return newRoomType;
+    public RoomType createRoomType(RoomType type) throws RoomTypeErrorException {
+        if (isRoomTypeNameUnique(type.getRoomTypeName())) {
+            em.persist(type);
+            em.flush();
+            return type;
+        } else {
+            throw new RoomTypeErrorException("Room type name must be unique.");
+        }
     }
 
-    
+    private boolean isRoomTypeNameUnique(String roomTypeName) {
+        Query query = em.createQuery("SELECT COUNT(rt) FROM RoomType rt WHERE rt.roomTypeName = :name");
+        query.setParameter("name", roomTypeName);
+        Long count = (Long) query.getSingleResult();
+        return count == 0; // true if the name is unique
+    }
+
     @Override
     public List<RoomType> retrieveAllRoomTypes() throws RoomTypeErrorException {
         Query query = em.createQuery("SELECT rt from RoomType rt");
@@ -140,7 +150,7 @@ public class RoomTypeSessionBean implements RoomTypeSessionBeanRemote, RoomTypeS
             query.setParameter("normalRate", RateTypeEnum.NORMAL);
             query.setParameter("occupiedStatus", RoomStatusEnum.OCCUPIED);
 
-                /*Integer noRooms = (int) Math.ceil((float) guests / rt.getCapacity());
+            /*Integer noRooms = (int) Math.ceil((float) guests / rt.getCapacity());
                 long count = (long) q.getSingleResult();
                 if (count + noRooms <= rt.getRooms().size()) {
                     avail.add(rt);
@@ -206,28 +216,28 @@ public class RoomTypeSessionBean implements RoomTypeSessionBeanRemote, RoomTypeS
 
         // Create a query that includes date filtering for PEAK and PROMOTION rates
         String queryStr = "SELECT rr.ratePerNight FROM RoomRate rr WHERE rr.roomType = :rt "
-                          + "AND rr.isDisabled = false ";
+                + "AND rr.isDisabled = false ";
 
         // Add date range filtering only for PEAK and PROMOTION rates
         queryStr += "AND ((rr.rateType = util.enumeration.RateTypeEnum.PROMOTION "
-                    + "AND rr.startDate <= :checkOut AND rr.endDate >= :checkIn) "
-                    + "OR (rr.rateType = util.enumeration.RateTypeEnum.PEAK "
-                    + "AND rr.startDate <= :checkOut AND rr.endDate >= :checkIn) "
-                    + "OR (rr.rateType NOT IN (util.enumeration.RateTypeEnum.PROMOTION, "
-                    + "util.enumeration.RateTypeEnum.PEAK))) ";
+                + "AND rr.startDate <= :checkOut AND rr.endDate >= :checkIn) "
+                + "OR (rr.rateType = util.enumeration.RateTypeEnum.PEAK "
+                + "AND rr.startDate <= :checkOut AND rr.endDate >= :checkIn) "
+                + "OR (rr.rateType NOT IN (util.enumeration.RateTypeEnum.PROMOTION, "
+                + "util.enumeration.RateTypeEnum.PEAK))) ";
 
         // Order by rateType priority (PROMOTION > PEAK > NORMAL > others)
         queryStr += "ORDER BY CASE "
-                    + "WHEN rr.rateType = util.enumeration.RateTypeEnum.PROMOTION THEN 1 "
-                    + "WHEN rr.rateType = util.enumeration.RateTypeEnum.PEAK THEN 2 "
-                    + "WHEN rr.rateType = util.enumeration.RateTypeEnum.NORMAL THEN 3 "
-                    + "ELSE 4 END";
+                + "WHEN rr.rateType = util.enumeration.RateTypeEnum.PROMOTION THEN 1 "
+                + "WHEN rr.rateType = util.enumeration.RateTypeEnum.PEAK THEN 2 "
+                + "WHEN rr.rateType = util.enumeration.RateTypeEnum.NORMAL THEN 3 "
+                + "ELSE 4 END";
 
         Query q = em.createQuery(queryStr)
-                    .setParameter("rt", rt)
-                    .setParameter("checkIn", checkIn)
-                    .setParameter("checkOut", checkOut)
-                    .setMaxResults(1);
+                .setParameter("rt", rt)
+                .setParameter("checkIn", checkIn)
+                .setParameter("checkOut", checkOut)
+                .setMaxResults(1);
 
         // Get the selected rate based on rateType priority
         BigDecimal dailyPrice = (BigDecimal) q.getSingleResult();
@@ -247,7 +257,7 @@ public class RoomTypeSessionBean implements RoomTypeSessionBeanRemote, RoomTypeS
             }
         }
 
-        return totalPrice; 
+        return totalPrice;
     }
 
 }

@@ -54,7 +54,7 @@ public class Reservation implements Serializable {
     private RoomAllocation roomAllocation;
     @ManyToOne
     private Partner partner;
-    @OneToOne
+    @OneToOne (optional = false)
     private RoomType roomType;
     
     public Reservation() {
@@ -215,6 +215,10 @@ public class Reservation implements Serializable {
      */
     public void setIsDisabled(Boolean isDisabled) {
         this.isDisabled = isDisabled;
+    }
+
+    public Partner getPartner(Object object) {
+        return partner;
     }
     
 }

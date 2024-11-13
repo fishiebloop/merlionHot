@@ -28,7 +28,9 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.xml.ws.RequestWrapper;
 import javax.xml.ws.ResponseWrapper;
+import util.exception.CannotUpgradeException;
 import util.exception.InvalidLoginCredentialException;
+import util.exception.NoAvailableRoomException;
 import util.exception.ReservationErrorException;
 import util.exception.RoomTypeErrorException;
 
@@ -76,11 +78,11 @@ public class HolidayWebService {
                 em.detach(reservation);
                 reservation.setRoomType(null);
             }
-            for (RoomRate rate:type.getRoomrates()) {
+            for (RoomRate rate : type.getRoomrates()) {
                 em.detach(rate);
                 rate.setRoomType(null);
             }
-            for (Room room:type.getRooms()) {
+            for (Room room : type.getRooms()) {
                 em.detach(room);
                 room.setRoomType(null);
             }
@@ -92,20 +94,35 @@ public class HolidayWebService {
     public Integer getAvailableRoomCountByTypeAndDate(@WebParam(name = "roomTypeID") Long roomTypeID, @WebParam(name = "in") Date in, @WebParam(name = "out") Date out) throws RoomTypeErrorException {
         RoomType type = roomTypeSessionBean.retrieveRoomTypeById(roomTypeID);
         Integer num = roomSessionBean.getAvailableRoomCountByTypeAndDate(type, in, out);
-        
         return num;
     }
 
     @WebMethod(operationName = "createReservation")
-    public Reservation createReservation(@WebParam(name = "roomTypeID") Long roomTypeID, @WebParam(name = "in") Date in, @WebParam(name = "out") Date out, @WebParam(name = "guestNo") Integer guestNo, @WebParam(name = "guestID") Long guestID, @WebParam(name = "partnerID") Long partnerID) {
-        //TODO write your implementation code here:
-        return newR;
+    public Reservation createReservation(@WebParam(name = "roomTypeID") Long roomTypeID, @WebParam(name = "in") Date in, @WebParam(name = "out") Date out, @WebParam(name = "guestNo") Integer guestNo, @WebParam(name = "guestEmail") String email, @WebParam(name = "partnerUser") String username) throws RoomTypeErrorException, InvalidLoginCredentialException {
+        RoomType type = roomTypeSessionBean.retrieveRoomTypeById(roomTypeID);
+        Guest guest = guestSessionBean.retrieveGuestByEmail(email);
+        Partner partner = partnerSessionBean.retrieveEmployeeByUsername(username);
+        Reservation r = reservationSessionBean.createReservation(type, guest, partner, in, out, guestNo);
+        em.detach(r);
+        r.setGuest(null);
+        r.setPartner(null);
+        r.setRoomAllocation(null);
+        r.setRoomType(null);
+        return r;
     }
 
     @WebMethod(operationName = "createSameDayReservation")
-    public Reservation createSameDayReservation(@WebParam(name = "roomTypeID") Long roomTypeID, @WebParam(name = "in") Date in, @WebParam(name = "out") Date out, @WebParam(name = "guestNo") Integer guestNo, @WebParam(name = "guestID") Long guestID, @WebParam(name = "partnerID") Long partnerID) {
-        //TODO write your implementation code here:
-        return newR;
+    public Reservation createSameDayReservation(@WebParam(name = "roomTypeID") Long roomTypeID, @WebParam(name = "in") Date in, @WebParam(name = "out") Date out, @WebParam(name = "guestNo") Integer guestNo, @WebParam(name = "guestEmail") String email, @WebParam(name = "partnerUser") String username) throws RoomTypeErrorException, InvalidLoginCredentialException, NoAvailableRoomException, CannotUpgradeException {
+        RoomType type = roomTypeSessionBean.retrieveRoomTypeById(roomTypeID);
+        Guest guest = guestSessionBean.retrieveGuestByEmail(email);
+        Partner partner = partnerSessionBean.retrieveEmployeeByUsername(username);
+        Reservation r = reservationSessionBean.createSameDayReservation(type, guest, partner, in, out, guestNo);
+        em.detach(r);
+        r.setGuest(null);
+        r.setPartner(null);
+        r.setRoomAllocation(null);
+        r.setRoomType(null);
+        return r;
     }
 
     @WebMethod(operationName = "getPriceOfRoomTypeOnline")
@@ -115,10 +132,14 @@ public class HolidayWebService {
         return price;
     }
 
-    @WebMethod(operationName = "retrieveReservationByIdForGuest")
-    public Reservation retrieveReservationByIdForGuest(@WebParam(name = "reservationID") Long reservationID, @WebParam(name = "guestEmail") String email) throws ReservationErrorException {
-        Guest guest = guestSessionBean.retrieveGuestByEmail(email);
-        Reservation r = reservationSessionBean.retrieveReservationByIdForGuest(reservationID, guest);
+    @WebMethod(operationName = "retrieveReservationDetails")
+    public Reservation retrieveReservationDetails(@WebParam(name = "reservationID") Long reservationID) throws ReservationErrorException{
+        Reservation r = reservationSessionBean.retrieveReservationById(reservationID);
+        em.detach(r);
+        r.setGuest(null);
+        r.setPartner(null);
+        r.setRoomAllocation(null);
+        r.setRoomType(null);
         return r;
     }
 
@@ -126,6 +147,13 @@ public class HolidayWebService {
     public List<Reservation> retrieveAllPartnerReservation(@WebParam(name = "username") String username) throws InvalidLoginCredentialException {
         Partner p = partnerSessionBean.retrieveEmployeeByUsername(username);
         List<Reservation> reservations = p.getReservations();
+        for (Reservation r : reservations) {
+            em.detach(r);
+            r.setGuest(null);
+            r.setPartner(null);
+            r.setRoomAllocation(null);
+            r.setRoomType(null);
+        }
         return reservations;
     }
 }
