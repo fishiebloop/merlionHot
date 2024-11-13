@@ -4,10 +4,13 @@
  */
 package util.exception;
 
+import javax.xml.ws.WebFault;
+
 /**
  *
  * @author eliseoh
  */
+@WebFault(name = "DateValidationError")
 public class DateValidationError extends Exception{
 
     /**

@@ -29,6 +29,7 @@ import javax.persistence.PersistenceContext;
 import javax.xml.ws.RequestWrapper;
 import javax.xml.ws.ResponseWrapper;
 import util.exception.CannotUpgradeException;
+import util.exception.DateValidationError;
 import util.exception.InvalidLoginCredentialException;
 import util.exception.NoAvailableRoomException;
 import util.exception.ReservationErrorException;
@@ -70,7 +71,10 @@ public class HolidayWebService {
     }
 
     @WebMethod(operationName = "retrieveAllAvailRoomTypeOnline")
-    public List<RoomType> retrieveAllAvailRoomTypeOnline(@WebParam(name = "in") Date in, @WebParam(name = "out") Date out) throws RoomTypeErrorException {
+    public List<RoomType> retrieveAllAvailRoomTypeOnline(@WebParam(name = "in") Date in, @WebParam(name = "out") Date out) throws RoomTypeErrorException, DateValidationError {
+        if (!out.equals(in) && out.before(in)) {
+            throw new DateValidationError("Dates entered wrongly!");
+        }
         List<RoomType> types = roomTypeSessionBean.retrieveAllAvailRoomTypeOnline(in, out);
         for (RoomType type : types) {
             em.detach(type);

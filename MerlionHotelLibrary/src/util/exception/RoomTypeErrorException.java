@@ -4,10 +4,13 @@
  */
 package util.exception;
 
+import javax.xml.ws.WebFault;
+
 /**
  *
  * @author eliseoh
  */
+@WebFault(name = "RoomTypeErrorException")
 public class RoomTypeErrorException extends Exception{
 
     /**

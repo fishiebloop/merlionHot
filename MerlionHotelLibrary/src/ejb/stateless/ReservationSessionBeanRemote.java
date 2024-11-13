@@ -36,6 +36,7 @@ public interface ReservationSessionBeanRemote {
     public Reservation createSameDayReservation(RoomType type, Guest guest, Partner partner, Date in, Date out, Integer guestNo) throws NoAvailableRoomException, CannotUpgradeException;
 
     Reservation detachReservation(Reservation res);
+    public Reservation createSameDayReservation(Reservation newR) throws NoAvailableRoomException, CannotUpgradeException;
     
 }
 
