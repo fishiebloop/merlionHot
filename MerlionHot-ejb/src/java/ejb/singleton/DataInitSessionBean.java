@@ -5,10 +5,12 @@
 package ejb.singleton;
 
 import ejb.stateless.EmployeeSessionBeanLocal;
+import ejb.stateless.PartnerSessionBeanLocal;
 import ejb.stateless.RoomRateSessionBeanLocal;
 import ejb.stateless.RoomSessionBeanLocal;
 import ejb.stateless.RoomTypeSessionBeanLocal;
 import entity.Employee;
+import entity.Partner;
 import entity.Room;
 import entity.RoomRate;
 import entity.RoomType;
@@ -35,6 +37,9 @@ import util.exception.EmployeeErrorException;
 public class DataInitSessionBean {
 
     @EJB
+    private PartnerSessionBeanLocal partnerSessionBean;
+
+    @EJB
     private RoomSessionBeanLocal roomSessionBean;
 
     @EJB
@@ -49,7 +54,7 @@ public class DataInitSessionBean {
     @EJB
     private EmployeeSessionBeanLocal employeeSessionBeanLocal;
     
-
+    
     public DataInitSessionBean() {
     }
 
@@ -68,6 +73,10 @@ public class DataInitSessionBean {
     
     private void initializeData()
     {
+        //not in test data, delete
+        partnerSessionBean.createPartner(new Partner("partner", "password"));
+        
+        
         employeeSessionBeanLocal.createEmployee(new Employee("sysadmin", "password", EmployeeEnum.SYSADMIN));
         employeeSessionBeanLocal.createEmployee(new Employee("opmanager", "password", EmployeeEnum.OPMANAGER));
         employeeSessionBeanLocal.createEmployee(new Employee("salesmanager", "password", EmployeeEnum.SALESMANAGER));
