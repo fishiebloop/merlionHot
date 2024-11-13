@@ -11,10 +11,14 @@ import entity.RoomAllocation;
 import entity.RoomType;
 import java.util.Date;
 import java.util.List;
+import javax.annotation.Resource;
 import javax.ejb.EJB;
+import javax.ejb.EJBContext;
 import javax.ejb.Schedule;
 import javax.ejb.Singleton;
 import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
@@ -22,6 +26,7 @@ import javax.persistence.Query;
 import util.enumeration.ExceptionTypeEnum;
 import util.enumeration.RateTypeEnum;
 import util.enumeration.RoomStatusEnum;
+import util.exception.CannotUpgradeException;
 import util.exception.NoAvailableRoomException;
 import util.exception.RoomAllocationNotFoundException;
 
@@ -63,7 +68,9 @@ public class RoomAllocationSessionBean implements RoomAllocationSessionBeanRemot
     }
 
     @Override
-    public Long createAllocation(Reservation reservation) throws NoAvailableRoomException {
+    //@TransactionAttribute(TransactionAttributeType.REQUIRED)
+    public Long createAllocation(Reservation reservation) throws NoAvailableRoomException, CannotUpgradeException {
+        reservation = em.merge(reservation);
         RoomType requestedType = reservation.getRoomType();
         Date startDate = reservation.getCheckInDate();
         Date endDate = reservation.getCheckOutDate();
@@ -82,12 +89,12 @@ public class RoomAllocationSessionBean implements RoomAllocationSessionBeanRemot
                 if (upgradedRoom != null) {
                     // Allocate the guest to the next higher room type and log an exception
                     Long allocationId = allocateRoom(reservation, upgradedRoom);
-                    throw new NoAvailableRoomException("Upgraded to next higher room type due to lack of availability.", true);
+                    throw new NoAvailableRoomException("Upgraded to next higher room type: " + nextHigherType.getRoomTypeName() + "due to lack of availability.");
                 }
             }
-
-            // Step 3: No available room of requested or next higher type; log an exception without allocation
-            throw new NoAvailableRoomException("No available rooms for requested or next higher room type.", false);
+                // Step 3: No available room of requested or next higher type; log an exception without allocation
+                reservation.setIsDisabled(true);
+                throw new CannotUpgradeException("No next higher room type.");
         }
     }
 
@@ -107,6 +114,7 @@ public class RoomAllocationSessionBean implements RoomAllocationSessionBeanRemot
     
 
     @Override
+    @TransactionAttribute(TransactionAttributeType.REQUIRED)
     public Long allocateRoom(Reservation reservation, Room room) {
         RoomAllocation allocation = new RoomAllocation();
         allocation.setRoom(room);
@@ -123,6 +131,7 @@ public class RoomAllocationSessionBean implements RoomAllocationSessionBeanRemot
     }
 
     @Override
+    //@TransactionAttribute(TransactionAttributeType.REQUIRED)
     public void performRoomAllocations() {
         Date today = new Date();
 
@@ -134,7 +143,7 @@ public class RoomAllocationSessionBean implements RoomAllocationSessionBeanRemot
             try {
                 createAllocation(reservation);
                 System.out.println("Room allocated for reservation ID: " + reservation.getReservationId());
-            } catch (NoAvailableRoomException e) {
+            } catch (NoAvailableRoomException | CannotUpgradeException e) {
                 // Log the exception in the report
                 createRoomAllocationException(reservation, e);
                 System.out.println("Exception occurred for reservation ID: " + reservation.getReservationId() + " - " + e.getMessage());
@@ -143,10 +152,14 @@ public class RoomAllocationSessionBean implements RoomAllocationSessionBeanRemot
     }
 
     @Override
-    public void createRoomAllocationException(Reservation r, NoAvailableRoomException exception) {
+    public void createRoomAllocationException(Reservation r, Exception exception) {
         ExceptionReport report = new ExceptionReport();
         report.setReservation(r);
-        report.setExceptionType(exception.isUpgradeAvailable() ? ExceptionTypeEnum.HIGHERAVAIL : ExceptionTypeEnum.NOHIGHERAVAIL);
+        if (exception instanceof NoAvailableRoomException) {
+            report.setExceptionType(ExceptionTypeEnum.HIGHERAVAIL);
+        } else {
+             report.setExceptionType(ExceptionTypeEnum.NOHIGHERAVAIL);   
+        }
         report.setTimestamp(new Date());
         report.setMessage(exception.getMessage());
         report.setResolved(false);

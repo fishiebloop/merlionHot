@@ -5,6 +5,7 @@
 package ejb.stateless;
 
 import entity.Guest;
+import entity.OnlineGuest;
 import entity.Reservation;
 import java.util.List;
 import java.util.Set;
@@ -33,7 +34,7 @@ public class GuestSessionBean implements GuestSessionBeanRemote, GuestSessionBea
     @Override
     public Guest guestAuth(String email, String password) throws GuestErrorException {
         try {
-            Guest g = (Guest) em.createQuery("SELECT g FROM Guest g WHERE g.email = :e").setParameter("e", email).getSingleResult();
+            OnlineGuest g = (OnlineGuest) em.createQuery("SELECT g FROM Guest g WHERE g.email = :e").setParameter("e", email).getSingleResult();
             if (!g.getPassword().equals(password)) {
                 throw new GuestErrorException("Wrong password entered!");
             }

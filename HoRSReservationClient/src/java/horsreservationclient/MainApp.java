@@ -13,9 +13,14 @@ import util.exception.GuestErrorException;
 import util.exception.InvalidLoginCredentialException;
 import com.merlionhotel.utils.DateUtil;
 import ejb.stateless.ReservationSessionBeanRemote;
+import ejb.stateless.RoomAllocationSessionBeanRemote;
+import ejb.stateless.RoomSessionBeanRemote;
 import ejb.stateless.RoomTypeSessionBeanRemote;
+import entity.OnlineGuest;
 import entity.Reservation;
 import entity.RoomType;
+import java.math.BigDecimal;
+import java.text.ParseException;
 import java.util.List;
 import util.exception.DateValidationError;
 import util.exception.RoomTypeErrorException;
@@ -31,14 +36,20 @@ public class MainApp {
     private GuestSessionBeanRemote guestSessionBean;
     private RoomTypeSessionBeanRemote roomTypeBean;
     private ReservationSessionBeanRemote reservationBean;
+    private RoomSessionBeanRemote roomSessionBean;
+    private RoomAllocationSessionBeanRemote allocationBean;
 
     public MainApp() {
     }
 
-    public MainApp(GuestSessionBeanRemote guestSessionBean, RoomTypeSessionBeanRemote roomTypeBean, ReservationSessionBeanRemote reservationBean) {
+    public MainApp(GuestSessionBeanRemote guestSessionBean, RoomTypeSessionBeanRemote roomTypeBean, 
+                   ReservationSessionBeanRemote reservationBean, RoomSessionBeanRemote roomSessionBean, RoomAllocationSessionBeanRemote allocationBean) {
+        
         this.guestSessionBean = guestSessionBean;
         this.roomTypeBean = roomTypeBean;
         this.reservationBean = reservationBean;
+        this.roomSessionBean = roomSessionBean;
+        this.allocationBean = allocationBean;
     }
     
     
@@ -132,7 +143,7 @@ public class MainApp {
     } 
     
     private void doRegister() throws BeanValidationError{
-        Guest g = new Guest();
+        OnlineGuest g = new OnlineGuest();
         
         System.out.println("*** HoRS Reservation System :: Register ***\n");
         System.out.print("Enter email> ");
@@ -147,46 +158,78 @@ public class MainApp {
     
     private void doSearchHotel() throws RoomTypeErrorException, DateValidationError {
         Integer res; 
+        RoomType type = null;
+        BigDecimal totalPrice = BigDecimal.ZERO;
+        Date out; 
+        Date in;
         System.out.println("*** HoRS Reservation System :: Search Hotel ***\n");
-        System.out.print("Enter Check in Date! Please format in DD/MM/YYYY> ");
-        String[] checkIn = scanner.nextLine().trim().split("/");
-        Date in = DateUtil.convertToDate(checkIn, false);
+        while(true) {
+            System.out.print("Enter Check in Date! Please format in dd-MM-yyyy > ");
+            String checkIn = scanner.nextLine().trim();
+            try {
+                in = DateUtil.convertToDate(checkIn);
+                break;
+            } catch (ParseException ex) {
+                throw new DateValidationError("Date formatted wrongly! Try again!");
+            }
+        }
         
-        System.out.print("Enter Check out Date! Please format in DD/MM/YYYY> ");
-        String[] checkOut = scanner.nextLine().trim().split("/");
-        Date out = DateUtil.convertToDate(checkOut, true);
+        while(true) {
+            System.out.print("Enter Check out Date! Please format in dd-MM-yyyy > ");
+            String checkOut = scanner.nextLine().trim();
+            try {
+                out = DateUtil.convertToDate(checkOut);
+                break;
+            } catch (ParseException ex) {
+                throw new DateValidationError("Date formatted wrongly! Try again!");
+            }
+        }
         
         System.out.print("Enter No of Guest(s) > ");
         Integer guests = scanner.nextInt();
 
-        if (out.before(in) || in.before(new Date())) {
+        //same day booking must have check in time after current time
+        if (!out.equals(in) && out.before(in)) {
             throw new DateValidationError("Dates entered wrongly!");
         }
         
-        List<RoomType> li = roomTypeBean.retrieveAllAvailRoomType(in, out, guests);
-        if (li.size() < 1) {
-            System.out.println("No Room Types Available!\n"); 
-        } else {
-            RoomType type = null;
-            System.out.println("List of Room Types: ");
-            for (int i = 1; i <= li.size(); i++) {
-                System.out.println(i + ": " + li.get(i-1).getRoomTypeName());
-                System.out.println("    Description: " + li.get(i-1).getDescription());
-                System.out.println("    Bed Description: " + li.get(i-1).getBed() + ", Capacity: " + li.get(i-1).getCapacity());
-                System.out.println("    Amenities: " + li.get(i-1).getAmenities() + "\n");
-                //print out price
-                
+        Boolean reselect = true;
+        do {
+            List<RoomType> li = roomTypeBean.retrieveAllAvailRoomTypeOnline(in, out);
+            if (li.size() < 1) {
+                System.out.println("No Room Types Available!\n"); 
+            } else {
+                System.out.println("List of Room Types: ");
+                for (int i = 1; i <= li.size(); i++) {
+                    System.out.println(i + ": " + li.get(i-1).getRoomTypeName());
+                    System.out.println("    Description: " + li.get(i-1).getDescription());
+                    System.out.println("    Bed Description: " + li.get(i-1).getBed() + "\n" + ", Capacity: " + li.get(i-1).getCapacity());
+                    System.out.println("    Amenities: " + li.get(i-1).getAmenities() + "\n");
+                    //print out price
+                    System.out.println("    Price for entire stay: $" + roomTypeBean.getPriceOfRoomTypeOnline(in, out, li.get(i-1)) + "\n");
+                    System.out.println();
+                }
                 System.out.println();
-            }
-            System.out.println();
-            
-            while(true) {
+                
                 System.out.print("Enter Room Type for reservation > ");
                 res = 0;
                 res = scanner.nextInt();
                 scanner.nextLine();
                 if (res > 0 && res <= li.size()) {
                    type = li.get(res-1);
+                   Integer avail = roomSessionBean.getAvailableRoomCountByTypeAndDate(type, in, out);
+                   Integer noRoomsNeeded = (int) Math.ceil((float) guests / type.getCapacity());
+                    if (noRoomsNeeded > avail) {
+                        System.out.print("Current room chosen only has " + avail + " rooms left, would you want to book all remaining rooms? (Enter Y for Yes) >");
+                        String ans = scanner.nextLine().trim();
+                        if (ans.equals("Y")) {
+                            Integer i = avail * type.getCapacity();
+                            totalPrice = totalPrice.add(reserveRoom(type, in, out, i));
+                            guests = guests - i;
+                        } 
+                    } else {
+                        reselect = false;
+                    }
                    break;
                 } else if (res == li.size() + 1) {
                     break;
@@ -195,6 +238,7 @@ public class MainApp {
                     System.out.println("Invalid option, please try again!\n");                
                 }
             }
+        } while (reselect);
 
             if (currentGuest == null) {
                 System.out.println("*** You are not logged in yet! Log in/Register to reserve a room! ***\n");
@@ -245,31 +289,42 @@ public class MainApp {
                 }
 
             }
-            reserveRoom(type, in, out, guests);
+            totalPrice = totalPrice.add(reserveRoom(type, in, out, guests));
+            System.out.println("Booking successful! Total price for all rooms purchased: $" + totalPrice); 
             loggedInMenu();
         }
         
-       
-    }
     
-    private void reserveRoom(RoomType rt, Date in, Date out, Integer guests) {
+    private BigDecimal reserveRoom(RoomType rt, Date in, Date out, Integer guests) {
         Integer capacity = rt.getCapacity();
         Integer noRooms = (int) Math.ceil((float) guests / capacity);
+        BigDecimal price = BigDecimal.ZERO;
         if (noRooms > 1) {
             System.out.println("As no. of guest exceeds maximum capacity per room, system will be making reservation for " + noRooms + " rooms!");
         }
         for (int i = 0; i < noRooms; i++) {
-            if (i != noRooms - 1) {
-                Reservation newR = new Reservation(in, out, capacity);
-                newR = reservationBean.createReservation(newR, currentGuest, rt);
-                System.out.println("Reservation No: " + newR.getReservationId());
+            Reservation newR = new Reservation(in, out, (i < noRooms - 1) ? capacity : guests - (capacity * (noRooms - 1)));
+            newR.setGuest(currentGuest);
+            newR.setRoomType(rt);
+
+            if (!DateUtil.sameDayLaterThan2AM(new Date(), in)) {
+                Long newRId = reservationBean.createReservation(newR);
+                System.out.println("Reservation No: " + newRId);
+                //newR = reservationBean.detachReservation(newR);
+                price = price.add(roomTypeBean.getPriceOfRoomTypeOnline(in, out, rt));
             } else {
-                Integer lastNo = guests - (capacity * (noRooms - 1));
-                Reservation newR = new Reservation(in, out, lastNo);
-                newR = reservationBean.createReservation(newR, currentGuest, rt);
-                System.out.println("Reservation No: " + newR.getReservationId());
+                //past allocation same day reservation, allocate directly 
+                try {
+                    newR = reservationBean.createSameDayReservation(newR);
+                    System.out.println("Reservation No: " + newR.getReservationId());
+                    //newR = reservationBean.detachReservation(newR);
+                    price = price.add(roomTypeBean.getPriceOfRoomTypeOnline(in, out, rt));
+                } catch (Exception ex) {
+                    System.out.println("Exception thrown: " + ex.getMessage());
+                }
             }
         }
+        return price;
     }
     
     private void loggedInMenu() {
