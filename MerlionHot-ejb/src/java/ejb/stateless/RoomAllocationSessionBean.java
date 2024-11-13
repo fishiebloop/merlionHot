@@ -103,7 +103,7 @@ public class RoomAllocationSessionBean implements RoomAllocationSessionBeanRemot
     public Room findAvailableRoom(RoomType type, Date startDate, Date endDate) {
         Query query = em.createQuery("SELECT r FROM Room r WHERE r.roomType = :roomType AND r.isDisabled = false AND r.status = :inStatus AND r NOT IN ("
                 + "SELECT a.room FROM RoomAllocation a JOIN a.reserveId res WHERE "
-                + "res.checkInDate < :endDate AND res.checkOutDate > :startDate)");
+                + "res.checkInDate <= :endDate AND res.checkOutDate >= :startDate)");
         query.setParameter("roomType", type);
         query.setParameter("startDate", startDate);
         query.setParameter("endDate", endDate);

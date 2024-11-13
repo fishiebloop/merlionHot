@@ -10,6 +10,8 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.OneToOne;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
 import util.enumeration.ExceptionTypeEnum;
 
 @Entity
@@ -26,6 +28,9 @@ public class ExceptionReport implements Serializable {
     private boolean resolved;
     @OneToOne
     private Reservation reservation;
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column(nullable = false)
+    private Date timestamp;
 
     public Reservation getReservation() {
         return reservation;
@@ -42,10 +47,10 @@ public class ExceptionReport implements Serializable {
     public void setTimestamp(Date timestamp) {
         this.timestamp = timestamp;
     }
-    private Date timestamp;
     
 
     public ExceptionReport() {
+        this.timestamp = new Date();
     }
     
     public ExceptionTypeEnum getExceptionType() {

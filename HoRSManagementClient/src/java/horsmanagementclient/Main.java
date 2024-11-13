@@ -91,10 +91,10 @@ public class Main {
                             sysAdminModule = new SystemAdministrationModule(employeeSessionBean, partnerSessionBean);
                             sysAdminModule.menu();
                         } else if (currentEmployee.getRole().equals(EmployeeEnum.OPMANAGER)) {
-                            hotelOpsModule = new HotelOperationModule(roomTypeSessionBean, roomSessionBean, roomRateSessionBean);
+                            hotelOpsModule = new HotelOperationModule(roomTypeSessionBean, roomSessionBean, roomRateSessionBean, exceptionReportSessionBean);
                             hotelOpsModule.menuOps();
                         } else if (currentEmployee.getRole().equals(EmployeeEnum.SALESMANAGER)) {
-                            hotelOpsModule = new HotelOperationModule(roomTypeSessionBean, roomSessionBean, roomRateSessionBean);
+                            hotelOpsModule = new HotelOperationModule(roomTypeSessionBean, roomSessionBean, roomRateSessionBean, exceptionReportSessionBean);
                             hotelOpsModule.menuSales();
                         } else if (currentEmployee.getRole().equals(EmployeeEnum.GUESTOFF)) {
                             frontOffModule = new FrontOfficeModule(reservationSessionBean, roomSessionBean, roomTypeSessionBean, roomRateSessionBean, roomAllocationSessionBean, exceptionReportSessionBean, guestSessionBean);

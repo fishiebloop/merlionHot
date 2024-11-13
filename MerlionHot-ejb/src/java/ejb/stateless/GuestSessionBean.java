@@ -73,9 +73,10 @@ public class GuestSessionBean implements GuestSessionBeanRemote, GuestSessionBea
     }
 
     @Override
-    public Guest createGuest(Guest g) {
-        em.persist(g);
-        return g;
+    public Guest createGuest(Guest g) throws BeanValidationError {
+            validateGuest(g);
+            em.persist(g);
+            return g;
     }
 
     @Override
