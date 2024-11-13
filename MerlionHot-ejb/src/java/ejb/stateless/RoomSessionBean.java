@@ -129,12 +129,34 @@ public class RoomSessionBean implements RoomSessionBeanRemote, RoomSessionBeanLo
     }
 
     @Override
-    public void deleteRoom(Room room) {
-        room = em.merge(room);
-        if (room.getRoomAllocation().size() > 0) {
-            room.setStatus(RoomStatusEnum.DISABLED);
+    public String deleteRoom(Room room) {
+        // Retrieve the managed Room instance
+        Room managedRoom = em.find(Room.class, room.getRoomId());
+
+        if (managedRoom == null) {
+            return "Room not found";
+        }
+
+        // Check for active allocations
+        Query query = em.createQuery("SELECT COUNT(a) FROM RoomAllocation a "
+                + "WHERE a.room = :room "
+                + "AND (a.reservation.checkOutDate > CURRENT_DATE "
+                + "OR (a.reservation.checkOutDate = CURRENT_DATE AND a.room.status = :occupiedStatus))");
+        query.setParameter("room", managedRoom);
+        query.setParameter("occupiedStatus", RoomStatusEnum.OCCUPIED);
+        Long count = (Long) query.getSingleResult();
+
+        if (count == 0) {
+            // No active allocations; delete the room
+            em.remove(managedRoom);
+            em.flush();
+            return "Room deleted successfully.";
         } else {
-            em.remove(room);
+            // Active allocations exist; disable the room
+            managedRoom.setIsDisabled(true);
+            em.merge(managedRoom);
+            em.flush();
+            return "Room has active allocations and has been disabled.";
         }
     }
 

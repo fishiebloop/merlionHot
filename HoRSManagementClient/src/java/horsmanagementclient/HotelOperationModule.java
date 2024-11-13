@@ -26,6 +26,7 @@ import java.util.logging.Logger;
 import util.enumeration.RateTypeEnum;
 import util.enumeration.RoomStatusEnum;
 import util.exception.RoomErrorException;
+import util.exception.RoomRateErrorException;
 import util.exception.RoomTypeErrorException;
 
 /**
@@ -64,9 +65,8 @@ public class HotelOperationModule {
             System.out.println("8: View Room Allocation Exception Report");
             System.out.println("9: Logout\n");
             response = 0;
-            
-            while(response < 1 || response > 9)
-            {
+
+            while (response < 1 || response > 9) {
                 System.out.print("> ");
 
                 response = scanner.nextInt();
@@ -76,33 +76,19 @@ public class HotelOperationModule {
                     doCreateRoomType();
                 } else if (response == 2) {
                     doViewAllRoomTypes();
-                } 
-                else if(response == 3)
-                {
+                } else if (response == 3) {
                     doViewRoomTypeDetails();
-                }
-                else if(response == 4)
-                {
+                } else if (response == 4) {
                     doCreateRoom();
-                }
-                else if(response == 5)
-                {
+                } else if (response == 5) {
                     doUpdateRoom();
-                }
-                else if(response == 6)
-                {
+                } else if (response == 6) {
                     doDeleteRoom();
-                }
-                else if(response == 7)
-                {
+                } else if (response == 7) {
                     doViewAllRooms();
-                }
-                else if(response == 8)
-                {
+                } else if (response == 8) {
                     //doViewRoomAllocationReport();
-                }
-                else if(response == 9)
-                {
+                } else if (response == 9) {
                     break;
                 } else {
                     System.out.println("Invalid option, please try again!\n");
@@ -150,18 +136,19 @@ public class HotelOperationModule {
             }
         }
     }
+
     public void doViewRoomTypeDetails() {
-        System.out.print("Enter Room Type ID >");
+        System.out.print("Enter Room Type ID (You may retrieve ID details from 'View All Room Types')> " );
         Long id = scanner.nextLong();
         scanner.nextLine();
-        
+
         try {
             RoomType type = roomTypeBean.retrieveRoomTypeById(id);
             getRoomTypeDetails(type);
         } catch (Exception ex) {
             System.out.println(ex.getMessage());
         }
-        
+
     }
 
     public void doViewAllRoomTypes() {
@@ -175,11 +162,11 @@ public class HotelOperationModule {
                 System.out.println("List of Room Types: ");
                 for (int i = 1; i <= li.size(); i++) {
 
-                    System.out.println("Room Type ID: " + li.get(i-1).getRoomTypeId() + ", Room Type Name: " + li.get(i-1).getRoomTypeName());
+                    System.out.println("Room Type ID: " + li.get(i - 1).getRoomTypeId() + ", Room Type Name: " + li.get(i - 1).getRoomTypeName());
                 }
                 System.out.println();
 
-                System.out.print("Want to view specific Room Type details? (Enter 'Y' for Yes) > "); 
+                System.out.print("Want to view specific Room Type details? (Enter 'Y' for Yes) > ");
                 String ans = scanner.nextLine().trim();
                 if (ans.equals("Y")) {
                     doViewRoomTypeDetails();
@@ -189,7 +176,7 @@ public class HotelOperationModule {
             System.out.println(ex.getMessage());
         }
     }
-    
+
     public void getRoomTypeDetails(RoomType type) {
         Integer response = 0;
 
@@ -198,6 +185,7 @@ public class HotelOperationModule {
         System.out.println("Room Type Bed Description: " + type.getBed());
         System.out.println("Room Type Capacity: " + type.getCapacity());
         System.out.println("Room Type Amenities: " + type.getAmenities());
+        System.out.println("Disabled?: " + (type.getIsDisabled() ? "Yes" : "No"));
         List<Room> rooms = type.getRooms();
         if (rooms.size() > 0) {
             System.out.println("Rooms under room type:");
@@ -240,27 +228,41 @@ public class HotelOperationModule {
         }
     }
 
-    public void doDeleteRoomType(RoomType type) {
-        if (type.getReservations().size() > 0) {
-            System.out.println("Still have pending reservations, unable to delete Room Type, will disable room type instead.\n");
+    public void doDeleteRoomType(RoomType roomType) {
+        scanner.nextLine();
+        String res = "";
+        System.out.println("*** HoRS Management System :: Room Type Operations :: Delete Room Type ***\n");
+        System.out.print("Enter Y to delete room type, N to exit> ");
+        res = scanner.nextLine().trim();
+
+        if (res.equalsIgnoreCase("Y")) {
+            String resultMessage = roomTypeBean.deleteRoomType(roomType);
+            System.out.println(resultMessage); // Display the result to the client
+        } else {
+            System.out.println("Room type deletion canceled.");
         }
-        roomTypeBean.deleteRoomType(type);
     }
 
     public void doDeleteRoom() {
+        scanner.nextLine();
         System.out.println("*** HoRS Management System :: Room Operations :: Delete Room ***\n");
-        System.out.print("Enter Room Number> ");
-        Integer response = 0;
+        System.out.println("Enter room number> ");
+        Integer roomNum = scanner.nextInt();
         try {
-            Room r = roomBean.retrieveRoomByNumber(scanner.nextInt());
-            scanner.nextLine();
-            if (r.getRoomAllocation().size() > 0) {
-                System.out.println("Still have pending room allocations, unable to delete Room, will disable room instead.\n");
+            Room room = roomBean.retrieveRoomByNumber(roomNum);
+            String res = "";
+            System.out.print("Enter Y to delete room, N to exit> ");
+            res = scanner.nextLine().trim();
+
+            if (res.equalsIgnoreCase("Y")) {
+                String resultMessage = roomBean.deleteRoom(room);
+                System.out.println(resultMessage); // Display the result to the client
+            } else {
+                System.out.println("Room deletion canceled.");
             }
-            roomBean.deleteRoom(r);
 
         } catch (RoomErrorException ex) {
-            System.out.println(ex.getMessage());
+            System.out.println("Room " + roomNum + " not found!");
         }
     }
 
@@ -476,9 +478,10 @@ public class HotelOperationModule {
         try {
             List<Room> roomList = roomBean.retrieveAllRooms();
             for (Room r : roomList) {
-                System.out.println("Room Number: " + r.getRoomNumber() + " , Room Type: " + r.getRoomType().getRoomTypeName() + " . Room Status: " + r.getStatus());
+                System.out.println("Room Number: " + r.getRoomNumber() + " , Room Type: " + r.getRoomType().getRoomTypeName() + ", Room Status: " + r.getStatus());
                 List<RoomAllocation> alloList = r.getRoomAllocation();
                 System.out.println("Number of room allocations: " + alloList.size());
+                System.out.println("Disabled?: " + (r.getIsDisabled() ? "Yes" : "No"));
             }
         } catch (RoomErrorException ex) {
             System.out.println(ex.getMessage());
@@ -532,8 +535,8 @@ public class HotelOperationModule {
             r.setRoomType(rt);
             r.setRateType(rateType);
 
-            System.out.print("Enter room rate name> ");
-            r.setName(scanner.nextLine().trim());
+            String rateName = rt.getRoomTypeName() + " " + rateType;
+            r.setName(rateName);
 
             System.out.print("Enter rate per night> ");
             r.setRatePerNight(new BigDecimal(scanner.nextLine().trim()));
@@ -551,7 +554,7 @@ public class HotelOperationModule {
                 RoomRate roomrate = rateBean.retrieveRoomRateById(newRateId);
                 rt.getRoomrates().add(roomrate);
                 roomTypeBean.updateRoomType(rt);
-                System.out.println("Room Rate " + r.getName() + " created successfully!\n");
+                System.out.println("Room Rate: " + r.getName() + " created successfully!\n");
             } else {
                 System.out.println("Error occurred during room rate creation!\n");
             }
@@ -575,15 +578,16 @@ public class HotelOperationModule {
         System.out.println("*** HoRS Management System :: Room Rate Operations :: View All Room Rates ***\n");
         List<RoomRate> rates = rateBean.retrieveAllRoomRates();
 
-        System.out.printf("%-20s %-20s %-15s %-10s%n", "Name", "Room Type", "Rate Type", "Rate/Night");
-        System.out.println("-----------------------------------------------------------------------");
+        System.out.printf("%-20s %-20s %-15s %-10s %-10s%n", "Name", "Room Type", "Rate Type", "Rate/Night", "Disabled?");
+        System.out.println("-------------------------------------------------------------------------------");
 
         for (RoomRate rate : rates) {
-            System.out.printf("%-20s %-20s %-15s %-10.2f%n",
+            System.out.printf("%-20s %-20s %-15s %-10.2f %-10s%n",
                     rate.getName(),
                     rate.getRoomType().getRoomTypeName(),
                     rate.getRateType(),
-                    rate.getRatePerNight().doubleValue());
+                    rate.getRatePerNight().doubleValue(),
+                    rate.getIsDisabled() ? "Yes" : "No");
         }
     }
 
@@ -591,28 +595,34 @@ public class HotelOperationModule {
         System.out.println("*** HoRS Management System :: Room Rate Operations :: View Room Rate Details ***\n");
         System.out.println("Enter room rate name> ");
         String name = scanner.nextLine().trim();
-        RoomRate rate = rateBean.retrieveRoomRateByName(name);
-        System.out.println("Room Rate Name: " + name);
-        System.out.println("Room Type: " + rate.getRoomType().getRoomTypeName());
-        System.out.println("Rate Type: " + rate.getRateType());
-        System.out.println("Rate Per Night: " + rate.getRatePerNight());
-        if (rate.getRateType().equals(RateTypeEnum.PEAK) || rate.getRateType().equals(RateTypeEnum.PROMOTION)) {
-            System.out.println("Start Date: " + rate.getStartDate());
-            System.out.println("End Date: " + rate.getEndDate());
+        try {
+            RoomRate rate = rateBean.retrieveRoomRateByName(name);
+            System.out.println("Room Rate Name: " + name);
+            System.out.println("Room Type: " + rate.getRoomType().getRoomTypeName());
+            System.out.println("Rate Type: " + rate.getRateType());
+            System.out.println("Rate Per Night: " + rate.getRatePerNight());
+            if (rate.getRateType().equals(RateTypeEnum.PEAK) || rate.getRateType().equals(RateTypeEnum.PROMOTION)) {
+                System.out.println("Start Date: " + rate.getStartDate());
+                System.out.println("End Date: " + rate.getEndDate());
 
+            }
+            System.out.println("Disabled?: " + (rate.getIsDisabled() ? "Yes" : "No"));
+            System.out.println("Choose action: ");
+            System.out.println("1: Update Room Rate");
+            System.out.println("2: Delete Room Rate");
+            System.out.println("3: Back");
+            int res = scanner.nextInt();
+            if (res == 1) {
+                doUpdateRoomRate(rate);
+            } else if (res == 2) {
+                doDeleteRoomRate(rate);
+            } else {
+                return;
+            }
+        } catch (RoomRateErrorException ex) {
+            System.out.println(ex.getMessage());
         }
-        System.out.println("Choose action: ");
-        System.out.println("1: Update Room Rate");
-        System.out.println("2: Delete Room Rate");
-        System.out.println("3: Back");
-        int res = scanner.nextInt();
-        if (res == 1) {
-            doUpdateRoomRate(rate);
-        } else if (res == 2) {
-            doDeleteRoomRate(rate);
-        } else {
-            return;
-        }
+
     }
 
     public void doUpdateRoomRate(RoomRate rate) {

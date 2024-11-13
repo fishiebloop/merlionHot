@@ -27,7 +27,7 @@ public interface RoomSessionBeanLocal {
 
     public void updateRoomTypeOfRoom(Room room, RoomType newRt);
 
-    public void deleteRoom(Room room);
+    public String deleteRoom(Room room);
     
     public void updateRoom(Room room);
     

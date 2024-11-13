@@ -4,7 +4,6 @@
  */
 package horsmanagementclient;
 
-import ejb.singleton.ScheduledAllocationSessionBeanRemote;
 import ejb.stateless.EmployeeSessionBeanRemote;
 import ejb.stateless.ExceptionReportSessionBeanRemote;
 import ejb.stateless.GuestSessionBeanRemote;
@@ -34,8 +33,6 @@ public class Main {
     @EJB
     private static ExceptionReportSessionBeanRemote exceptionReportSessionBean;
     @EJB
-    private static ScheduledAllocationSessionBeanRemote scheduledAllocationSessionBean;
-    @EJB
     private static RoomSessionBeanRemote roomSessionBean;
     @EJB
     private static EmployeeSessionBeanRemote employeeSessionBean;
@@ -47,6 +44,7 @@ public class Main {
     private static RoomRateSessionBeanRemote roomRateSessionBean;
     @EJB
     private static GuestSessionBeanRemote guestSessionBean;
+    
     
     
     

@@ -27,7 +27,7 @@ public interface RoomTypeSessionBeanLocal {
 
     public void updateRoomType(RoomType roomType);
 
-    public void deleteRoomType(RoomType roomType);
+    public String deleteRoomType(RoomType roomType);
 
     List<RoomType> retrieveAllAvailRoomType(Date checkIn, Date checkOut, Integer guests) throws RoomTypeErrorException;
     

@@ -8,6 +8,7 @@ import entity.RoomRate;
 import entity.RoomType;
 import java.util.List;
 import javax.ejb.Local;
+import util.exception.RoomRateErrorException;
 
 /**
  *
@@ -26,6 +27,6 @@ public interface RoomRateSessionBeanLocal {
 
     public String deleteRoomRate(RoomRate roomRate);
 
-    public RoomRate retrieveRoomRateByName(String roomRateName);
+    public RoomRate retrieveRoomRateByName(String roomRateName) throws RoomRateErrorException;
     
 }

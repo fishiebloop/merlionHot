@@ -115,6 +115,13 @@ public class FrontOfficeModule {
         if (startDate.equals(endDate)) {
             numberOfNights = 1;
         }
+        Date today = new Date();
+        
+        if (endDate.before(startDate) || startDate.before(today)) { //12am issue
+            System.out.println("Invalid start date and end date! Please try again.");
+            return;
+        }
+        
         System.out.println("Number of nights: " + numberOfNights);
         List<RoomType> types = roomTypeBean.retrieveAvailableRoomTypes(startDate, endDate);
         if (types.isEmpty()) {
@@ -169,6 +176,7 @@ public class FrontOfficeModule {
                     if (availableRooms >= requiredRooms) {
                         System.out.println("Sufficient rooms available for reservation.");
                         BigDecimal chosenAmount = amounts[choiceIndex - 1];
+                        System.out.println();
                         createReservations(requiredRooms, chosenType, startDate, endDate, name, email, numGuests, chosenAmount);
                     } else {
                         int maxGuestsAccommodated = availableRooms * chosenType.getCapacity();
@@ -239,6 +247,7 @@ public class FrontOfficeModule {
                 guestBean.updateGuest(guest);
 
                 System.out.println("Reserved " + roomType.getRoomTypeName() + " for " + guestName + " with reservation ID " + reserveID + " and guest count: " + guestsForThisReservation);
+                System.out.println();
 
                 // Check if it's a same-day check-in after 2 AM
                 LocalTime currentTime = LocalTime.now();

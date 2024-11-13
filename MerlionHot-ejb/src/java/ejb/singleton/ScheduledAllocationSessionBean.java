@@ -14,12 +14,11 @@ import javax.ejb.Singleton;
  * @author qiuyutong
  */
 @Singleton
-public class ScheduledAllocationSessionBean implements ScheduledAllocationSessionBeanRemote, ScheduledAllocationSessionBeanLocal {
+public class ScheduledAllocationSessionBean {
 
     @EJB
     private RoomAllocationSessionBeanRemote roomAllocationBean;
 
-    
     @Schedule(hour = "2", minute = "0", second = "0", persistent = false)
     public void allocateRoomsForToday() {
         // Your room allocation logic here

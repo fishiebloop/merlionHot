@@ -21,7 +21,7 @@ public interface RoomSessionBeanRemote {
     public Long createRoom(Room newRoom, RoomType rt);
     public Room retrieveRoomByNumber(Integer roomNumber) throws RoomErrorException;
     public void updateRoomTypeOfRoom(Room room, RoomType newRt);
-    public void deleteRoom(Room room);
+    public String deleteRoom(Room room);
     public List<Room> retrieveAllRooms() throws RoomErrorException;
     public void updateRoom(Room room);
 
