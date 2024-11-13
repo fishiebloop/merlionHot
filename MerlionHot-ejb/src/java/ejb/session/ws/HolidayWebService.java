@@ -62,8 +62,8 @@ public class HolidayWebService {
     private RoomTypeSessionBeanLocal roomTypeSessionBean;
 
     @WebMethod(operationName = "partnerLogin")
-    public Partner partnerLogin(@WebParam(name = "username") String username,
-            @WebParam(name = "password") String password) throws InvalidLoginCredentialException {
+    public Long partnerLogin(@WebParam(name = "username") String username,
+                               @WebParam(name = "password") String password) throws InvalidLoginCredentialException {
         return partnerSessionBean.partnerLogin(username, password);
     }
 
@@ -96,7 +96,7 @@ public class HolidayWebService {
         return num;
     }
 
-    @WebMethod(operationName = "createReservation")
+    /*@WebMethod(operationName = "createReservation")
     public Reservation createReservation(@WebParam(name = "roomTypeID") Long roomTypeID, @WebParam(name = "in") Date in, @WebParam(name = "out") Date out, @WebParam(name = "guestNo") Integer guestNo, @WebParam(name = "guestID") Long guestID, @WebParam(name = "partnerID") Long partnerID) {
         //TODO write your implementation code here:
         return newR;
@@ -106,7 +106,7 @@ public class HolidayWebService {
     public Reservation createSameDayReservation(@WebParam(name = "roomTypeID") Long roomTypeID, @WebParam(name = "in") Date in, @WebParam(name = "out") Date out, @WebParam(name = "guestNo") Integer guestNo, @WebParam(name = "guestID") Long guestID, @WebParam(name = "partnerID") Long partnerID) {
         //TODO write your implementation code here:
         return newR;
-    }
+    }*/
 
     @WebMethod(operationName = "getPriceOfRoomTypeOnline")
     public BigDecimal getPriceOfRoomTypeOnline(@WebParam(name = "in") Date in, @WebParam(name = "out") Date out, @WebParam(name = "roomTypeID") Long roomTypeID) throws RoomTypeErrorException {

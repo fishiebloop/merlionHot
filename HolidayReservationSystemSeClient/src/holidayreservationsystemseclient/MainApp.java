@@ -5,6 +5,9 @@
 package holidayreservationsystemseclient;
 
 import java.util.Scanner;
+import ws.holiday.HolidayWebService;
+import ws.holiday.HolidayWebService_Service;
+import ws.holiday.InvalidLoginCredentialException;
 
 /**
  *
@@ -12,6 +15,7 @@ import java.util.Scanner;
  */
 public class MainApp {
     private static Scanner scanner = new Scanner(System.in);
+    private Long partnerId;
     
     public void runApp() {
         Integer response;
@@ -62,5 +66,16 @@ public class MainApp {
         String username = scanner.nextLine().trim();
         System.out.print("Enter password> ");
         String password = scanner.nextLine().trim();
+        try {
+            HolidayWebService_Service service = new HolidayWebService_Service();
+            partnerId = service.getHolidayWebServicePort().partnerLogin(username, password);
+        } catch (InvalidLoginCredentialException e) {
+            // Handle the SOAP fault
+            System.out.println("Login failed: " + e.getMessage());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
+    
+    
 }
