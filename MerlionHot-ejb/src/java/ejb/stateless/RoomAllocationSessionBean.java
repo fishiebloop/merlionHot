@@ -9,6 +9,7 @@ import entity.Reservation;
 import entity.Room;
 import entity.RoomAllocation;
 import entity.RoomType;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import javax.annotation.Resource;
@@ -134,6 +135,16 @@ public class RoomAllocationSessionBean implements RoomAllocationSessionBeanRemot
     //@TransactionAttribute(TransactionAttributeType.REQUIRED)
     public void performRoomAllocations() {
         Date today = new Date();
+
+        // Reset today to 12 am (midnight)
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(today);
+        calendar.set(Calendar.HOUR_OF_DAY, 0);
+        calendar.set(Calendar.MINUTE, 0);
+        calendar.set(Calendar.SECOND, 0);
+        calendar.set(Calendar.MILLISECOND, 0);
+
+        today = calendar.getTime();
 
         List<Reservation> reservations = em.createQuery("SELECT r FROM Reservation r WHERE r.checkInDate = :today", Reservation.class)
                 .setParameter("today", today)

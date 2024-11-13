@@ -35,8 +35,8 @@ public class DateUtil {
         // Create a calendar for 2 AM on the same day
         Calendar twoAM = Calendar.getInstance();
         twoAM.setTime(checkIn);
-        twoAM.set(Calendar.HOUR_OF_DAY, 20);
-        twoAM.set(Calendar.MINUTE, 55);
+        twoAM.set(Calendar.HOUR_OF_DAY, 22);
+        twoAM.set(Calendar.MINUTE, 20);
         twoAM.set(Calendar.SECOND, 0);
         twoAM.set(Calendar.MILLISECOND, 0);
 

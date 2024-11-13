@@ -20,7 +20,7 @@ public class ScheduledAllocationSessionBean implements ScheduledAllocationSessio
     private RoomAllocationSessionBeanRemote roomAllocationBean;
 
     
-    @Schedule(hour = "20", minute = "55", second = "0", persistent = false)
+    @Schedule(hour = "22", minute = "20", second = "0", persistent = false)
     public void allocateRoomsForToday() {
         // Your room allocation logic here
         roomAllocationBean.performRoomAllocations();
