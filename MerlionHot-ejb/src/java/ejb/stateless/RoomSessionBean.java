@@ -43,6 +43,8 @@ public class RoomSessionBean implements RoomSessionBeanRemote, RoomSessionBeanLo
         em.flush();
         return newRoom.getRoomId();
     }
+    
+    
 
     @Override
     public List<Room> retrieveAllRooms() throws RoomErrorException {
@@ -105,6 +107,7 @@ public class RoomSessionBean implements RoomSessionBeanRemote, RoomSessionBeanLo
 
     @Override
     public int getAvailableRoomCountByTypeAndDate(RoomType roomType, Date startDate, Date endDate) {
+        roomType = em.merge(roomType);
         // Query to get the total count of rooms for the specified RoomType that are not disabled
         Query totalRoomsQuery = em.createQuery("SELECT COUNT(r) FROM Room r WHERE r.roomType = :roomType AND r.isDisabled = false");
         totalRoomsQuery.setParameter("roomType", roomType);
@@ -176,6 +179,13 @@ public class RoomSessionBean implements RoomSessionBeanRemote, RoomSessionBeanLo
         // If count is 0, it means there are no reservations or allocations for the room on that date
         Long count = (Long) query.getSingleResult();
         return count == 0;
+    }
+
+    @Override
+    public Room createRoom2(Room room) {
+        em.persist(room);
+        em.flush();
+        return room;
     }
 
 }

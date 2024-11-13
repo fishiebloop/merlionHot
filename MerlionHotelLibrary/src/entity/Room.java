@@ -64,7 +64,12 @@ public class Room implements Serializable {
         this.roomNumber = roomNumber;
     }
 
-    
+    public Room(Integer roomNumber, RoomStatusEnum status, RoomType roomType) {
+        this.roomNumber = roomNumber;
+        this.status = status;
+        this.roomType = roomType;
+    }
+  
     
     /**
      * @return the roomAllocation

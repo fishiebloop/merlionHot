@@ -4,6 +4,8 @@
  */
 package ejb.stateless;
 
+import entity.ExceptionReport;
+import java.util.List;
 import javax.ejb.Local;
 
 /**
@@ -12,5 +14,9 @@ import javax.ejb.Local;
  */
 @Local
 public interface ExceptionReportSessionBeanLocal {
+
+    List<ExceptionReport> retrieveHigherAvailList();
+
+    List<ExceptionReport> retrieveNoUpgradeList();
     
 }

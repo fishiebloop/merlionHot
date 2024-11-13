@@ -29,7 +29,6 @@ import javax.validation.constraints.Future;
 @Entity
 public class Reservation implements Serializable {
 
-    
     private static final long serialVersionUID = 1L;
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -45,13 +44,58 @@ public class Reservation implements Serializable {
     @Temporal(TemporalType.TIMESTAMP)
     @Column(nullable = false)
     private Date reserveDate;
+    @Column(nullable = false)
+    private Boolean isDisabled;
     
     @ManyToOne (optional = false)
     @JoinColumn(nullable = false)
     private Guest guest;
     @OneToOne(mappedBy = "reserveId")
     private RoomAllocation roomAllocation;
+    @ManyToOne
+    private Partner partner;
+    @OneToOne
+    private RoomType roomType;
+    
+    public Reservation() {
+       this.reserveDate = new Date();
+       this.isDisabled = false;
+    }
 
+    public Reservation(Date checkInDate, Date checkOutDate, Integer guestNo) {
+        this();
+        this.checkInDate = checkInDate;
+        this.checkOutDate = checkOutDate;
+        this.guestNo = guestNo;
+    }
+    /**
+     * @return the reserveDate
+     */
+    public Date getReserveDate() {
+        return reserveDate;
+    }
+
+    /**
+     * @param reserveDate the reserveDate to set
+     */
+    public void setReserveDate(Date reserveDate) {
+        this.reserveDate = reserveDate;
+    }
+    
+    /**
+     * @return the partner
+     */
+    public Partner getPartner() {
+        return partner;
+    }
+
+    /**
+     * @param partner the partner to set
+     */
+    public void setPartner(Partner partner) {
+        this.partner = partner;
+    }
+    
     public RoomAllocation getRoomAllocation() {
         return roomAllocation;
     }
@@ -66,19 +110,6 @@ public class Reservation implements Serializable {
 
     public void setRoomType(RoomType roomType) {
         this.roomType = roomType;
-    }
-    @OneToOne
-    private RoomType roomType;
-
-    public Reservation() {
-       this.reserveDate = new Date();
-    }
-
-    public Reservation(Date checkInDate, Date checkOutDate, Integer guestNo) {
-        this();
-        this.checkInDate = checkInDate;
-        this.checkOutDate = checkOutDate;
-        this.guestNo = guestNo;
     }
    
 
@@ -170,6 +201,20 @@ public class Reservation implements Serializable {
      */
     public void setGuest(Guest guest) {
         this.guest = guest;
+    }
+
+    /**
+     * @return the isDisabled
+     */
+    public Boolean getIsDisabled() {
+        return isDisabled;
+    }
+
+    /**
+     * @param isDisabled the isDisabled to set
+     */
+    public void setIsDisabled(Boolean isDisabled) {
+        this.isDisabled = isDisabled;
     }
     
 }

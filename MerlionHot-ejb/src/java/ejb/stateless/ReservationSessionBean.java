@@ -11,7 +11,15 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 import entity.Guest;
+import java.util.Date;
 import java.util.List;
+import javax.annotation.Resource;
+import javax.ejb.EJB;
+import javax.ejb.EJBContext;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
+import util.exception.CannotUpgradeException;
+import util.exception.NoAvailableRoomException;
 import util.exception.ReservationErrorException;
 
 /**
@@ -21,8 +29,13 @@ import util.exception.ReservationErrorException;
 @Stateless
 public class ReservationSessionBean implements ReservationSessionBeanRemote, ReservationSessionBeanLocal {
 
+    @EJB
+    private RoomAllocationSessionBeanLocal roomAllocationSessionBean;
+
     @PersistenceContext(unitName = "MerlionHot-ejbPU")
     private EntityManager em;
+    
+    
 
     @Override
     public Long createReservation(Reservation reservation) {
@@ -30,6 +43,8 @@ public class ReservationSessionBean implements ReservationSessionBeanRemote, Res
         em.flush();
         return reservation.getReservationId();
     }
+    
+    
     
     @Override
     public void updateReservation(Reservation reservation) {
@@ -45,6 +60,7 @@ public class ReservationSessionBean implements ReservationSessionBeanRemote, Res
     }
 
     @Override
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)    
     public Reservation createReservation(Reservation newR, Guest guest, RoomType rt) {
         guest = em.merge(guest);
         rt = em.merge(rt);
@@ -75,6 +91,19 @@ public class ReservationSessionBean implements ReservationSessionBeanRemote, Res
             throw new ReservationErrorException("Cannot find reservation!");
         }
     }
-    
+
+    @Override
+    public Reservation createSameDayReservation(Reservation newR) throws NoAvailableRoomException, CannotUpgradeException {
+        Long newRId = createReservation(newR);
+        newR = em.find(Reservation.class, newRId);
+        roomAllocationSessionBean.createAllocation(newR);
+        return newR;
+    }
+
+    @Override
+    public Reservation detachReservation(Reservation res) {
+        em.detach(res);
+        return res;
+    }
     
 }

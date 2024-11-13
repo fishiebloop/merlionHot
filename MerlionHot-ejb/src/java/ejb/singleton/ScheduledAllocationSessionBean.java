@@ -26,5 +26,4 @@ public class ScheduledAllocationSessionBean {
         System.out.println("Room allocation process started at 2 am.");
         
     }
-    
 }

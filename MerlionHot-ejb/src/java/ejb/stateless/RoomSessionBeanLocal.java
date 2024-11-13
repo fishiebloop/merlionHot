@@ -30,5 +30,7 @@ public interface RoomSessionBeanLocal {
     public String deleteRoom(Room room);
     
     public void updateRoom(Room room);
+
+    Room createRoom2(Room room);
     
 }

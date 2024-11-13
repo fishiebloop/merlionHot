@@ -4,7 +4,9 @@ import entity.Reservation;
 import entity.Room;
 import entity.RoomRate;
 import entity.RoomType;
+import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import javax.ejb.Stateless;
@@ -24,12 +26,13 @@ public class RoomTypeSessionBean implements RoomTypeSessionBeanRemote, RoomTypeS
     private EntityManager em;
 
     @Override
-    public Long createRoomType(RoomType newRoomType) {
+    public RoomType createRoomType(RoomType newRoomType) {
         em.persist(newRoomType);
         em.flush();
-        return newRoomType.getRoomTypeId();
+        return newRoomType;
     }
 
+    
     @Override
     public List<RoomType> retrieveAllRoomTypes() throws RoomTypeErrorException {
         Query query = em.createQuery("SELECT rt from RoomType rt");
@@ -121,29 +124,84 @@ public class RoomTypeSessionBean implements RoomTypeSessionBeanRemote, RoomTypeS
     }
 
     @Override
-    public List<RoomType> retrieveAllAvailRoomType(Date checkIn, Date checkOut, Integer guests) throws RoomTypeErrorException {
+    public List<RoomType> retrieveAllAvailRoomTypeOnline(Date checkIn, Date checkOut) throws RoomTypeErrorException {
         try {
-            List<RoomType> all = retrieveAllRoomTypes();
-            List<RoomType> avail = new ArrayList<>();
-            for (RoomType rt : all) {
-                Query q = em.createQuery("SELECT COUNT(r) FROM Reservation r WHERE r.roomType = :rt AND r.checkInDate < :out AND r.checkOutDate > :in");
-                q.setParameter("rt", rt);
-                q.setParameter("in", checkIn);
-                q.setParameter("out", checkOut);
+            Query query = em.createQuery("SELECT rt FROM RoomType rt "
+                    + "WHERE rt.isDisabled = false " // Only include room types that are not disabled
+                    + "AND EXISTS (SELECT rr FROM RoomRate rr WHERE rr.roomType = rt AND rr.isDisabled = false AND rr.rateType = :normalRate) "
+                    + "AND (SELECT COUNT(res) FROM Reservation res "
+                    + "WHERE res.isDisabled = false AND res.roomType = rt "
+                    + "AND (res.checkInDate < :endDate AND res.checkOutDate > :startDate) "
+                    + "AND (res.checkOutDate != CURRENT_DATE OR res.roomAllocation.room.status != :occupiedStatus)) < "
+                    + "(SELECT COUNT(r) FROM Room r WHERE r.roomType = rt AND r.isDisabled = false)" // Ensure reservation count is less than room count
+            );
+            query.setParameter("startDate", checkIn);
+            query.setParameter("endDate", checkOut);
+            query.setParameter("normalRate", RateTypeEnum.NORMAL);
+            query.setParameter("occupiedStatus", RoomStatusEnum.OCCUPIED);
 
-                Integer noRooms = (int) Math.ceil((float) guests / rt.getCapacity());
+                /*Integer noRooms = (int) Math.ceil((float) guests / rt.getCapacity());
                 long count = (long) q.getSingleResult();
                 if (count + noRooms <= rt.getRooms().size()) {
                     avail.add(rt);
-                }
-            }
-            return avail;
+                }*/
+            return query.getResultList();
         } catch (Exception ex) {
             throw new RoomTypeErrorException("Error occured while retrieving Available Room Type List!" + ex.getMessage());
         }
     }
 
     @Override
+    public BigDecimal getPriceOfRoomTypeOnline(Date checkIn, Date checkOut, RoomType rt) {
+        BigDecimal totalPrice = BigDecimal.ZERO;
+        rt = em.merge(rt);  // Ensures the RoomType is properly merged into the current persistence context
+
+        // Create a query that includes date filtering for PEAK and PROMOTION rates
+        String queryStr = "SELECT rr.ratePerNight FROM RoomRate rr WHERE rr.roomType = :rt "
+                          + "AND rr.isDisabled = false ";
+
+        // Add date range filtering only for PEAK and PROMOTION rates
+        queryStr += "AND ((rr.rateType = util.enumeration.RateTypeEnum.PROMOTION "
+                    + "AND rr.startDate <= :checkOut AND rr.endDate >= :checkIn) "
+                    + "OR (rr.rateType = util.enumeration.RateTypeEnum.PEAK "
+                    + "AND rr.startDate <= :checkOut AND rr.endDate >= :checkIn) "
+                    + "OR (rr.rateType NOT IN (util.enumeration.RateTypeEnum.PROMOTION, "
+                    + "util.enumeration.RateTypeEnum.PEAK))) ";
+
+        // Order by rateType priority (PROMOTION > PEAK > NORMAL > others)
+        queryStr += "ORDER BY CASE "
+                    + "WHEN rr.rateType = util.enumeration.RateTypeEnum.PROMOTION THEN 1 "
+                    + "WHEN rr.rateType = util.enumeration.RateTypeEnum.PEAK THEN 2 "
+                    + "WHEN rr.rateType = util.enumeration.RateTypeEnum.NORMAL THEN 3 "
+                    + "ELSE 4 END";
+
+        Query q = em.createQuery(queryStr)
+                    .setParameter("rt", rt)
+                    .setParameter("checkIn", checkIn)
+                    .setParameter("checkOut", checkOut)
+                    .setMaxResults(1);
+
+        // Get the selected rate based on rateType priority
+        BigDecimal dailyPrice = (BigDecimal) q.getSingleResult();
+
+        if (checkIn.equals(checkOut)) {
+            // If the dates are the same, count as 1 night
+            totalPrice = totalPrice.add(dailyPrice);
+        } else {
+            // Loop through each day between checkIn and checkOut to accumulate the price
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTime(checkIn);
+
+            while (!calendar.getTime().after(checkOut)) {
+                // Add the price for each day
+                totalPrice = totalPrice.add(dailyPrice);
+                calendar.add(Calendar.DAY_OF_MONTH, 1); // Move to the next day
+            }
+        }
+
+        return totalPrice; 
+    }
+    
     public String deleteRoomType(RoomType roomType) {
         // Retrieve the managed RoomType instance
         RoomType managedRoomType = em.find(RoomType.class, roomType.getRoomTypeId());

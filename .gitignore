@@ -72,4 +72,4 @@ nbproject/private/
 
 # Ignore all .jar files
 **/*.jar
->>>>>>> 405bdb169f4e000f11dc92b47157eed86f1dc5a9
+/HolidayReservationSystemSeClient/nbproject/private/

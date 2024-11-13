@@ -10,6 +10,7 @@ import entity.RoomAllocation;
 import entity.RoomType;
 import java.util.Date;
 import javax.ejb.Remote;
+import util.exception.CannotUpgradeException;
 import util.exception.NoAvailableRoomException;
 import util.exception.RoomAllocationNotFoundException;
 
@@ -24,11 +25,11 @@ public interface RoomAllocationSessionBeanRemote {
 
     public Long allocateRoom(Reservation reservation, Room room);
     
-    public void createRoomAllocationException(Reservation r, NoAvailableRoomException exception);
+    public void createRoomAllocationException(Reservation r, Exception exception);
     public void performRoomAllocations();
     public RoomAllocation retrieveAllocationById(Long id) throws RoomAllocationNotFoundException;
     public RoomAllocation retrieveAllocationByReservation(Reservation r) throws RoomAllocationNotFoundException;
 
-    public Long createAllocation(Reservation reservation) throws NoAvailableRoomException;
+    public Long createAllocation(Reservation reservation) throws NoAvailableRoomException, CannotUpgradeException;
     
 }

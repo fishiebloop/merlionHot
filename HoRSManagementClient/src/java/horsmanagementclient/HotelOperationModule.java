@@ -4,9 +4,12 @@
  */
 package horsmanagementclient;
 
+import ejb.stateless.ExceptionReportSessionBeanRemote;
 import ejb.stateless.RoomRateSessionBeanRemote;
 import ejb.stateless.RoomSessionBeanRemote;
 import ejb.stateless.RoomTypeSessionBeanRemote;
+import entity.ExceptionReport;
+import entity.Guest;
 import entity.Reservation;
 import entity.Room;
 import entity.RoomAllocation;
@@ -40,14 +43,16 @@ public class HotelOperationModule {
     private RoomTypeSessionBeanRemote roomTypeBean;
     private RoomSessionBeanRemote roomBean;
     private RoomRateSessionBeanRemote rateBean;
+    private ExceptionReportSessionBeanRemote exceptionReportSessionBean;
 
     public HotelOperationModule() {
     }
 
-    public HotelOperationModule(RoomTypeSessionBeanRemote roomTypeBean, RoomSessionBeanRemote roomBean, RoomRateSessionBeanRemote rateBean) {
+    public HotelOperationModule(RoomTypeSessionBeanRemote roomTypeBean, RoomSessionBeanRemote roomBean, RoomRateSessionBeanRemote rateBean, ExceptionReportSessionBeanRemote exceptionReportSessionBean) {
         this.roomTypeBean = roomTypeBean;
         this.roomBean = roomBean;
         this.rateBean = rateBean;
+        this.exceptionReportSessionBean = exceptionReportSessionBean;
     }
 
     public void menuOps() {
@@ -86,9 +91,13 @@ public class HotelOperationModule {
                     doDeleteRoom();
                 } else if (response == 7) {
                     doViewAllRooms();
-                } else if (response == 8) {
-                    //doViewRoomAllocationReport();
-                } else if (response == 9) {
+                }
+                else if(response == 8)
+                {
+                    doViewRoomAllocationReport();
+                }
+                else if(response == 9)
+                {
                     break;
                 } else {
                     System.out.println("Invalid option, please try again!\n");
@@ -101,6 +110,49 @@ public class HotelOperationModule {
         }
     }
 
+    public void doViewRoomAllocationReport() {
+         Integer response = 0;
+
+            System.out.println("*** Hotel Operation System :: Operations Management :: View Room Allocation Report ***\n");
+            List<ExceptionReport> higherAvail = exceptionReportSessionBean.retrieveHigherAvailList();
+            if (higherAvail.size() < 1) {
+                System.out.println("No reservations allocated to next higher room type.");
+            } else {
+                System.out.println("List of reservations allocated to next higher room type:");
+                Integer i = 1;
+                for (ExceptionReport er : higherAvail) {
+                    Reservation r = er.getReservation();
+                    Guest g = r.getGuest();
+                    System.out.println(i + ".");
+                    System.out.println("    Reservation ID: " + r.getReservationId());
+                    System.out.println("    Guest Name: " + g.getName());
+                    System.out.println("    Guest Email: " + g.getEmail());
+                    System.out.println("    Allocated Room Type: " + r.getRoomType().getRoomTypeName());
+                    System.out.println("    Allocated Room Number: " + r.getRoomAllocation().getRoom().getRoomNumber());
+                    System.out.println();
+                    i++;
+                }
+            }
+            
+            List<ExceptionReport> noHigherAvail = exceptionReportSessionBean.retrieveNoUpgradeList();
+            if (noHigherAvail.size() < 1) {
+                System.out.println("No reservations with no allocated rooms.");
+            } else {
+                System.out.println("List of reservations with no allocated rooms:");
+                Integer i = 1;
+                for (ExceptionReport er : noHigherAvail) {
+                    Reservation r = er.getReservation();
+                    Guest g = r.getGuest();
+                    System.out.println(i + ".");
+                    System.out.println("    Reservation ID: " + r.getReservationId());
+                    System.out.println("    Guest Name: " + g.getName());
+                    System.out.println("    Guest Email: " + g.getEmail());
+                    System.out.println();
+                    i++;
+                }
+            }
+            
+    }
     public void menuSales() {
         Integer response = 0;
 
@@ -282,8 +334,8 @@ public class HotelOperationModule {
         System.out.print("Enter Room Type's Amenities Description> ");
         type.setAmenities(scanner.nextLine().trim());
 
-        Long newType = roomTypeBean.createRoomType(type);
-        if (newType != null) {
+        type = roomTypeBean.createRoomType(type);
+        if (type.getRoomTypeId() != null) {
             System.out.println("Room Type " + type.getRoomTypeName() + " created successfully!\n");
         } else {
             System.out.println("Error occurred during room type creation!\n");
@@ -549,9 +601,9 @@ public class HotelOperationModule {
             }
 
             // Persist the RoomRate if no duplicate rate type exists
-            Long newRateId = rateBean.createRoomRate(r);
-            if (newRateId != null) {
-                RoomRate roomrate = rateBean.retrieveRoomRateById(newRateId);
+            RoomRate newRateId = rateBean.createRoomRate(r);
+            if (newRateId.getRoomRateId() != null) {
+                RoomRate roomrate = rateBean.retrieveRoomRateById(newRateId.getRoomRateId());
                 rt.getRoomrates().add(roomrate);
                 roomTypeBean.updateRoomType(rt);
                 System.out.println("Room Rate: " + r.getName() + " created successfully!\n");
