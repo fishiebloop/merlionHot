@@ -4,6 +4,7 @@
  */
 package horsreservationclient;
 
+import ejb.stateless.ExceptionReportSessionBeanRemote;
 import ejb.stateless.GuestSessionBeanRemote;
 import ejb.stateless.ReservationSessionBeanRemote;
 import ejb.stateless.RoomAllocationSessionBeanRemote;
@@ -16,6 +17,7 @@ import javax.ejb.EJB;
  * @author eliseoh
  */
 public class Main {
+
 
     @EJB
     private static RoomAllocationSessionBeanRemote roomAllocationSessionBean;

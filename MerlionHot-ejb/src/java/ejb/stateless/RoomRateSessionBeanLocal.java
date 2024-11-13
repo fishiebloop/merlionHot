@@ -10,6 +10,8 @@ import java.util.List;
 import javax.ejb.Local;
 import util.exception.RoomRateErrorException;
 import util.exception.BeanValidationError;
+import util.exception.BeanValidationError;
+import util.exception.RoomRateErrorException;
 
 /**
  *
@@ -28,8 +30,8 @@ public interface RoomRateSessionBeanLocal {
 
     public String deleteRoomRate(RoomRate roomRate);
 
-    public RoomRate retrieveRoomRateByName(String roomRateName) throws RoomRateErrorException;
-
     Boolean validateRoomRate(RoomRate rr) throws BeanValidationError;
 
+    public RoomRate retrieveRoomRateByName(String roomRateName) throws RoomRateErrorException;
+    
 }

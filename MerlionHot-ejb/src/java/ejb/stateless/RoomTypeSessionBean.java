@@ -249,5 +249,5 @@ public class RoomTypeSessionBean implements RoomTypeSessionBeanRemote, RoomTypeS
 
         return totalPrice; 
     }
-    
+
 }

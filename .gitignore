@@ -68,11 +68,15 @@ nbproject/private/
 
 # Ignore all .DS_Store files
 **/.DS_Store
+.DS_Store
 
 # Ignore all .jar files
 **/*.jar
+<<<<<<< HEAD
 <<<<<<< HEAD
 >>>>>>> 405bdb169f4e000f11dc92b47157eed86f1dc5a9
 =======
 /HolidayReservationSystemSeClient/nbproject/private/
 >>>>>>> 05274d370c6230589530207a675475c38f0b19f1
+=======
+>>>>>>> 43f9ab60ea567ce7be7244bedaf89cb2435025b3

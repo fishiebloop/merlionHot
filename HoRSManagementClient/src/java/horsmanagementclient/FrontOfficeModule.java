@@ -35,6 +35,7 @@ import javax.persistence.NoResultException;
 import util.enumeration.ExceptionTypeEnum;
 import util.enumeration.RateTypeEnum;
 import util.enumeration.RoomStatusEnum;
+import util.exception.BeanValidationError;
 import util.exception.DateValidationError;
 import util.exception.NoAvailableRoomException;
 import util.exception.RoomAllocationNotFoundException;
@@ -205,7 +206,13 @@ public class FrontOfficeModule {
                         System.out.println("Sufficient rooms available for reservation.");
                         BigDecimal chosenAmount = amounts[choiceIndex - 1];
                         System.out.println();
-                        createReservations(requiredRooms, chosenType, in, out, name, email, numGuests, chosenAmount);
+                        try {
+                            createReservations(requiredRooms, chosenType, in, out, name, email, numGuests, chosenAmount);
+                        } catch(BeanValidationError ex) 
+                        {
+                            System.out.println("Validation failed. Please correct the following errors:\n" + ex.getMessage());
+                            System.out.println("Please re-enter your details.");
+                        }
                     } else {
                         int maxGuestsAccommodated = availableRooms * chosenType.getCapacity();
                         System.out.println("Only " + availableRooms + " rooms are available for the chosen room type.");
@@ -216,7 +223,14 @@ public class FrontOfficeModule {
 
                         if (partialRes.equalsIgnoreCase("Y")) {
                             BigDecimal chosenAmount = amounts[choiceIndex - 1];
-                            createReservations(availableRooms, chosenType, in, out, name, email, maxGuestsAccommodated, chosenAmount);
+
+                            try {
+                            createReservations(requiredRooms, chosenType, in, out, name, email, numGuests, chosenAmount);
+                            } catch(BeanValidationError ex) 
+                            {
+                                System.out.println("Validation failed. Please correct the following errors:\n" + ex.getMessage());
+                                System.out.println("Please re-enter your details.");
+                            }
                         } else {
                             System.out.println("Reservation canceled.");
                         }
@@ -230,7 +244,7 @@ public class FrontOfficeModule {
         }
     }
 
-    private void createReservations(int numRooms, RoomType roomType, Date startDate, Date endDate, String guestName, String guestEmail, int totalGuests, BigDecimal chosenAmount) {
+    private void createReservations(int numRooms, RoomType roomType, Date startDate, Date endDate, String guestName, String guestEmail, int totalGuests, BigDecimal chosenAmount) throws BeanValidationError {
         Guest guest = guestBean.retrieveGuestByEmail(guestEmail);
         boolean isNewGuest = false;
 

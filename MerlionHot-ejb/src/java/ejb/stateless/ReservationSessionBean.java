@@ -35,9 +35,6 @@ public class ReservationSessionBean implements ReservationSessionBeanRemote, Res
     @PersistenceContext(unitName = "MerlionHot-ejbPU")
     private EntityManager em;
     
-    //@Resource
-    //private EJBContext eJBContext;
-    
     
 
     @Override
@@ -94,22 +91,6 @@ public class ReservationSessionBean implements ReservationSessionBeanRemote, Res
             throw new ReservationErrorException("Cannot find reservation!");
         }
     }
-    
-    
-
-    /*@Override
-    //@TransactionAttribute(TransactionAttributeType.REQUIRED)
-    public Reservation createNotSameDayReservation(Reservation newR, Guest guest, RoomType rt) throws NoAvailableRoomException, CannotUpgradeException {
-        newR = createReservation(newR, guest, rt);
-        try {
-            roomAllocationSessionBean.createAllocation(newR);
-            return newR;
-        } catch (CannotUpgradeException ex) {
-            newR.setIsDisabled(true);
-            //eJBContext.setRollbackOnly();
-            throw new CannotUpgradeException("No next higher room type. Your reservation is cancelled.");
-        }
-    }*/
 
     @Override
     public Reservation createSameDayReservation(Reservation newR) throws NoAvailableRoomException, CannotUpgradeException {

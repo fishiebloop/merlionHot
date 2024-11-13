@@ -10,6 +10,7 @@ import ejb.stateless.ReservationSessionBeanLocal;
 import ejb.stateless.RoomRateSessionBeanLocal;
 import ejb.stateless.RoomSessionBeanLocal;
 import ejb.stateless.RoomTypeSessionBeanLocal;
+import entity.Partner;
 import javax.ejb.EJB;
 import javax.jws.WebService;
 import javax.jws.WebMethod;
@@ -17,6 +18,7 @@ import javax.jws.WebParam;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import util.exception.InvalidLoginCredentialException;
 
 /**
  *
@@ -50,9 +52,10 @@ public class HolidayWebService {
     /**
      * This is a sample web service operation
      */
-    @WebMethod(operationName = "hello")
-    public String hello(@WebParam(name = "name") String txt) {
-        return "Hello " + txt + " !";
+    @WebMethod(operationName = "partnerLogin")
+    public Partner partnerLogin(@WebParam(name = "username") String username,
+                               @WebParam(name = "password") String password) throws InvalidLoginCredentialException {
+        return partnerSessionBean.partnerLogin(username, password);
     }
     //need to detach and null bi direction
 }

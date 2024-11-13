@@ -12,6 +12,7 @@ import util.exception.BeanValidationError;
 import util.exception.GuestErrorException;
 import util.exception.InvalidLoginCredentialException;
 import com.merlionhotel.utils.DateUtil;
+import ejb.stateless.ExceptionReportSessionBeanRemote;
 import ejb.stateless.ReservationSessionBeanRemote;
 import ejb.stateless.RoomAllocationSessionBeanRemote;
 import ejb.stateless.RoomSessionBeanRemote;
@@ -152,7 +153,6 @@ public class MainApp {
         g.setPassword(scanner.nextLine().trim());
         System.out.print("Enter Name> ");
         g.setName(scanner.nextLine().trim());
-            guestSessionBean.validateGuest(g);
             currentGuest = guestSessionBean.createGuest(g);
     }
     

@@ -10,6 +10,8 @@ import java.util.List;
 import javax.ejb.Remote;
 import util.exception.RoomRateErrorException;
 import util.exception.BeanValidationError;
+import util.exception.BeanValidationError;
+import util.exception.RoomRateErrorException;
 
 /**
  *

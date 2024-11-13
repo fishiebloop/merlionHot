@@ -6,6 +6,7 @@ package ejb.stateless;
 
 import entity.ExceptionReport;
 import entity.Reservation;
+import java.util.List;
 import javax.ejb.Remote;
 
 /**
@@ -18,5 +19,9 @@ public interface ExceptionReportSessionBeanRemote {
     public void createExceptionReport(ExceptionReport report);
 
     public ExceptionReport retrieveExceptionByReservation(Reservation r);
+
+    List<ExceptionReport> retrieveHigherAvailList();
+
+    List<ExceptionReport> retrieveNoUpgradeList();
     
 }

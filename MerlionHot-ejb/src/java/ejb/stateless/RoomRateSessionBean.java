@@ -19,9 +19,9 @@ import javax.validation.Validation;
 import javax.validation.Validator;
 import javax.validation.ValidatorFactory;
 import util.enumeration.RoomStatusEnum;
-import util.exception.RoomRateErrorException;
 import util.exception.RoomTypeErrorException;
 import util.exception.BeanValidationError;
+import util.exception.RoomRateErrorException;
 
 /**
  *

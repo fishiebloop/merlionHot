@@ -19,7 +19,7 @@ import util.exception.GuestErrorException;
 @Remote
 public interface GuestSessionBeanRemote {
 
-    public Guest createGuest(Guest g);
+    public Guest createGuest(Guest g)throws BeanValidationError;
     public List<Reservation> retrieveAllReservations(Long guestId) throws GuestErrorException;
     public Boolean validateGuest(Guest g) throws BeanValidationError;
     public Guest guestAuth(String email, String password) throws GuestErrorException;
