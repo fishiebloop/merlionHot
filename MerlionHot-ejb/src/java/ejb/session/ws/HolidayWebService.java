@@ -64,8 +64,8 @@ public class HolidayWebService {
     private RoomTypeSessionBeanLocal roomTypeSessionBean;
 
     @WebMethod(operationName = "partnerLogin")
-    public Partner partnerLogin(@WebParam(name = "username") String username,
-            @WebParam(name = "password") String password) throws InvalidLoginCredentialException {
+    public Long partnerLogin(@WebParam(name = "username") String username,
+                               @WebParam(name = "password") String password) throws InvalidLoginCredentialException {
         return partnerSessionBean.partnerLogin(username, password);
     }
 

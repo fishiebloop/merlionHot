@@ -4,21 +4,25 @@
 <xsd:import namespace="http://ws.session.ejb/" schemaLocation="http://localhost:8080/HolidayWebService/HolidayWebService?xsd=1"/>
 </xsd:schema>
 </types>
-<message name="hello">
-<part name="parameters" element="tns:hello"/>
+<message name="partnerLogin">
+<part name="parameters" element="tns:partnerLogin"/>
 </message>
-<message name="helloResponse">
-<part name="parameters" element="tns:helloResponse"/>
+<message name="partnerLoginResponse">
+<part name="parameters" element="tns:partnerLoginResponse"/>
+</message>
+<message name="InvalidLoginCredentialException">
+<part name="fault" element="tns:InvalidLoginCredentialException"/>
 </message>
 <portType name="HolidayWebService">
-<operation name="hello">
-<input wsam:Action="http://ws.session.ejb/HolidayWebService/helloRequest" message="tns:hello"/>
-<output wsam:Action="http://ws.session.ejb/HolidayWebService/helloResponse" message="tns:helloResponse"/>
+<operation name="partnerLogin">
+<input wsam:Action="http://ws.session.ejb/HolidayWebService/partnerLoginRequest" message="tns:partnerLogin"/>
+<output wsam:Action="http://ws.session.ejb/HolidayWebService/partnerLoginResponse" message="tns:partnerLoginResponse"/>
+<fault message="tns:InvalidLoginCredentialException" name="InvalidLoginCredentialException" wsam:Action="http://ws.session.ejb/HolidayWebService/partnerLogin/Fault/InvalidLoginCredentialException"/>
 </operation>
 </portType>
 <binding name="HolidayWebServicePortBinding" type="tns:HolidayWebService">
 <soap:binding transport="http://schemas.xmlsoap.org/soap/http" style="document"/>
-<operation name="hello">
+<operation name="partnerLogin">
 <soap:operation soapAction=""/>
 <input>
 <soap:body use="literal"/>
@@ -26,6 +30,9 @@
 <output>
 <soap:body use="literal"/>
 </output>
+<fault name="InvalidLoginCredentialException">
+<soap:fault name="InvalidLoginCredentialException" use="literal"/>
+</fault>
 </operation>
 </binding>
 <service name="HolidayWebService">
