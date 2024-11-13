@@ -10,6 +10,8 @@ import java.util.List;
 import java.util.Set;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
+import javax.persistence.NoResultException;
+import javax.persistence.NonUniqueResultException;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 import javax.validation.ConstraintViolation;
@@ -18,6 +20,8 @@ import javax.validation.Validator;
 import javax.validation.ValidatorFactory;
 import util.enumeration.RoomStatusEnum;
 import util.exception.BeanValidationError;
+import util.exception.RoomRateErrorException;
+import util.exception.RoomTypeErrorException;
 
 /**
  *
@@ -52,10 +56,14 @@ public class RoomRateSessionBean implements RoomRateSessionBeanRemote, RoomRateS
     }
 
     @Override
-    public RoomRate retrieveRoomRateByName(String roomRateName) {
-        Query query = em.createQuery("SELECT rr from RoomRate rr WHERE rr.name = :inName");
-        query.setParameter("inName", roomRateName);
-        return (RoomRate) query.getSingleResult();
+    public RoomRate retrieveRoomRateByName(String roomRateName) throws RoomRateErrorException {
+        try {
+            Query query = em.createQuery("SELECT rr from RoomRate rr WHERE rr.name = :inName");
+            query.setParameter("inName", roomRateName);
+            return (RoomRate) query.getSingleResult();
+        } catch (NoResultException | NonUniqueResultException ex) {
+            throw new RoomRateErrorException("Cannot find room rate from name!");
+        }
     }
 
     @Override

@@ -1,6 +1,7 @@
 package ejb.stateless;
 
 import entity.Reservation;
+import entity.Room;
 import entity.RoomRate;
 import entity.RoomType;
 import java.math.BigDecimal;
@@ -55,10 +56,9 @@ public class RoomTypeSessionBean implements RoomTypeSessionBeanRemote, RoomTypeS
         query.setParameter("inID", roomTypeId);
         return (RoomType) query.getSingleResult();
     }*/
-    
     @Override
-    public RoomType retrieveRoomTypeById(Long roomTypeId) throws RoomTypeErrorException{
-        
+    public RoomType retrieveRoomTypeById(Long roomTypeId) throws RoomTypeErrorException {
+
         try {
             RoomType rt = em.find(RoomType.class, roomTypeId);
             rt.getRooms().size();
@@ -68,7 +68,6 @@ public class RoomTypeSessionBean implements RoomTypeSessionBeanRemote, RoomTypeS
         } catch (Exception ex) {
             throw new RoomTypeErrorException("Error occured while retrieving Room Type List!");
         }
-        
 
     }
 
@@ -114,16 +113,6 @@ public class RoomTypeSessionBean implements RoomTypeSessionBeanRemote, RoomTypeS
     }
 
     @Override
-    public void deleteRoomType(RoomType roomType) {
-        roomType = em.merge(roomType);
-        if (roomType.getReservations().size() > 0) {
-            roomType.setIsDisabled(true);
-        } else {
-            em.remove(roomType);
-        }
-    }
-
-    @Override
     public boolean roomRateExistsForType(Long roomTypeId, RateTypeEnum rateType) {
         Query query = em.createQuery("SELECT COUNT(rr) FROM RoomRate rr WHERE rr.roomType.roomTypeId = :roomTypeId AND rr.rateType = :rateType AND rr.isDisabled = false");
         query.setParameter("roomTypeId", roomTypeId);
@@ -132,7 +121,7 @@ public class RoomTypeSessionBean implements RoomTypeSessionBeanRemote, RoomTypeS
         Long count = (Long) query.getSingleResult();
         return count > 0;
 
-    } 
+    }
 
     @Override
     public List<RoomType> retrieveAllAvailRoomTypeOnline(Date checkIn, Date checkOut) throws RoomTypeErrorException {
@@ -213,5 +202,52 @@ public class RoomTypeSessionBean implements RoomTypeSessionBeanRemote, RoomTypeS
         return totalPrice; 
     }
     
-    
+    public String deleteRoomType(RoomType roomType) {
+        // Retrieve the managed RoomType instance
+        RoomType managedRoomType = em.find(RoomType.class, roomType.getRoomTypeId());
+
+        if (managedRoomType == null) {
+            return "Room type not found";
+        }
+
+        // Check for active reservations
+        Query query = em.createQuery("SELECT COUNT(r) FROM Reservation r "
+                + "WHERE r.roomType = :roomType "
+                + "AND (r.checkOutDate > CURRENT_DATE "
+                + "OR (r.checkOutDate = CURRENT_DATE AND r.roomAllocation.room.status = :occupiedStatus))");
+        query.setParameter("roomType", managedRoomType);
+        query.setParameter("occupiedStatus", RoomStatusEnum.OCCUPIED);
+        Long count = (Long) query.getSingleResult();
+
+        if (count == 0) {
+            // No active reservations; delete room type, associated rooms, and room rates
+            for (RoomRate rate : managedRoomType.getRoomrates()) {
+                em.remove(rate);
+            }
+            for (Room room : managedRoomType.getRooms()) {
+                em.remove(room);
+            }
+            em.remove(managedRoomType);
+            em.flush();
+            return "Room type, associated rooms, and room rates deleted successfully.";
+        } else {
+            // Active reservations exist; disable room type, associated rooms, and room rates
+            managedRoomType.setIsDisabled(true);
+            em.merge(managedRoomType);
+
+            for (RoomRate rate : managedRoomType.getRoomrates()) {
+                rate.setIsDisabled(true);
+                em.merge(rate);
+            }
+
+            for (Room room : managedRoomType.getRooms()) {
+                room.setIsDisabled(true);
+                em.merge(room);
+            }
+
+            em.flush();
+            return "Room type has active reservations and has been disabled along with associated rooms and room rates.";
+        }
+    }
+
 }
