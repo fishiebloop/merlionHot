@@ -77,13 +77,13 @@ public class ExceptionReportSessionBean implements ExceptionReportSessionBeanLoc
 
         // Retrieve reports created between 12 am today and now
         return em.createQuery(
-                "SELECT e FROM ExceptionReport e WHERE e.timestamp BETWEEN :todayStart AND :now "
-                + "AND e.exceptionType = :exceptionType",
-                ExceptionReport.class)
-                .setParameter("todayStart", todayStart, TemporalType.TIMESTAMP)
-                .setParameter("now", now, TemporalType.TIMESTAMP)
-                .setParameter("exceptionType", ExceptionTypeEnum.HIGHERAVAIL)
-                .getResultList();
+            "SELECT e FROM ExceptionReport e WHERE e.timestamp >= :todayStart "
+            + "AND e.timestamp <= :now AND e.exceptionType = :exceptionType",
+            ExceptionReport.class)
+            .setParameter("todayStart", todayStart, TemporalType.TIMESTAMP)
+            .setParameter("now", now, TemporalType.TIMESTAMP)
+            .setParameter("exceptionType", ExceptionTypeEnum.NOHIGHERAVAIL)
+            .getResultList();
     }
 
 }

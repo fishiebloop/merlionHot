@@ -99,7 +99,8 @@ public class FrontOfficeModule {
                     doCheckout();
                 } else if (response == 4) {
                     break;
-                } else {
+                }
+                else {
                     System.out.println("Invalid option, please try again!\n");
                 }
             }

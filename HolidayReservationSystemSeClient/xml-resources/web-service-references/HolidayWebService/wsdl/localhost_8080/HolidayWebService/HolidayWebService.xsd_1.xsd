@@ -109,18 +109,6 @@
 </xs:sequence>
 </xs:complexType>
 
-<xs:complexType name="guestExist">
-<xs:sequence>
-<xs:element name="guestEmail" type="xs:string" minOccurs="0"/>
-</xs:sequence>
-</xs:complexType>
-
-<xs:complexType name="guestExistResponse">
-<xs:sequence>
-<xs:element name="return" type="xs:boolean" minOccurs="0"/>
-</xs:sequence>
-</xs:complexType>
-
 <xs:complexType name="createSameDayReservation">
 <xs:sequence>
 <xs:element name="roomTypeID" type="xs:long" minOccurs="0"/>
@@ -232,6 +220,18 @@
 </xs:sequence>
 </xs:complexType>
 
+<xs:complexType name="guestExist">
+<xs:sequence>
+<xs:element name="guestEmail" type="xs:string" minOccurs="0"/>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="guestExistResponse">
+<xs:sequence>
+<xs:element name="return" type="xs:boolean" minOccurs="0"/>
+</xs:sequence>
+</xs:complexType>
+
 <xs:complexType name="retrieveAllAvailRoomTypeOnline">
 <xs:sequence>
 <xs:element name="in" type="xs:anySimpleType" minOccurs="0"/>
@@ -269,8 +269,8 @@
 
 <xs:complexType name="getPriceOfRoomTypeOnline">
 <xs:sequence>
-<xs:element name="in" type="xs:dateTime" minOccurs="0"/>
-<xs:element name="out" type="xs:dateTime" minOccurs="0"/>
+<xs:element name="in" type="xs:anySimpleType" minOccurs="0"/>
+<xs:element name="out" type="xs:anySimpleType" minOccurs="0"/>
 <xs:element name="roomTypeID" type="xs:long" minOccurs="0"/>
 </xs:sequence>
 </xs:complexType>

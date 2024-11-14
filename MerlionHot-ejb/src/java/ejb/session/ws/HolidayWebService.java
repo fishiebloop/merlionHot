@@ -88,20 +88,11 @@ public class HolidayWebService {
             throw new DateValidationError("Dates entered wrongly!");
         }
         List<RoomType> types = roomTypeSessionBean.retrieveAllAvailRoomTypeOnline(inDate, outDate);
-        for (RoomType type : types) {
-            em.detach(type);
-            for (Reservation reservation : type.getReservations()) {
-                em.detach(reservation);
-                reservation.setRoomType(null);
-            }
-            for (RoomRate rate : type.getRoomrates()) {
-                em.detach(rate);
-                rate.setRoomType(null);
-            }
-            for (Room room : type.getRooms()) {
-                em.detach(room);
-                room.setRoomType(null);
-            }
+        for (RoomType rt: types) {
+            em.detach(rt);
+            rt.setRooms(null);
+            rt.setReservations(null);
+            rt.setRoomrates(null);
         }
         return types;
     }
@@ -164,15 +155,18 @@ public class HolidayWebService {
     }
 
     @WebMethod(operationName = "getPriceOfRoomTypeOnline")
-    public BigDecimal getPriceOfRoomTypeOnline(@WebParam(name = "in") Date in, @WebParam(name = "out") Date out, @WebParam(name = "roomTypeID") Long roomTypeID) throws RoomTypeErrorException {
+    public BigDecimal getPriceOfRoomTypeOnline(@WebParam(name = "in") XMLGregorianCalendar in, @WebParam(name = "out") XMLGregorianCalendar out, @WebParam(name = "roomTypeID") Long roomTypeID) throws RoomTypeErrorException {
+        Date inDate = in.toGregorianCalendar().getTime();
+        Date outDate = out.toGregorianCalendar().getTime();
         RoomType type = roomTypeSessionBean.retrieveRoomTypeById(roomTypeID);
-        BigDecimal price = roomTypeSessionBean.getPriceOfRoomTypeOnline(in, out, type);
+        BigDecimal price = roomTypeSessionBean.getPriceOfRoomTypeOnline(inDate, outDate, type);
         return price;
     }
 
     @WebMethod(operationName = "retrieveReservationDetails")
     public ReservationDTO retrieveReservationDetails(@WebParam(name = "reservationID") Long reservationID) throws ReservationErrorException{
         Reservation r = reservationSessionBean.retrieveReservationById(reservationID);
+        r.getRoomType();
         if (r == null) {
             throw new ReservationErrorException("Reservation not found for ID: " + reservationID);
         }

@@ -5,6 +5,7 @@
 package horsmanagementclient;
 
 import ejb.stateless.ExceptionReportSessionBeanRemote;
+import ejb.stateless.RoomAllocationSessionBeanRemote;
 import ejb.stateless.RoomRateSessionBeanRemote;
 import ejb.stateless.RoomSessionBeanRemote;
 import ejb.stateless.RoomTypeSessionBeanRemote;
@@ -45,15 +46,17 @@ public class HotelOperationModule {
     private RoomSessionBeanRemote roomBean;
     private RoomRateSessionBeanRemote rateBean;
     private ExceptionReportSessionBeanRemote exceptionReportSessionBean;
+    private RoomAllocationSessionBeanRemote roomAllocationSessionBean;
 
     public HotelOperationModule() {
     }
 
-    public HotelOperationModule(RoomTypeSessionBeanRemote roomTypeBean, RoomSessionBeanRemote roomBean, RoomRateSessionBeanRemote rateBean, ExceptionReportSessionBeanRemote exceptionReportSessionBean) {
+    public HotelOperationModule(RoomTypeSessionBeanRemote roomTypeBean, RoomSessionBeanRemote roomBean, RoomRateSessionBeanRemote rateBean, ExceptionReportSessionBeanRemote exceptionReportSessionBean, RoomAllocationSessionBeanRemote roomAllocationSessionBean) {
         this.roomTypeBean = roomTypeBean;
         this.roomBean = roomBean;
         this.rateBean = rateBean;
         this.exceptionReportSessionBean = exceptionReportSessionBean;
+        this.roomAllocationSessionBean = roomAllocationSessionBean;
     }
 
     public void menuOps() {
@@ -69,15 +72,15 @@ public class HotelOperationModule {
             System.out.println("6: Delete Room");
             System.out.println("7: View All Rooms");
             System.out.println("8: View Room Allocation Exception Report");
-            System.out.println("9: Logout\n");
+            System.out.println("9: Allocate room for reservations");
+            System.out.println("10: Logout\n");
             response = 0;
 
-            while (response < 1 || response > 9) {
+            while (response < 1 || response > 10) {
                 System.out.print("> ");
 
                 response = scanner.nextInt();
                 scanner.nextLine();
-
                 if (response == 1) {
                     doCreateRoomType();
                 } else if (response == 2) {
@@ -95,13 +98,16 @@ public class HotelOperationModule {
                 } else if (response == 8) {
                     doViewRoomAllocationReport();
                 } else if (response == 9) {
+                    roomAllocationSessionBean.performRoomAllocations();
+                    System.out.println("Room allocation process.");
+                } else if (response == 10) {
                     break;
                 } else {
                     System.out.println("Invalid option, please try again!\n");
                 }
             }
 
-            if (response == 9) {
+            if (response == 10) {
                 break;
             }
         }
@@ -289,6 +295,7 @@ public class HotelOperationModule {
             System.out.println("5: Change Amenities Description");
             System.out.println("6: Change Next Higher Room Type");
             System.out.println("7: Exit\n");
+            System.out.print("> ");
 
             int response = scanner.nextInt();
             scanner.nextLine();
@@ -363,7 +370,7 @@ public class HotelOperationModule {
 
     public void doDeleteRoom() {
         System.out.println("*** HoRS Management System :: Room Operations :: Delete Room ***\n");
-        System.out.println("Enter room number> ");
+        System.out.print("Enter room number> ");
         Integer roomNum = scanner.nextInt();
         try {
             Room room = roomBean.retrieveRoomByNumber(roomNum);
@@ -483,6 +490,7 @@ public class HotelOperationModule {
             System.out.println("5: Change Start Date");
             System.out.println("6: Change End Date");
             System.out.println("7: Exit\n");
+            System.out.print("> ");
 
             int response = scanner.nextInt();
             scanner.nextLine();
@@ -579,6 +587,7 @@ public class HotelOperationModule {
                 System.out.println("2: Change Room Status");
                 System.out.println("3: Change Room Type");
                 System.out.println("4: Exit\n");
+                System.out.print("> ");
 
                 int response = scanner.nextInt();
                 scanner.nextLine();

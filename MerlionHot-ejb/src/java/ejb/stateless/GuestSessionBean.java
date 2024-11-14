@@ -95,8 +95,12 @@ public class GuestSessionBean implements GuestSessionBeanRemote, GuestSessionBea
     public List<Reservation> retrieveAllReservations(Long guestId) throws GuestErrorException {
         try {
             Guest g = em.find(Guest.class, guestId);
-            g.getReservation().size();
-            return g.getReservation();
+            if (g != null) {
+                g.getReservation().size();  // Ensure lazy-loading occurs here
+                return g.getReservation();
+            } else {
+                throw new GuestErrorException("Guest not found!");
+            }
         } catch (Exception ex) {
             throw new GuestErrorException("Unable to find Guest!");
         }

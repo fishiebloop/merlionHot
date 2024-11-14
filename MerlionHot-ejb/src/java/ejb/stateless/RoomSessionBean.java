@@ -161,8 +161,8 @@ public class RoomSessionBean implements RoomSessionBeanRemote, RoomSessionBeanLo
 
         Query query = em.createQuery("SELECT COUNT(a) FROM RoomAllocation a "
                 + "WHERE a.room = :room "
-                + "AND (a.reservation.checkOutDate > CURRENT_DATE "
-                + "OR (a.reservation.checkOutDate = CURRENT_DATE AND a.room.status = :occupiedStatus))");
+                + "AND (a.reserveId.checkOutDate > CURRENT_DATE "
+                + "OR (a.reserveId.checkOutDate = CURRENT_DATE AND a.room.status = :occupiedStatus))");
         query.setParameter("room", managedRoom);
         query.setParameter("occupiedStatus", RoomStatusEnum.OCCUPIED);
         Long count = (Long) query.getSingleResult();

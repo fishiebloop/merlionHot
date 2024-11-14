@@ -53,7 +53,7 @@ public class Reservation implements Serializable {
     private RoomAllocation roomAllocation;
     @ManyToOne
     private Partner partner;
-    @OneToOne (optional = false)
+    @ManyToOne (optional = false)
     private RoomType roomType;
     private Boolean isPartnerReservation = false;
     private Boolean isWalkIn = false;

@@ -220,6 +220,43 @@ public class MainApp {
                     Integer availableRooms = roomSessionBean.getAvailableRoomCountForOnline(type, in, out);
                     if (requestedRooms <= availableRooms) {
                         reselect = false;
+                        
+                        if (currentGuest == null) {
+                            System.out.println("*** You are not logged in yet! Log in/Register to reserve a room! ***\n");
+                            System.out.println("1: Login");
+                            System.out.println("2: Register");
+
+                            Integer response;
+                            while (true) {
+                                System.out.print("> ");
+                                response = scanner.nextInt();
+                                scanner.nextLine();
+
+                                if (response == 1) {
+                                    try {
+                                        doLogin();
+                                        System.out.println("Login successful! Logged in as: " + currentGuest.getName() + "\n");
+                                        break;
+                                    } catch (InvalidLoginCredentialException | GuestErrorException ex) {
+                                        System.out.println("Login failed: " + ex.getMessage() + "\n");
+                                    }
+                                } else if (response == 2) {
+                                    try {
+                                        doRegister();
+                                        System.out.println("Register was successful! Logged in as: " + currentGuest.getName() + "\n");
+                                        break;
+                                    } catch (BeanValidationError ex) {
+                                        System.out.println("Validation failed. Please correct the following errors:\n" + ex.getMessage());
+                                        System.out.println("Please re-enter your details.");
+                                    }catch (GuestErrorException ex) {
+                                        System.out.println(ex.getMessage());
+                                    }
+                                } else {
+                                    System.out.println("Invalid option, please try again!\n");
+                                }
+                            }
+                        }
+                        
                         totalPrice = totalPrice.add(reserveRoom(type, in, out, requestedRooms));
                     } else {
                         System.out.print("Only " + availableRooms + " rooms are available for the chosen room type. Do you want to reserve all available rooms? (Enter Y for Yes) > ");
@@ -237,41 +274,7 @@ public class MainApp {
             }
         } while (reselect);
 
-        if (currentGuest == null) {
-            System.out.println("*** You are not logged in yet! Log in/Register to reserve a room! ***\n");
-            System.out.println("1: Login");
-            System.out.println("2: Register");
-
-            Integer response;
-            while (true) {
-                System.out.print("> ");
-                response = scanner.nextInt();
-                scanner.nextLine();
-
-                if (response == 1) {
-                    try {
-                        doLogin();
-                        System.out.println("Login successful! Logged in as: " + currentGuest.getName() + "\n");
-                        break;
-                    } catch (InvalidLoginCredentialException | GuestErrorException ex) {
-                        System.out.println("Login failed: " + ex.getMessage() + "\n");
-                    }
-                } else if (response == 2) {
-                    try {
-                        doRegister();
-                        System.out.println("Register was successful! Logged in as: " + currentGuest.getName() + "\n");
-                        break;
-                    } catch (BeanValidationError ex) {
-                        System.out.println("Validation failed. Please correct the following errors:\n" + ex.getMessage());
-                        System.out.println("Please re-enter your details.");
-                    }catch (GuestErrorException ex) {
-                        System.out.println(ex.getMessage());
-                    }
-                } else {
-                    System.out.println("Invalid option, please try again!\n");
-                }
-            }
-        }
+        
 
         System.out.println("Booking successful! Total price for all rooms purchased: $" + totalPrice);
         loggedInMenu();
