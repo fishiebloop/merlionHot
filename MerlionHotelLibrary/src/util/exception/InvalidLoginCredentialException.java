@@ -4,10 +4,13 @@
  */
 package util.exception;
 
+import javax.xml.ws.WebFault;
+
 /**
  *
  * @author eliseoh
  */
+@WebFault(name = "InvalidLoginCredentialException")
 public class InvalidLoginCredentialException extends Exception {
 
     /**
@@ -25,5 +28,9 @@ public class InvalidLoginCredentialException extends Exception {
      */
     public InvalidLoginCredentialException(String msg) {
         super(msg);
+    }
+    
+    public String getFaultInfo() {
+        return getMessage();
     }
 }

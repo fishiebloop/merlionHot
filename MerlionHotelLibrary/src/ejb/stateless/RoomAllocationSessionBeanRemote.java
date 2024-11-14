@@ -21,7 +21,7 @@ import util.exception.RoomAllocationNotFoundException;
 @Remote
 public interface RoomAllocationSessionBeanRemote {
 
-    public Room findAvailableRoom(RoomType type, Date startDate, Date endDate);
+    //public Room findAvailableRoom(RoomType type, Date startDate, Date endDate);
 
     public Long allocateRoom(Reservation reservation, Room room);
     
@@ -31,5 +31,9 @@ public interface RoomAllocationSessionBeanRemote {
     public RoomAllocation retrieveAllocationByReservation(Reservation r) throws RoomAllocationNotFoundException;
 
     public Long createAllocation(Reservation reservation) throws NoAvailableRoomException, CannotUpgradeException;
+
+    public Room findAvailableRoomForOnline(RoomType type, Date startDate, Date endDate);
+
+    public Room findAvailableRoomForWalkIn(RoomType type, Date startDate, Date endDate);
     
 }

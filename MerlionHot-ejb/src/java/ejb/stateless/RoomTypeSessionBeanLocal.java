@@ -18,7 +18,7 @@ import util.exception.RoomTypeErrorException;
 @Local
 public interface RoomTypeSessionBeanLocal {
 
-    public RoomType createRoomType(RoomType newRoomType);
+    public RoomType createRoomType(RoomType newRoomType)  throws RoomTypeErrorException;
 
     public List<RoomType> retrieveAllRoomTypes() throws RoomTypeErrorException;
 

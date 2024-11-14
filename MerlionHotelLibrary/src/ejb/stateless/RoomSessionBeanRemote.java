@@ -18,16 +18,24 @@ import util.exception.RoomErrorException;
  */
 @Remote
 public interface RoomSessionBeanRemote {
+
     public Long createRoom(Room newRoom, RoomType rt);
+
     public Room retrieveRoomByNumber(Integer roomNumber) throws RoomErrorException;
+
     public void updateRoomTypeOfRoom(Room room, RoomType newRt);
+
     public String deleteRoom(Room room);
+
     public List<Room> retrieveAllRooms() throws RoomErrorException;
+
     public void updateRoom(Room room);
 
-    public boolean isRoomAvailable(Room room, LocalDate date);
-
-    public int getAvailableRoomCountByTypeAndDate(RoomType roomType, Date startDate, Date endDate);
+    public boolean isRoomAvailable(Room room, LocalDate date, Long currentReservationId);
+    // public int getAvailableRoomCountByTypeAndDate(RoomType roomType, Date startDate, Date endDate);
 
     Room createRoom2(Room room);
+    public int getAvailableRoomCountForOnline(RoomType roomType, Date startDate, Date endDate);
+
+    public int getAvailableRoomCountForWalkIn(RoomType roomType, Date startDate, Date endDate);
 }

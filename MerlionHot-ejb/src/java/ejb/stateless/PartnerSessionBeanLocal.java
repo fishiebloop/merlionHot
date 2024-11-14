@@ -24,6 +24,6 @@ public interface PartnerSessionBeanLocal {
 
     public Long createPartner(Partner newPartner);
 
-    Partner partnerLogin(String username, String password) throws InvalidLoginCredentialException;
+    Long partnerLogin(String username, String password) throws InvalidLoginCredentialException;
     
 }

@@ -40,10 +40,10 @@ public class Room implements Serializable {
     private RoomStatusEnum status;
     @OneToMany (mappedBy = "room", fetch = FetchType.EAGER)
     private List<RoomAllocation> roomAllocation;
-    @ManyToOne
+    @ManyToOne(optional = false)
     @JoinColumn(nullable = false, name = "roomTypeId")
     private RoomType roomType;
-    @Column
+    @Column(nullable = false)
     private Boolean isDisabled = false;
 
     public boolean getIsDisabled() {

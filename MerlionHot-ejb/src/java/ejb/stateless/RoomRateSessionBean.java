@@ -18,10 +18,11 @@ import javax.validation.ConstraintViolation;
 import javax.validation.Validation;
 import javax.validation.Validator;
 import javax.validation.ValidatorFactory;
+import util.enumeration.RateTypeEnum;
 import util.enumeration.RoomStatusEnum;
+import util.exception.RoomTypeErrorException;
 import util.exception.BeanValidationError;
 import util.exception.RoomRateErrorException;
-import util.exception.RoomTypeErrorException;
 
 /**
  *
@@ -80,22 +81,39 @@ public class RoomRateSessionBean implements RoomRateSessionBeanRemote, RoomRateS
             return "Room rate not found";
         }
 
-        // Check for active reservations using the room rate's room type
-        Query query = em.createQuery("SELECT COUNT(r) FROM Reservation r "
-                + "WHERE r.roomType = :roomType "
-                + "AND (r.checkOutDate > CURRENT_DATE "
-                + "OR (r.checkOutDate = CURRENT_DATE AND r.roomAllocation.room.status = :occupiedStatus))");
-        query.setParameter("roomType", managedRate.getRoomType());
-        query.setParameter("occupiedStatus", RoomStatusEnum.OCCUPIED); // Assuming RoomStatusEnum.OCCUPIED exists
-        Long count = (Long) query.getSingleResult();
+        // Determine the rate type
+        RateTypeEnum rateType = managedRate.getRateType();
 
-        if (count == 0) {
+        // Construct the base query for active reservations based on rate type
+        String reservationQueryStr = "SELECT COUNT(r) FROM Reservation r "
+                + "WHERE r.roomType = :roomType "
+                + "AND r.isWalkIn = :isWalkIn " // Check if reservation matches the type associated with the rate
+                + "AND (r.checkOutDate > CURRENT_DATE "
+                + "OR (r.checkOutDate = CURRENT_DATE AND r.roomAllocation.room.status = :occupiedStatus))";
+
+        Query query = em.createQuery(reservationQueryStr);
+        query.setParameter("roomType", managedRate.getRoomType());
+        query.setParameter("occupiedStatus", RoomStatusEnum.OCCUPIED);
+
+        // Determine whether to filter for walk-in or online reservations
+        boolean isWalkIn;
+        if (rateType == RateTypeEnum.PUBLISHED) {
+            isWalkIn = true;  // PUBLISHED rates apply only to walk-in reservations
+        } else {
+            isWalkIn = false; // Other rates apply only to online reservations
+        }
+        query.setParameter("isWalkIn", isWalkIn);
+
+        // Check if there are active reservations that would prevent deletion
+        Long activeReservationCount = (Long) query.getSingleResult();
+
+        if (activeReservationCount == 0) {
             // No active reservations; delete the room rate
             em.remove(managedRate);
             em.flush();
             return "Room rate deleted successfully.";
         } else {
-            // Mark room rate as disabled if it is in use
+            // Active reservations exist; disable the room rate instead
             managedRate.setIsDisabled(true);
             em.merge(managedRate);
             em.flush();

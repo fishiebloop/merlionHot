@@ -5,6 +5,7 @@
 package ejb.stateless;
 
 import entity.Guest;
+import entity.Partner;
 import entity.Reservation;
 import entity.RoomType;
 import java.util.Date;
@@ -20,14 +21,20 @@ import util.exception.ReservationErrorException;
 @Local
 public interface ReservationSessionBeanLocal {
 
-    Reservation createReservation(Reservation newR, Guest guest, RoomType rt);
+    // Reservation createReservation(Reservation newR, Guest guest, RoomType rt);
 
     Reservation retrieveReservationByIdForGuest(Long id, Guest g) throws ReservationErrorException;
 
     //public Reservation createNotSameDayReservation(Reservation newR, Guest guest, RoomType rt) throws NoAvailableRoomException, CannotUpgradeException;
+    // public Reservation createSameDayReservation(Reservation newR) throws NoAvailableRoomException, CannotUpgradeException;
 
-   public Reservation createSameDayReservation(Reservation newR) throws NoAvailableRoomException, CannotUpgradeException;
-
+    public Reservation createSameDayReservation(Reservation newR) throws NoAvailableRoomException, CannotUpgradeException;
     Reservation detachReservation(Reservation res);
     
+     public Reservation retrieveReservationById(Long id) throws ReservationErrorException;
+
+    public Reservation createReservation(RoomType type, Guest guest, Partner partner, Date in, Date out);
+
+    public Reservation createSameDayReservation(RoomType type, Guest guest, Partner partner, Date in, Date out) throws NoAvailableRoomException, CannotUpgradeException;
+
 }

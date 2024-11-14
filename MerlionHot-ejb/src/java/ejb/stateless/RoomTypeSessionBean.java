@@ -26,13 +26,23 @@ public class RoomTypeSessionBean implements RoomTypeSessionBeanRemote, RoomTypeS
     private EntityManager em;
 
     @Override
-    public RoomType createRoomType(RoomType newRoomType) {
-        em.persist(newRoomType);
-        em.flush();
-        return newRoomType;
+    public RoomType createRoomType(RoomType type) throws RoomTypeErrorException {
+        if (isRoomTypeNameUnique(type.getRoomTypeName())) {
+            em.persist(type);
+            em.flush();
+            return type;
+        } else {
+            throw new RoomTypeErrorException("Room type name must be unique.");
+        }
     }
 
-    
+    private boolean isRoomTypeNameUnique(String roomTypeName) {
+        Query query = em.createQuery("SELECT COUNT(rt) FROM RoomType rt WHERE rt.roomTypeName = :name");
+        query.setParameter("name", roomTypeName);
+        Long count = (Long) query.getSingleResult();
+        return count == 0; // true if the name is unique
+    }
+
     @Override
     public List<RoomType> retrieveAllRoomTypes() throws RoomTypeErrorException {
         Query query = em.createQuery("SELECT rt from RoomType rt");
@@ -90,14 +100,16 @@ public class RoomTypeSessionBean implements RoomTypeSessionBeanRemote, RoomTypeS
     @Override
     public List<RoomType> retrieveAvailableRoomTypes(Date startDate, Date endDate) {
         Query query = em.createQuery("SELECT rt FROM RoomType rt "
-                + "WHERE rt.isDisabled = false " // Only include room types that are not disabled
+                + "WHERE rt.isDisabled = false "
                 + "AND EXISTS (SELECT rr FROM RoomRate rr WHERE rr.roomType = rt AND rr.isDisabled = false AND rr.rateType = :publishedRate) "
                 + "AND (SELECT COUNT(res) FROM Reservation res "
                 + "WHERE res.roomType = rt "
-                + "AND (res.checkInDate < :endDate AND res.checkOutDate > :startDate) "
-                + "AND (res.checkOutDate != CURRENT_DATE OR res.roomAllocation.room.status != :occupiedStatus)) < "
-                + "(SELECT COUNT(r) FROM Room r WHERE r.roomType = rt AND r.isDisabled = false)" // Ensure reservation count is less than room count
-        );
+                + "AND ("
+                + "(res.checkInDate < :endDate AND res.checkOutDate > :startDate) "
+                + "OR (res.checkInDate = :startDate AND res.checkOutDate = :endDate AND res.roomAllocation.room.status = :occupiedStatus) "
+                + "OR (res.checkOutDate = CURRENT_DATE AND :startDate = CURRENT_DATE AND res.roomAllocation.room.status = :occupiedStatus) "
+                + ")) < "
+                + "(SELECT COUNT(r) FROM Room r WHERE r.roomType = rt AND r.isDisabled = false)");
         query.setParameter("startDate", startDate);
         query.setParameter("endDate", endDate);
         query.setParameter("publishedRate", RateTypeEnum.PUBLISHED);
@@ -127,59 +139,104 @@ public class RoomTypeSessionBean implements RoomTypeSessionBeanRemote, RoomTypeS
     public List<RoomType> retrieveAllAvailRoomTypeOnline(Date checkIn, Date checkOut) throws RoomTypeErrorException {
         try {
             Query query = em.createQuery("SELECT rt FROM RoomType rt "
-                    + "WHERE rt.isDisabled = false " // Only include room types that are not disabled
+                    + "WHERE rt.isDisabled = false "
                     + "AND EXISTS (SELECT rr FROM RoomRate rr WHERE rr.roomType = rt AND rr.isDisabled = false AND rr.rateType = :normalRate) "
                     + "AND (SELECT COUNT(res) FROM Reservation res "
                     + "WHERE res.isDisabled = false AND res.roomType = rt "
-                    + "AND (res.checkInDate < :endDate AND res.checkOutDate > :startDate) "
-                    + "AND (res.checkOutDate != CURRENT_DATE OR res.roomAllocation.room.status != :occupiedStatus)) < "
-                    + "(SELECT COUNT(r) FROM Room r WHERE r.roomType = rt AND r.isDisabled = false)" // Ensure reservation count is less than room count
-            );
+                    + "AND ("
+                    + "(res.checkInDate < :endDate AND res.checkOutDate > :startDate) "
+                    + "OR (res.checkInDate = :startDate AND res.checkOutDate = :endDate AND res.roomAllocation.room.status = :occupiedStatus) "
+                    + "OR (res.checkOutDate = CURRENT_DATE AND :startDate = CURRENT_DATE AND res.roomAllocation.room.status = :occupiedStatus) "
+                    + ")) < "
+                    + "(SELECT COUNT(r) FROM Room r WHERE r.roomType = rt AND r.isDisabled = false)");
             query.setParameter("startDate", checkIn);
             query.setParameter("endDate", checkOut);
             query.setParameter("normalRate", RateTypeEnum.NORMAL);
             query.setParameter("occupiedStatus", RoomStatusEnum.OCCUPIED);
 
-                /*Integer noRooms = (int) Math.ceil((float) guests / rt.getCapacity());
-                long count = (long) q.getSingleResult();
-                if (count + noRooms <= rt.getRooms().size()) {
-                    avail.add(rt);
-                }*/
             return query.getResultList();
         } catch (Exception ex) {
-            throw new RoomTypeErrorException("Error occured while retrieving Available Room Type List!" + ex.getMessage());
+            throw new RoomTypeErrorException("Error occurred while retrieving Available Room Type List: " + ex.getMessage());
         }
     }
 
     @Override
+    public String deleteRoomType(RoomType roomType) {
+        RoomType managedRoomType = em.find(RoomType.class, roomType.getRoomTypeId());
+
+        if (managedRoomType == null) {
+            return "Room type not found";
+        }
+
+        Query query = em.createQuery("SELECT COUNT(r) FROM Reservation r "
+                + "WHERE r.roomType = :roomType "
+                + "AND (r.checkOutDate > CURRENT_DATE "
+                + "OR (r.checkOutDate = CURRENT_DATE AND r.roomAllocation.room.status = :occupiedStatus))");
+        query.setParameter("roomType", managedRoomType);
+        query.setParameter("occupiedStatus", RoomStatusEnum.OCCUPIED);
+        Long activeReservationCount = (Long) query.getSingleResult();
+
+        if (activeReservationCount == 0) {
+            Query dissociateQuery = em.createQuery("UPDATE RoomType rt SET rt.nextHigherRoomType = NULL WHERE rt.nextHigherRoomType = :roomType");
+            dissociateQuery.setParameter("roomType", managedRoomType);
+            dissociateQuery.executeUpdate();
+
+            for (RoomRate rate : managedRoomType.getRoomrates()) {
+                em.remove(rate);
+            }
+            for (Room room : managedRoomType.getRooms()) {
+                em.remove(room);
+            }
+            em.remove(managedRoomType);
+            em.flush();
+            return "Room type, associated rooms, and room rates deleted successfully.";
+        } else {
+            managedRoomType.setIsDisabled(true);
+            em.merge(managedRoomType);
+
+            for (RoomRate rate : managedRoomType.getRoomrates()) {
+                rate.setIsDisabled(true);
+                em.merge(rate);
+            }
+
+            for (Room room : managedRoomType.getRooms()) {
+                room.setIsDisabled(true);
+                em.merge(room);
+            }
+
+            em.flush();
+            return "Room type has active reservations and has been disabled along with associated rooms and room rates.";
+        }
+    }
+
     public BigDecimal getPriceOfRoomTypeOnline(Date checkIn, Date checkOut, RoomType rt) {
         BigDecimal totalPrice = BigDecimal.ZERO;
         rt = em.merge(rt);  // Ensures the RoomType is properly merged into the current persistence context
 
         // Create a query that includes date filtering for PEAK and PROMOTION rates
         String queryStr = "SELECT rr.ratePerNight FROM RoomRate rr WHERE rr.roomType = :rt "
-                          + "AND rr.isDisabled = false ";
+                + "AND rr.isDisabled = false ";
 
         // Add date range filtering only for PEAK and PROMOTION rates
         queryStr += "AND ((rr.rateType = util.enumeration.RateTypeEnum.PROMOTION "
-                    + "AND rr.startDate <= :checkOut AND rr.endDate >= :checkIn) "
-                    + "OR (rr.rateType = util.enumeration.RateTypeEnum.PEAK "
-                    + "AND rr.startDate <= :checkOut AND rr.endDate >= :checkIn) "
-                    + "OR (rr.rateType NOT IN (util.enumeration.RateTypeEnum.PROMOTION, "
-                    + "util.enumeration.RateTypeEnum.PEAK))) ";
+                + "AND rr.startDate <= :checkOut AND rr.endDate >= :checkIn) "
+                + "OR (rr.rateType = util.enumeration.RateTypeEnum.PEAK "
+                + "AND rr.startDate <= :checkOut AND rr.endDate >= :checkIn) "
+                + "OR (rr.rateType NOT IN (util.enumeration.RateTypeEnum.PROMOTION, "
+                + "util.enumeration.RateTypeEnum.PEAK))) ";
 
         // Order by rateType priority (PROMOTION > PEAK > NORMAL > others)
         queryStr += "ORDER BY CASE "
-                    + "WHEN rr.rateType = util.enumeration.RateTypeEnum.PROMOTION THEN 1 "
-                    + "WHEN rr.rateType = util.enumeration.RateTypeEnum.PEAK THEN 2 "
-                    + "WHEN rr.rateType = util.enumeration.RateTypeEnum.NORMAL THEN 3 "
-                    + "ELSE 4 END";
+                + "WHEN rr.rateType = util.enumeration.RateTypeEnum.PROMOTION THEN 1 "
+                + "WHEN rr.rateType = util.enumeration.RateTypeEnum.PEAK THEN 2 "
+                + "WHEN rr.rateType = util.enumeration.RateTypeEnum.NORMAL THEN 3 "
+                + "ELSE 4 END";
 
         Query q = em.createQuery(queryStr)
-                    .setParameter("rt", rt)
-                    .setParameter("checkIn", checkIn)
-                    .setParameter("checkOut", checkOut)
-                    .setMaxResults(1);
+                .setParameter("rt", rt)
+                .setParameter("checkIn", checkIn)
+                .setParameter("checkOut", checkOut)
+                .setMaxResults(1);
 
         // Get the selected rate based on rateType priority
         BigDecimal dailyPrice = (BigDecimal) q.getSingleResult();
@@ -199,55 +256,7 @@ public class RoomTypeSessionBean implements RoomTypeSessionBeanRemote, RoomTypeS
             }
         }
 
-        return totalPrice; 
-    }
-    
-    public String deleteRoomType(RoomType roomType) {
-        // Retrieve the managed RoomType instance
-        RoomType managedRoomType = em.find(RoomType.class, roomType.getRoomTypeId());
-
-        if (managedRoomType == null) {
-            return "Room type not found";
-        }
-
-        // Check for active reservations
-        Query query = em.createQuery("SELECT COUNT(r) FROM Reservation r "
-                + "WHERE r.roomType = :roomType "
-                + "AND (r.checkOutDate > CURRENT_DATE "
-                + "OR (r.checkOutDate = CURRENT_DATE AND r.roomAllocation.room.status = :occupiedStatus))");
-        query.setParameter("roomType", managedRoomType);
-        query.setParameter("occupiedStatus", RoomStatusEnum.OCCUPIED);
-        Long count = (Long) query.getSingleResult();
-
-        if (count == 0) {
-            // No active reservations; delete room type, associated rooms, and room rates
-            for (RoomRate rate : managedRoomType.getRoomrates()) {
-                em.remove(rate);
-            }
-            for (Room room : managedRoomType.getRooms()) {
-                em.remove(room);
-            }
-            em.remove(managedRoomType);
-            em.flush();
-            return "Room type, associated rooms, and room rates deleted successfully.";
-        } else {
-            // Active reservations exist; disable room type, associated rooms, and room rates
-            managedRoomType.setIsDisabled(true);
-            em.merge(managedRoomType);
-
-            for (RoomRate rate : managedRoomType.getRoomrates()) {
-                rate.setIsDisabled(true);
-                em.merge(rate);
-            }
-
-            for (Room room : managedRoomType.getRooms()) {
-                room.setIsDisabled(true);
-                em.merge(room);
-            }
-
-            em.flush();
-            return "Room type has active reservations and has been disabled along with associated rooms and room rates.";
-        }
+        return totalPrice;
     }
 
 }

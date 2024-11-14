@@ -28,9 +28,6 @@
 <message name="retrieveAllAvailRoomTypeOnlineResponse">
 <part name="parameters" element="tns:retrieveAllAvailRoomTypeOnlineResponse"/>
 </message>
-<message name="DateValidationError">
-<part name="fault" element="tns:DateValidationError"/>
-</message>
 <message name="retrieveAllPartnerReservation">
 <part name="parameters" element="tns:retrieveAllPartnerReservation"/>
 </message>
@@ -67,7 +64,6 @@
 <input wsam:Action="http://ws.session.ejb/HolidayWebService/retrieveAllAvailRoomTypeOnlineRequest" message="tns:retrieveAllAvailRoomTypeOnline"/>
 <output wsam:Action="http://ws.session.ejb/HolidayWebService/retrieveAllAvailRoomTypeOnlineResponse" message="tns:retrieveAllAvailRoomTypeOnlineResponse"/>
 <fault message="tns:RoomTypeErrorException" name="RoomTypeErrorException" wsam:Action="http://ws.session.ejb/HolidayWebService/retrieveAllAvailRoomTypeOnline/Fault/RoomTypeErrorException"/>
-<fault message="tns:DateValidationError" name="DateValidationError" wsam:Action="http://ws.session.ejb/HolidayWebService/retrieveAllAvailRoomTypeOnline/Fault/DateValidationError"/>
 </operation>
 <operation name="retrieveAllPartnerReservation">
 <input wsam:Action="http://ws.session.ejb/HolidayWebService/retrieveAllPartnerReservationRequest" message="tns:retrieveAllPartnerReservation"/>
@@ -121,9 +117,6 @@
 </output>
 <fault name="RoomTypeErrorException">
 <soap:fault name="RoomTypeErrorException" use="literal"/>
-</fault>
-<fault name="DateValidationError">
-<soap:fault name="DateValidationError" use="literal"/>
 </fault>
 </operation>
 <operation name="retrieveAllPartnerReservation">

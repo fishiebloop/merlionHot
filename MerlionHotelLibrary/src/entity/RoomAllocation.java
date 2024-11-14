@@ -30,7 +30,8 @@ public class RoomAllocation implements Serializable {
     @OneToOne (optional = false)
     @JoinColumn(nullable = false)
     private Reservation reserveId;
-    @ManyToOne 
+    @ManyToOne(optional = false)
+    @JoinColumn(nullable = false)
     private Room room;
 
     public RoomAllocation() {

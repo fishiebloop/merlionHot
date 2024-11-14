@@ -26,7 +26,7 @@ public class RoomRate implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long roomRateId;
-    @Column(nullable = false, length = 64)
+    @Column(nullable = false, length = 64, unique = true)
     private String name;
     @Enumerated(EnumType.STRING)
     private RateTypeEnum rateType;
@@ -42,6 +42,7 @@ public class RoomRate implements Serializable {
     @ManyToOne (optional = false)
     @JoinColumn(nullable = false)
     private RoomType roomType;
+    @Column(nullable = false)
     private Boolean isDisabled = false;
 
     public Boolean getIsDisabled() {

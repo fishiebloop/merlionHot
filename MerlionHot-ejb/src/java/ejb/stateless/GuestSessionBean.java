@@ -78,6 +78,18 @@ public class GuestSessionBean implements GuestSessionBeanRemote, GuestSessionBea
             em.persist(g);
             return g;
     }
+    
+    @Override
+    public Guest retrieveGuestById(Long id) {
+        try {
+            Query query = em.createQuery("SELECT g FROM Guest g WHERE g.guestID = :inID");
+            query.setParameter("inID", id);
+
+            return (Guest) query.getSingleResult();
+        } catch (NoResultException e) {
+            return null;  // Return null if no guest with that email is found
+        }
+    }
 
     @Override
     public List<Reservation> retrieveAllReservations(Long guestId) throws GuestErrorException {
