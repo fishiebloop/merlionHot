@@ -20,6 +20,7 @@ import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+import javax.validation.constraints.Digits;
 import javax.validation.constraints.Future;
 
 /**
@@ -39,8 +40,6 @@ public class Reservation implements Serializable {
     @Temporal(TemporalType.TIMESTAMP)
     @Column(nullable = false)
     private Date checkOutDate;
-    @Column(length = 20, nullable = false)
-    private Integer guestNo;
     @Temporal(TemporalType.TIMESTAMP)
     @Column(nullable = false)
     private Date reserveDate;
@@ -56,17 +55,34 @@ public class Reservation implements Serializable {
     private Partner partner;
     @OneToOne (optional = false)
     private RoomType roomType;
+    private Boolean isPartnerReservation = false;
+    private Boolean isWalkIn = false;
+
+    public Boolean getIsWalkIn() {
+        return isWalkIn;
+    }
+
+    public void setIsWalkIn(Boolean isWalkIn) {
+        this.isWalkIn = isWalkIn;
+    }
+
+    public Boolean getIsPartnerReservation() {
+        return isPartnerReservation;
+    }
+
+    public void setIsPartnerReservation(Boolean isPartnerReservation) {
+        this.isPartnerReservation = isPartnerReservation;
+    }
     
     public Reservation() {
        this.reserveDate = new Date();
        this.isDisabled = false;
     }
 
-    public Reservation(Date checkInDate, Date checkOutDate, Integer guestNo) {
+    public Reservation(Date checkInDate, Date checkOutDate) {
         this();
         this.checkInDate = checkInDate;
         this.checkOutDate = checkOutDate;
-        this.guestNo = guestNo;
     }
     /**
      * @return the reserveDate
@@ -173,20 +189,6 @@ public class Reservation implements Serializable {
      */
     public void setCheckOutDate(Date checkOutDate) {
         this.checkOutDate = checkOutDate;
-    }
-
-    /**
-     * @return the guestNo
-     */
-    public Integer getGuestNo() {
-        return guestNo;
-    }
-
-    /**
-     * @param guestNo the guestNo to set
-     */
-    public void setGuestNo(Integer guestNo) {
-        this.guestNo = guestNo;
     }
 
     /**

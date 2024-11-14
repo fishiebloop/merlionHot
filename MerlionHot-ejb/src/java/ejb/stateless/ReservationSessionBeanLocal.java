@@ -32,8 +32,8 @@ public interface ReservationSessionBeanLocal {
     
      public Reservation retrieveReservationById(Long id) throws ReservationErrorException;
 
-    public Reservation createReservation(RoomType type, Guest guest, Partner partner, Date in, Date out, Integer guestNo);
+    public Reservation createReservation(RoomType type, Guest guest, Partner partner, Date in, Date out);
 
-    public Reservation createSameDayReservation(RoomType type, Guest guest, Partner partner, Date in, Date out, Integer guestNo) throws NoAvailableRoomException, CannotUpgradeException;
+    public Reservation createSameDayReservation(RoomType type, Guest guest, Partner partner, Date in, Date out) throws NoAvailableRoomException, CannotUpgradeException;
 
 }

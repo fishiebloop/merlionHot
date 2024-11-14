@@ -116,7 +116,7 @@ public class FrontOfficeModule {
         Date in;
 
         while (true) {
-            System.out.print("Enter Check in Date! Please format in dd-MM-yyyy > ");
+            System.out.print("Enter Check-in Date! Please format in dd-MM-yyyy > ");
             String checkIn = scanner.nextLine().trim();
             try {
                 in = DateUtil.convertToDate(checkIn);
@@ -127,7 +127,7 @@ public class FrontOfficeModule {
         }
 
         while (true) {
-            System.out.print("Enter Check out Date! Please format in dd-MM-yyyy > ");
+            System.out.print("Enter Check-out Date! Please format in dd-MM-yyyy > ");
             String checkOut = scanner.nextLine().trim();
             try {
                 out = DateUtil.convertToDate(checkOut);
@@ -143,10 +143,6 @@ public class FrontOfficeModule {
             numberOfNights = 1;
         }
 
-        System.out.print("Enter No of Guest(s) > ");
-        Integer guests = scanner.nextInt();
-
-        //same day booking must have check in time after current time
         if (!out.equals(in) && out.before(in)) {
             throw new DateValidationError("Dates entered wrongly!");
         }
@@ -157,9 +153,10 @@ public class FrontOfficeModule {
             System.out.println("No available room types.");
             return;
         }
+
         BigDecimal[] amounts = new BigDecimal[types.size()];
 
-        int i = 1; // Index for displaying room types
+        int i = 1;
         for (RoomType type : types) {
             BigDecimal totalAmount = BigDecimal.ZERO;
 
@@ -178,83 +175,73 @@ public class FrontOfficeModule {
             System.out.println("Total amount for " + numberOfNights + " nights: " + totalAmount);
             i++;
         }
-        scanner.nextLine();
-        if (!types.isEmpty()) {
-            System.out.print("Reserve a room? Type Y to reserve, N to exit> ");
-            String res = scanner.nextLine().trim();
-            if (res.equalsIgnoreCase("Y")) {
-                System.out.print("Enter number of guests> ");
-                int numGuests = scanner.nextInt();
+
+        System.out.print("Reserve a room? Type Y to reserve, N to exit> ");
+        String res = scanner.nextLine().trim();
+        if (res.equalsIgnoreCase("Y")) {
+            System.out.print("Enter main guest name> ");
+            String name = scanner.nextLine().trim();
+            System.out.print("Enter main guest email> ");
+            String email = scanner.nextLine().trim();
+
+            System.out.print("Choose room type to reserve (1 to " + types.size() + ")> ");
+            int choiceIndex = scanner.nextInt();
+            scanner.nextLine();
+
+            if (choiceIndex >= 1 && choiceIndex <= types.size()) {
+                RoomType chosenType = types.get(choiceIndex - 1);
+
+                System.out.print("Enter number of rooms you want to reserve> ");
+                int requestedRooms = scanner.nextInt();
                 scanner.nextLine();
 
-                System.out.print("Enter main guest name> ");
-                String name = scanner.nextLine().trim();
-                System.out.print("Enter main guest email> ");
-                String email = scanner.nextLine().trim();
+                int availableRooms = roomBean.getAvailableRoomCountForWalkIn(chosenType, in, out);
 
-                System.out.print("Choose room type to reserve (1 to " + types.size() + ")> ");
-                int choiceIndex = scanner.nextInt();
-                scanner.nextLine();
+                if (requestedRooms <= availableRooms) {
+                    System.out.println("Sufficient rooms available for reservation.");
+                    BigDecimal chosenAmount = amounts[choiceIndex - 1].multiply(BigDecimal.valueOf(requestedRooms));
 
-                if (choiceIndex >= 1 && choiceIndex <= types.size()) {
-                    RoomType chosenType = types.get(choiceIndex - 1);
-                    int roomCapacity = chosenType.getCapacity();
-                    int requiredRooms = (int) Math.ceil((double) numGuests / roomCapacity);
+                    try {
+                        createReservations(requestedRooms, chosenType, in, out, name, email, chosenAmount);
+                    } catch (BeanValidationError ex) {
+                        System.out.println("Validation failed. Please correct the following errors:\n" + ex.getMessage());
+                        System.out.println("Please re-enter your details.");
+                    }
+                } else {
+                    System.out.println("Only " + availableRooms + " rooms are available for the chosen room type.");
+                    System.out.print("Do you want to reserve the available rooms instead? Type Y for yes, N for no> ");
+                    String partialRes = scanner.nextLine().trim();
 
-                    int availableRooms = roomBean.getAvailableRoomCountByTypeAndDate(chosenType, in, out);
+                    if (partialRes.equalsIgnoreCase("Y")) {
+                        BigDecimal chosenAmount = amounts[choiceIndex - 1].multiply(BigDecimal.valueOf(availableRooms));
 
-                    if (availableRooms >= requiredRooms) {
-                        System.out.println("Sufficient rooms available for reservation.");
-                        BigDecimal chosenAmount = amounts[choiceIndex - 1];
-                        System.out.println();
                         try {
-                            createReservations(requiredRooms, chosenType, in, out, name, email, numGuests, chosenAmount);
-                        } catch(BeanValidationError ex) 
-                        {
+                            createReservations(availableRooms, chosenType, in, out, name, email, chosenAmount);
+                        } catch (BeanValidationError ex) {
                             System.out.println("Validation failed. Please correct the following errors:\n" + ex.getMessage());
                             System.out.println("Please re-enter your details.");
                         }
                     } else {
-                        int maxGuestsAccommodated = availableRooms * chosenType.getCapacity();
-                        System.out.println("Only " + availableRooms + " rooms are available for the chosen room type.");
-                        System.out.println("Maximum number of guests that can be accommodated: " + maxGuestsAccommodated);
-
-                        System.out.print("Do you want to reserve rooms for " + maxGuestsAccommodated + " guests? Type Y for yes, N for no> ");
-                        String partialRes = scanner.nextLine().trim();
-
-                        if (partialRes.equalsIgnoreCase("Y")) {
-                            BigDecimal chosenAmount = amounts[choiceIndex - 1];
-
-                            try {
-                            createReservations(requiredRooms, chosenType, in, out, name, email, numGuests, chosenAmount);
-                            } catch(BeanValidationError ex) 
-                            {
-                                System.out.println("Validation failed. Please correct the following errors:\n" + ex.getMessage());
-                                System.out.println("Please re-enter your details.");
-                            }
-                        } else {
-                            System.out.println("Reservation canceled.");
-                        }
+                        System.out.println("Reservation canceled.");
                     }
-                } else {
-                    System.out.println("Invalid room type choice.");
                 }
             } else {
-                System.out.println("Reservation process exited.");
+                System.out.println("Invalid room type choice.");
             }
+        } else {
+            System.out.println("Reservation process exited.");
         }
     }
 
-    private void createReservations(int numRooms, RoomType roomType, Date startDate, Date endDate, String guestName, String guestEmail, int totalGuests, BigDecimal chosenAmount) throws BeanValidationError {
+    private void createReservations(int numRooms, RoomType roomType, Date startDate, Date endDate, String guestName, String guestEmail, BigDecimal chosenAmount) throws BeanValidationError {
         Guest guest = guestBean.retrieveGuestByEmail(guestEmail);
         boolean isNewGuest = false;
 
         if (guest == null) {
-            // If guest doesn't exist, create a new one
             guest = new Guest();
             guest.setName(guestName);
             guest.setEmail(guestEmail);
-            guest = guestBean.createGuest(guest); // Persist the new guest
+            guest = guestBean.createGuest(guest);
             isNewGuest = true;
             System.out.println("New guest created with email: " + guestEmail);
         } else {
@@ -262,37 +249,26 @@ public class FrontOfficeModule {
         }
 
         LocalDate startLocalDate = startDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-        int remainingGuests = totalGuests;
-        int roomCapacity = roomType.getCapacity();
         BigDecimal totalReservationFee = chosenAmount.multiply(BigDecimal.valueOf(numRooms));
 
         try {
-            // Step 2: Create and persist each reservation, up to the number of available rooms
             for (int i = 0; i < numRooms; i++) {
                 Reservation reservation = new Reservation();
                 reservation.setCheckInDate(startDate);
                 reservation.setCheckOutDate(endDate);
                 reservation.setRoomType(roomType);
-
-                // Determine the number of guests for this reservation
-                int guestsForThisReservation = Math.min(remainingGuests, roomCapacity);
-                reservation.setGuestNo(guestsForThisReservation);
-                remainingGuests -= guestsForThisReservation;
-
-                // Set the guest for each reservation and add the reservation to the guest's list
                 reservation.setGuest(guest);
+                reservation.setIsWalkIn(true);
 
-                // Persist the reservation
                 Long reserveID = reservationBean.createReservation(reservation);
                 Reservation managedReservation = reservationBean.retrieveReservationById(reserveID);
                 guest.getReservation().add(managedReservation);
                 roomTypeBean.updateRoomType(roomType);
                 guestBean.updateGuest(guest);
-
-                System.out.println("Reserved " + roomType.getRoomTypeName() + " for " + guestName + " with reservation ID " + reserveID + " and guest count: " + guestsForThisReservation);
+                System.out.println();
+                System.out.println("Reserved " + roomType.getRoomTypeName() + " for " + guestName + " with reservation ID " + reserveID);
                 System.out.println();
 
-                // Check if it's a same-day check-in after 2 AM
                 LocalTime currentTime = LocalTime.now();
                 if (startLocalDate.equals(LocalDate.now()) && currentTime.isAfter(LocalTime.of(2, 0))) {
                     System.out.println("Performing same-day check-in allocation...");
@@ -304,6 +280,7 @@ public class FrontOfficeModule {
                         roomBean.updateRoom(allocatedRoom);
 
                         System.out.println("Allocated guest to room number " + allocatedRoom.getRoomNumber() + " of room type " + allocatedRoom.getRoomType().getRoomTypeName());
+                        System.out.println();
                     } catch (NoAvailableRoomException ex) {
                         roomAllocationBean.createRoomAllocationException(reservation, ex);
                         if (ex.isUpgradeAvailable()) {
@@ -321,17 +298,10 @@ public class FrontOfficeModule {
                         System.out.println("Unexpected error: could not retrieve allocation.");
                     }
                 }
-
-                // Stop if there are no remaining guests to allocate
-                if (remainingGuests <= 0) {
-                    break;
-                }
             }
             System.out.println("Total reservation fee for " + numRooms + " rooms: " + totalReservationFee);
         } catch (Exception e) {
-            // If reservation fails, delete the guest if it is newly created and has no reservations
             System.out.println("Reservation process failed: " + e.getMessage());
-            //e.printStackTrace();
             if (isNewGuest && guest.getReservation().isEmpty()) {
                 guestBean.deleteGuest(guest);
                 System.out.println("New guest with no reservations has been deleted.");
@@ -400,8 +370,9 @@ public class FrontOfficeModule {
         Guest g = guestBean.retrieveGuestByEmail(email);
         if (g == null) {
             System.out.println("No guest found with the email: " + email);
-            return;  // Exit the check-in method if no guest is found
+            return;  // Exit if no guest is found
         }
+
         List<Reservation> reservations = g.getReservation();
         if (reservations.isEmpty()) {
             System.out.println("No reservations found for the guest with email: " + email);
@@ -409,17 +380,25 @@ public class FrontOfficeModule {
         }
 
         for (Reservation r : reservations) {
-            LocalDate checkoutDate = r.getCheckOutDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-            LocalTime currentTime = LocalTime.now();
+            try {
+                RoomAllocation allocation = roomAllocationBean.retrieveAllocationByReservation(r);
+                Room allocatedRoom = allocation.getRoom();
+                String roomInfo = "Reservation ID: " + r.getReservationId() + ", Room Number: " + allocatedRoom.getRoomNumber();
 
-            if (checkoutDate.equals(LocalDate.now())) {
-                try {
-                    RoomAllocation allocation = roomAllocationBean.retrieveAllocationByReservation(r);
-                    Room allocatedRoom = allocation.getRoom();
+                System.out.print("Do you want to check out for " + roomInfo + "? (Enter 'Y' for Yes) > ");
+                String ans = scanner.nextLine().trim();
+                if (!ans.equalsIgnoreCase("Y")) {
+                    System.out.println("Skipping check-out for " + roomInfo);
+                    continue;  // Skip to the next reservation if they don't want to check out
+                }
 
+                LocalDate checkoutDate = r.getCheckOutDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+                LocalTime currentTime = LocalTime.now();
+
+                if (checkoutDate.equals(LocalDate.now())) {
                     if (currentTime.isAfter(LocalTime.of(12, 0))) {
                         // Late check-out: only allow if no new reservation for this room today
-                        boolean isRoomAvailableLater = roomBean.isRoomAvailable(allocatedRoom, LocalDate.now());
+                        boolean isRoomAvailableLater = roomBean.isRoomAvailable(allocatedRoom, LocalDate.now(), r.getReservationId());
                         if (isRoomAvailableLater) {
                             allocatedRoom.setStatus(RoomStatusEnum.AVAIL);
                             roomBean.updateRoom(allocatedRoom);
@@ -433,11 +412,13 @@ public class FrontOfficeModule {
                         roomBean.updateRoom(allocatedRoom);
                         System.out.println("Checked out. Room number " + allocatedRoom.getRoomNumber() + " is now available.");
                     }
-                } catch (RoomAllocationNotFoundException ex) {
-                    System.out.println("Room allocation not found for reservation ID: " + r.getReservationId());
+                } else {
+                    System.out.println("Check-out date is not today for Reservation ID: " + r.getReservationId() + ". Cannot check out.");
                 }
-            } else {
-                System.out.println("Check-out date is not today for reservation ID: " + r.getReservationId() + ". Cannot check out.");
+            } catch (RoomAllocationNotFoundException ex) {
+                System.out.println("Room allocation not found for reservation ID: " + r.getReservationId());
+            } catch (Exception ex) {
+                System.out.println("An error occurred: " + ex.getMessage());
             }
         }
     }

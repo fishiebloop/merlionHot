@@ -21,7 +21,7 @@ import util.exception.RoomAllocationNotFoundException;
 @Local
 public interface RoomAllocationSessionBeanLocal {
 
-    public Room findAvailableRoom(RoomType type, Date startDate, Date endDate);
+    //public Room findAvailableRoom(RoomType type, Date startDate, Date endDate);
 
     public Long allocateRoom(Reservation reservation, Room room);
     

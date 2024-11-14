@@ -22,6 +22,7 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.InputMismatchException;
 import java.util.List;
 import java.util.Scanner;
 import java.util.logging.Level;
@@ -187,7 +188,7 @@ public class HotelOperationModule {
     }
 
     public void doViewRoomTypeDetails() {
-        System.out.print("Enter Room Type ID (You may retrieve ID details from 'View All Room Types')> ");
+        System.out.println("Enter Room Type ID (You may retrieve ID details from 'View All Room Types')> ");
         Long id = scanner.nextLong();
         scanner.nextLine();
 
@@ -235,6 +236,8 @@ public class HotelOperationModule {
         System.out.println("Room Type Capacity: " + type.getCapacity());
         System.out.println("Room Type Amenities: " + type.getAmenities());
         System.out.println("Disabled?: " + (type.getIsDisabled() ? "Yes" : "No"));
+        System.out.println("Next Higher Room Type: "
+                + (type.getNextHigherRoomType() != null ? type.getNextHigherRoomType().getRoomTypeName() : "None"));
         List<Room> rooms = type.getRooms();
         if (rooms.size() > 0) {
             System.out.println("Rooms under room type:");
@@ -262,8 +265,6 @@ public class HotelOperationModule {
             System.out.print("> ");
 
             response = scanner.nextInt();
-            scanner.nextLine();
-
             if (response == 1) {
                 doUpdateRoomType(type);
             } else if (response == 2) {
@@ -273,6 +274,74 @@ public class HotelOperationModule {
                 break;  // Break out of the main while loop
             } else {
                 System.out.println("Invalid option, please try again!\n");
+            }
+        }
+    }
+
+    public void doUpdateRoomType(RoomType rt) {
+        System.out.println("*** HoRS Management System :: Room Type Operations :: Update Room Type ***\n");
+
+        while (true) {
+            System.out.println("1: Change Room Type Name");
+            System.out.println("2: Change Room Type Description");
+            System.out.println("3: Change Bed Description");
+            System.out.println("4: Change Room Type Capacity");
+            System.out.println("5: Change Amenities Description");
+            System.out.println("6: Change Next Higher Room Type");
+            System.out.println("7: Exit\n");
+
+            int response = scanner.nextInt();
+            scanner.nextLine();
+
+            if (response == 1) {
+                System.out.print("Enter new Room Type Name> ");
+                String newRoomTypeName = scanner.nextLine().trim();
+
+                // Check if room type name already exists
+                try {
+                    RoomType existingRoomType = roomTypeBean.retrieveRoomTypeByName(newRoomTypeName);
+                    System.out.println("Error: Room type name '" + newRoomTypeName + "' already exists. Update canceled.");
+                } catch (RoomTypeErrorException ex) {
+                    rt.setRoomTypeName(newRoomTypeName);
+                    roomTypeBean.updateRoomType(rt);
+                    System.out.println("Successful update!");
+                }
+            } else if (response == 2) {
+                System.out.print("Enter new Room Type Description> ");
+                rt.setDescription(scanner.nextLine().trim());
+                roomTypeBean.updateRoomType(rt);
+                System.out.println("Successful update!");
+            } else if (response == 3) {
+                System.out.print("Enter new Bed Description> ");
+                rt.setBed(scanner.nextLine().trim());
+                roomTypeBean.updateRoomType(rt);
+                System.out.println("Successful update!");
+            } else if (response == 4) {
+                System.out.print("Enter new Room Type Capacity> ");
+                rt.setCapacity(scanner.nextInt());
+                scanner.nextLine();
+                roomTypeBean.updateRoomType(rt);
+                System.out.println("Successful update!");
+            } else if (response == 5) {
+                System.out.print("Enter new Amenities Description> ");
+                rt.setAmenities(scanner.nextLine().trim());
+                roomTypeBean.updateRoomType(rt);
+                System.out.println("Successful update!");
+            } else if (response == 6) {
+                System.out.print("Enter Next Higher Room Type ID> ");
+                Long id = scanner.nextLong();
+                try {
+                    RoomType nextHigher = roomTypeBean.retrieveRoomTypeById(id);
+                    rt.setNextHigherRoomType(nextHigher);
+                    roomTypeBean.updateRoomType(rt);
+                    System.out.println("Successful update!");
+                } catch (RoomTypeErrorException e) {
+                    System.out.println("Room type does not exist!");
+                }
+            } else if (response == 7) {
+                break;
+            } else {
+                System.out.println("Invalid option, please try again!");
             }
         }
     }
@@ -293,18 +362,18 @@ public class HotelOperationModule {
     }
 
     public void doDeleteRoom() {
-        scanner.nextLine();
         System.out.println("*** HoRS Management System :: Room Operations :: Delete Room ***\n");
         System.out.println("Enter room number> ");
         Integer roomNum = scanner.nextInt();
         try {
             Room room = roomBean.retrieveRoomByNumber(roomNum);
             String res = "";
+            scanner.nextLine();
             System.out.print("Enter Y to delete room, N to exit> ");
             res = scanner.nextLine().trim();
-
             if (res.equalsIgnoreCase("Y")) {
                 String resultMessage = roomBean.deleteRoom(room);
+
                 System.out.println(resultMessage); // Display the result to the client
             } else {
                 System.out.println("Room deletion canceled.");
@@ -325,17 +394,31 @@ public class HotelOperationModule {
         type.setDescription(scanner.nextLine().trim());
         System.out.print("Enter Room Type's Bed Description> ");
         type.setBed(scanner.nextLine().trim());
-        System.out.print("Enter Room Type's Capacity> ");
-        type.setCapacity(scanner.nextInt());
+        try {
+            System.out.print("Enter Room Type's Capacity> ");
+            type.setCapacity(scanner.nextInt());
+        } catch (InputMismatchException ex) {
+            System.out.println("Please key in an integer!");
+            return;
+        }
         scanner.nextLine();
         System.out.print("Enter Room Type's Amenities Description> ");
         type.setAmenities(scanner.nextLine().trim());
-
+        System.out.println("Enter Next Higher Room Type ID (You may retrieve ID details from 'View All Room Types', please key in -1 if no next higher room type)> ");
+        Long id = scanner.nextLong();
         try {
-            type = roomTypeBean.createRoomType(type);
-            System.out.println("Room Type " + type.getRoomTypeName() + " created successfully!\n");
+            RoomType nextHigher = roomTypeBean.retrieveRoomTypeById(id);
+            type.setNextHigherRoomType(nextHigher);
+
+            try {
+                type = roomTypeBean.createRoomType(type);
+                System.out.println("Room Type " + type.getRoomTypeName() + " created successfully!\n");
+            } catch (RoomTypeErrorException e) {
+                System.out.println("Error: " + e.getMessage() + "\n");
+            }
         } catch (RoomTypeErrorException e) {
-            System.out.println("Error: " + e.getMessage() + "\n");
+            System.out.println("Room type does not exist!");
+            return;
         }
     }
 
@@ -379,144 +462,167 @@ public class HotelOperationModule {
         }
     }
 
-    //doesnt allow update of associations
-    public void doUpdateRoomType(RoomType rt) {
-        System.out.println("*** HoRS Management System :: Room Type Operations :: Update Room Type ***\n");
-        Integer response = 0;
+    public void doUpdateRoomRate(RoomRate rate) {
+        System.out.println("*** HoRS Management System :: Room Rate Operations :: Update Room Rate ***\n");
 
         while (true) {
-            System.out.println("1: Change Room Type Name");
-            System.out.println("2: Change Room Type Description");
-            System.out.println("3: Change Bed Description");
-            System.out.println("4: Change Room Type Capacity");
-            System.out.println("5: Change Amenities Description");
-            System.out.println("6: Exit\n");
-            response = 0;
+            System.out.println("1: Change Room Rate Name");
+            System.out.println("2: Change Room Type");
+            System.out.println("3: Change Rate Type");
+            System.out.println("4: Change Rate Per Night");
+            System.out.println("5: Change Start Date");
+            System.out.println("6: Change End Date");
+            System.out.println("7: Exit\n");
 
-            while (response < 1 || response > 6) {
-                System.out.print("> ");
+            int response = scanner.nextInt();
+            scanner.nextLine();
 
-                response = scanner.nextInt();
-                scanner.nextLine();
+            if (response == 1) {
+                System.out.print("Enter new Room Rate Name> ");
+                String newRoomRateName = scanner.nextLine().trim();
 
-                if (response == 1) {
-                    System.out.print("Enter new Room Type Name> ");
-                    rt.setRoomTypeName(scanner.nextLine().trim());
-                    roomTypeBean.updateRoomType(rt);
-                    System.out.println("\n Successful update!");
-                } else if (response == 2) {
-                    System.out.print("Enter new Room Type Description> ");
-                    rt.setDescription(scanner.nextLine().trim());
-                    roomTypeBean.updateRoomType(rt);
-                    System.out.println("\n Successful update!");
-                } else if (response == 3) {
-                    System.out.print("Enter new Room Type Bed Description> ");
-                    rt.setBed(scanner.nextLine().trim());
-                    roomTypeBean.updateRoomType(rt);
-                    System.out.println("\n Successful update!");
-                } else if (response == 4) {
-                    System.out.print("Enter new Room Type Capacity> ");
-                    rt.setCapacity(scanner.nextInt());
-                    roomTypeBean.updateRoomType(rt);
-                    System.out.println("\n Successful update!");
-                } else if (response == 5) {
-                    System.out.print("Enter new Room Type Amenities Description> ");
-                    rt.setAmenities(scanner.nextLine().trim());
-                    roomTypeBean.updateRoomType(rt);
-                    System.out.println("\n Successful update!");
-                } else if (response == 6) {
-                    break;
-                } else {
-                    System.out.println("Invalid option, please try again!\n");
+                // Check if room rate name already exists
+                try {
+                    RoomRate existingRate = rateBean.retrieveRoomRateByName(newRoomRateName);
+                    System.out.println("Error: Room rate name '" + newRoomRateName + "' already exists. Update canceled.");
+                } catch (RoomRateErrorException ex) {
+                    rate.setName(newRoomRateName);
+                    rateBean.updateRoomRate(rate);
+                    System.out.println("Successful update!");
                 }
-            }
+            } else if (response == 2) {
+                // Select new room type
+                try {
+                    List<RoomType> roomTypes = roomTypeBean.retrieveAllRoomTypes();
+                    System.out.println("List of Room Types:");
+                    for (int i = 0; i < roomTypes.size(); i++) {
+                        System.out.println((i + 1) + ": " + roomTypes.get(i).getRoomTypeName());
+                    }
+                    int choice = scanner.nextInt();
+                    scanner.nextLine();
+                    RoomType newRoomType = roomTypes.get(choice - 1);
+                    rate.setRoomType(newRoomType);
+                    rateBean.updateRoomRate(rate);
+                    System.out.println("Successful update!");
+                } catch (RoomTypeErrorException ex) {
+                    System.out.println(ex.getMessage());
+                }
+            } else if (response == 3) {
+                System.out.println("Choose Rate Type:");
+                for (RateTypeEnum type : RateTypeEnum.values()) {
+                    System.out.println(type.ordinal() + 1 + ": " + type);
+                }
+                int choice = scanner.nextInt();
+                scanner.nextLine();
+                RateTypeEnum newRateType = RateTypeEnum.values()[choice - 1];
 
-            if (response == 6) {
+                // Check if rate type already exists for this room type
+                if (roomTypeBean.roomRateExistsForType(rate.getRoomType().getRoomTypeId(), newRateType)) {
+                    System.out.println("Error: Rate type '" + newRateType + "' already exists for this room type. Update canceled.");
+                } else {
+                    rate.setRateType(newRateType);
+                    rateBean.updateRoomRate(rate);
+                    System.out.println("Successful update!");
+                }
+            } else if (response == 4) {
+                System.out.print("Enter new Rate Per Night> ");
+                rate.setRatePerNight(scanner.nextBigDecimal());
+                scanner.nextLine();
+                rateBean.updateRoomRate(rate);
+                System.out.println("Successful update!");
+            } else if (response == 5) {
+                System.out.print("Enter Start Date (yyyy-MM-dd)> ");
+                String startDateStr = scanner.nextLine().trim();
+                Date startDate = parseDate(startDateStr, new SimpleDateFormat("yyyy-MM-dd"));
+                if (startDate != null) {
+                    rate.setStartDate(startDate);
+                    rateBean.updateRoomRate(rate);
+                    System.out.println("Successful update!");
+                }
+            } else if (response == 6) {
+                System.out.print("Enter End Date (yyyy-MM-dd)> ");
+                String endDateStr = scanner.nextLine().trim();
+                Date endDate = parseDate(endDateStr, new SimpleDateFormat("yyyy-MM-dd"));
+                if (endDate != null) {
+                    rate.setEndDate(endDate);
+                    rateBean.updateRoomRate(rate);
+                    System.out.println("Successful update!");
+                }
+            } else if (response == 7) {
                 break;
+            } else {
+                System.out.println("Invalid option, please try again!");
             }
         }
     }
 
-    //cannot update room allocation, need review to see if needed
     public void doUpdateRoom() {
         System.out.println("*** HoRS Management System :: Room Operations :: Update Room ***\n");
         System.out.print("Enter Room Number> ");
-        Integer response = 0;
 
         try {
             Room r = roomBean.retrieveRoomByNumber(scanner.nextInt());
             scanner.nextLine();
+
             while (true) {
                 System.out.println("1: Change Room Number");
                 System.out.println("2: Change Room Status");
                 System.out.println("3: Change Room Type");
                 System.out.println("4: Exit\n");
-                response = 0;
 
-                while (response < 1 || response > 4) {
-                    System.out.print("> ");
+                int response = scanner.nextInt();
+                scanner.nextLine();
 
-                    response = scanner.nextInt();
+                if (response == 1) {
+                    System.out.print("Enter new Room number> ");
+                    Integer newRoomNumber = scanner.nextInt();
                     scanner.nextLine();
 
-                    if (response == 1) {
-                        System.out.print("Enter new Room number> ");
-                        r.setRoomNumber(scanner.nextInt());
-                        scanner.nextLine();
+                    // Check if room number already exists
+                    try {
+                        Room existingRoom = roomBean.retrieveRoomByNumber(newRoomNumber);
+                        System.out.println("Error: Room number " + newRoomNumber + " already exists. Update canceled.");
+                    } catch (RoomErrorException ex) {
+                        r.setRoomNumber(newRoomNumber);
                         roomBean.updateRoom(r);
-                        System.out.println("\n Successful update!");
-                    } else if (response == 2) {
-                        System.out.println("1: Available");
-                        System.out.println("2: Occupied");
-                        System.out.print("Enter new Room Status> ");
-                        Integer no = scanner.nextInt();
-                        scanner.nextLine();
-
-                        if (no == 1) {
-                            r.setStatus(RoomStatusEnum.AVAIL);
-                            roomBean.updateRoom(r);
-                            System.out.println("\n Successful update!");
-                        } else if (no == 2) {
-                            r.setStatus(RoomStatusEnum.OCCUPIED);
-                            roomBean.updateRoom(r);
-                            System.out.println("\n Successful update!");
-                        } else {
-                            System.out.println("Unknown Input!");
-                        }
-                    } else if (response == 3) {
-                        try {
-                            List<RoomType> li = roomTypeBean.retrieveAllRoomTypes();
-                            if (li.size() < 1) {
-                                System.out.println("No Room Types created!\n");
-                            } else {
-                                System.out.println("Choose new room type:  ");
-                                for (int i = 1; i <= li.size(); i++) {
-                                    System.out.println(i + ": " + li.get(i - 1).getRoomTypeName());
-                                }
-                                System.out.println();
-
-                                System.out.print("> ");
-                                Integer rmType = scanner.nextInt();
-                                scanner.nextLine();
-                                if (rmType > 0 && rmType <= li.size()) {
-                                    RoomType newRt = li.get(rmType - 1);
-                                    roomBean.updateRoomTypeOfRoom(r, newRt);
-                                } else {
-                                    System.out.println("Unknown Input!");
-                                }
-                            }
-                        } catch (RoomTypeErrorException ex) {
-                            System.out.println(ex.getMessage());
-                        }
-                    } else if (response == 4) {
-                        break;
-                    } else {
-                        System.out.println("Invalid option, please try again!\n");
+                        System.out.println("Successful update!");
                     }
-                }
+                } else if (response == 2) {
+                    System.out.println("1: Available");
+                    System.out.println("2: Occupied");
+                    System.out.print("Enter new Room Status> ");
+                    int statusOption = scanner.nextInt();
+                    scanner.nextLine();
 
-                if (response == 4) {
+                    if (statusOption == 1) {
+                        r.setStatus(RoomStatusEnum.AVAIL);
+                    } else if (statusOption == 2) {
+                        r.setStatus(RoomStatusEnum.OCCUPIED);
+                    } else {
+                        System.out.println("Unknown Input!");
+                    }
+                    roomBean.updateRoom(r);
+                    System.out.println("Successful update!");
+                } else if (response == 3) {
+                    try {
+                        List<RoomType> roomTypes = roomTypeBean.retrieveAllRoomTypes();
+                        System.out.println("List of Room Types:");
+                        for (int i = 0; i < roomTypes.size(); i++) {
+                            System.out.println((i + 1) + ": " + roomTypes.get(i).getRoomTypeName());
+                        }
+                        int choice = scanner.nextInt();
+                        scanner.nextLine();
+                        RoomType newRoomType = roomTypes.get(choice - 1);
+                        r.setRoomType(newRoomType);
+                        roomBean.updateRoom(r);
+                        System.out.println("Successful update!");
+                    } catch (RoomTypeErrorException ex) {
+                        System.out.println(ex.getMessage());
+                    }
+                } else if (response == 4) {
                     break;
+                } else {
+                    System.out.println("Invalid option, please try again!");
                 }
             }
         } catch (RoomErrorException ex) {
@@ -528,7 +634,7 @@ public class HotelOperationModule {
         try {
             List<Room> roomList = roomBean.retrieveAllRooms();
             for (Room r : roomList) {
-                System.out.println("Room Number: " + r.getRoomNumber() + " , Room Type: " + r.getRoomType().getRoomTypeName() + ", Room Status: " + r.getStatus());
+                System.out.println("Room Number: " + r.getRoomNumber() + ", Room Type: " + r.getRoomType().getRoomTypeName() + ", Room Status: " + r.getStatus());
                 List<RoomAllocation> alloList = r.getRoomAllocation();
                 System.out.println("Number of room allocations: " + alloList.size());
                 System.out.println("Disabled?: " + (r.getIsDisabled() ? "Yes" : "No"));
@@ -643,7 +749,7 @@ public class HotelOperationModule {
 
     public void doViewRoomRateDetails() {
         System.out.println("*** HoRS Management System :: Room Rate Operations :: View Room Rate Details ***\n");
-        System.out.println("Enter room rate name> ");
+        System.out.println("Enter room rate name (You may retrieve room rate names in 'View All Room Rates'> ");
         String name = scanner.nextLine().trim();
         try {
             RoomRate rate = rateBean.retrieveRoomRateByName(name);
@@ -673,110 +779,6 @@ public class HotelOperationModule {
             System.out.println(ex.getMessage());
         }
 
-    }
-
-    public void doUpdateRoomRate(RoomRate rate) {
-        System.out.println("*** HoRS Management System :: Room Rate Operations :: Update Room Rate ***\n");
-        Integer response = 0;
-
-        while (true) {
-            System.out.println("1: Change Room Rate Name");
-            System.out.println("2: Change Room Type");
-            System.out.println("3: Change Rate Type");
-            System.out.println("4: Change Rate Per Night");
-            System.out.println("5: Change Start Date");
-            System.out.println("6: Change End Date");
-            System.out.println("7: Exit\n");
-            response = 0;
-
-            while (response < 1 || response > 7) {
-                System.out.print("> ");
-
-                response = scanner.nextInt();
-                scanner.nextLine();
-
-                if (response == 1) {
-                    System.out.print("Enter new Room Rate Name> ");
-                    rate.setName(scanner.nextLine().trim());
-                    rateBean.updateRoomRate(rate);
-                    System.out.println("\n Successful update!");
-                } else if (response == 2) {
-                    try {
-                        List<RoomType> li = roomTypeBean.retrieveAllRoomTypes();
-                        System.out.println("List of Room Types");
-
-                        if (li.size() < 1) {
-                            System.out.println("No Room Types created!\n");
-                        } else {
-                            Integer i = 1;
-                            for (RoomType roomType : li) {
-                                if (!roomType.getIsDisabled()) {
-                                    System.out.println(i + ": " + roomType.getRoomTypeName());
-                                    i++;
-                                }
-                            }
-                            System.out.println();
-                            System.out.print("Choose new Room Type> ");
-
-                            Integer rtNo = scanner.nextInt();
-                            scanner.nextLine();
-                            RoomType rt = li.get(rtNo - 1);
-                            scanner.nextLine();
-                            rate.setRoomType(rt);
-                            rateBean.updateRoomRate(rate);
-                            rt.getRoomrates().add(rate);
-                            roomTypeBean.updateRoomType(rt);
-                            System.out.println("\n Successful update!");
-                        }
-                    } catch (RoomTypeErrorException ex) {
-                        System.out.println(ex.getMessage() + "\n");
-                    }
-                } else if (response == 3) {
-                    System.out.println("List of Rate Types");
-
-                    for (RateTypeEnum rateEnum : RateTypeEnum.values()) {
-                        int j = 1;
-                        System.out.println(j + ": " + rateEnum);
-                        j++;
-                    }
-                    System.out.println("Choose new Rate Type> ");
-                    int res = scanner.nextInt();
-                    scanner.nextLine();
-                    List<RateTypeEnum> rateTypes = Arrays.asList(RateTypeEnum.values());
-                    RateTypeEnum rateType = rateTypes.get(response - 1);
-                    rate.setRateType(rateType);
-                    rateBean.updateRoomRate(rate);
-                    System.out.println("\n Successful update!");
-                } else if (response == 4) {
-                    System.out.print("Enter new Rate Per Night> ");
-                    String rateInput = scanner.nextLine();
-                    BigDecimal ratePerNight = new BigDecimal(rateInput);
-                    rate.setRatePerNight(ratePerNight);
-                    rateBean.updateRoomRate(rate);
-                    System.out.println("\n Successful update!");
-                } else if (response == 5) {
-                    System.out.print("Enter start date (yyyy-MM-dd)> ");
-                    Date startDate = parseDate(scanner.nextLine(), formatter);
-                    rate.setStartDate(startDate);
-                    rateBean.updateRoomRate(rate);
-                    System.out.println("\n Successful update!");
-                } else if (response == 6) {
-                    System.out.print("Enter end date (yyyy-MM-dd)> ");
-                    Date endDate = parseDate(scanner.nextLine(), formatter);
-                    rate.setEndDate(endDate);
-                    rateBean.updateRoomRate(rate);
-                    System.out.println("\n Successful update!");
-                } else if (response == 7) {
-                    break;
-                } else {
-                    System.out.println("Invalid option, please try again!\n");
-                }
-            }
-
-            if (response == 7) {
-                break;
-            }
-        }
     }
 
     public void doDeleteRoomRate(RoomRate rate) {

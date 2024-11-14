@@ -6,6 +6,7 @@ package ejb.stateless;
 
 import entity.Room;
 import entity.RoomType;
+import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
 import javax.ejb.Local;
@@ -23,8 +24,11 @@ public interface RoomSessionBeanLocal {
     public List<Room> retrieveAllRooms() throws RoomErrorException;
 
     public Room retrieveRoomById(Long roomId);
+    public int getAvailableRoomCountForOnline(RoomType roomType, Date startDate, Date endDate);
     
-    public int getAvailableRoomCountByTypeAndDate(RoomType roomType, Date startDate, Date endDate);
+    public boolean isRoomAvailable(Room room, LocalDate date, Long currentReservationId);
+    
+    //public int getAvailableRoomCountByTypeAndDate(RoomType roomType, Date startDate, Date endDate);
 
     public Room retrieveRoomByNumber(Integer roomNumber) throws RoomErrorException;
 
@@ -33,6 +37,8 @@ public interface RoomSessionBeanLocal {
     public String deleteRoom(Room room);
     
     public void updateRoom(Room room);
+    
+    public int getAvailableRoomCountForWalkIn(RoomType roomType, Date startDate, Date endDate);
 
     Room createRoom2(Room room);
     

@@ -15,6 +15,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
+import javax.validation.constraints.Digits;
 
 @Entity
 public class RoomType implements Serializable {
@@ -22,13 +23,14 @@ public class RoomType implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long roomTypeId;
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false, unique = true, length = 100)
     private String roomTypeName;
     @Column(length = 255)
     private String description;
     @Column(length = 30)
     private String bed;
-    @Column(length = 8, nullable = false)
+    @Column(nullable = true)
+    @Digits(integer = 2, fraction = 0)
     private int capacity;
     @Column(length = 255)
     private String amenities;

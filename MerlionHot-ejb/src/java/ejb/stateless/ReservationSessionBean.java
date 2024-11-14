@@ -79,7 +79,7 @@ public class ReservationSessionBean implements ReservationSessionBeanRemote, Res
         return newR;
     }  */
     @Override
-    public Reservation createReservation(RoomType type, Guest guest, Partner partner, Date in, Date out, Integer guestNo) {
+    public Reservation createReservation(RoomType type, Guest guest, Partner partner, Date in, Date out) {
         Reservation r = new Reservation();
         r.setRoomType(type);
         type.getReservations().add(r);
@@ -89,7 +89,7 @@ public class ReservationSessionBean implements ReservationSessionBeanRemote, Res
         partner.getReservations().add(r);
         r.setCheckInDate(in);
         r.setCheckOutDate(out);
-        r.setGuestNo(guestNo);
+        r.setIsPartnerReservation(true);
         em.persist(r);
         em.merge(guest);
         em.merge(partner);
@@ -112,17 +112,17 @@ public class ReservationSessionBean implements ReservationSessionBeanRemote, Res
         }
     }
 
-    /* @Override
+    @Override
     public Reservation createSameDayReservation(Reservation newR) throws NoAvailableRoomException, CannotUpgradeException {
         Long newRId = createReservation(newR);
         newR = em.find(Reservation.class, newRId);
         roomAllocationSessionBean.createAllocation(newR);
         return newR;
-    } */
+    }
     
     @Override
-    public Reservation createSameDayReservation(RoomType type, Guest guest, Partner partner, Date in, Date out, Integer guestNo) throws NoAvailableRoomException, CannotUpgradeException {
-        Reservation r = createReservation(type, guest, partner, in, out, guestNo);
+    public Reservation createSameDayReservation(RoomType type, Guest guest, Partner partner, Date in, Date out) throws NoAvailableRoomException, CannotUpgradeException {
+        Reservation r = createReservation(type, guest, partner, in, out);
         roomAllocationSessionBean.createAllocation(r);
         return r;
     }

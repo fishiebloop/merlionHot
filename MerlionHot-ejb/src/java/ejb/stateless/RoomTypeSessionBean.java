@@ -100,14 +100,16 @@ public class RoomTypeSessionBean implements RoomTypeSessionBeanRemote, RoomTypeS
     @Override
     public List<RoomType> retrieveAvailableRoomTypes(Date startDate, Date endDate) {
         Query query = em.createQuery("SELECT rt FROM RoomType rt "
-                + "WHERE rt.isDisabled = false " // Only include room types that are not disabled
+                + "WHERE rt.isDisabled = false "
                 + "AND EXISTS (SELECT rr FROM RoomRate rr WHERE rr.roomType = rt AND rr.isDisabled = false AND rr.rateType = :publishedRate) "
                 + "AND (SELECT COUNT(res) FROM Reservation res "
                 + "WHERE res.roomType = rt "
-                + "AND (res.checkInDate < :endDate AND res.checkOutDate > :startDate) "
-                + "AND (res.checkOutDate != CURRENT_DATE OR res.roomAllocation.room.status != :occupiedStatus)) < "
-                + "(SELECT COUNT(r) FROM Room r WHERE r.roomType = rt AND r.isDisabled = false)" // Ensure reservation count is less than room count
-        );
+                + "AND ("
+                + "(res.checkInDate < :endDate AND res.checkOutDate > :startDate) "
+                + "OR (res.checkInDate = :startDate AND res.checkOutDate = :endDate AND res.roomAllocation.room.status = :occupiedStatus) "
+                + "OR (res.checkOutDate = CURRENT_DATE AND :startDate = CURRENT_DATE AND res.roomAllocation.room.status = :occupiedStatus) "
+                + ")) < "
+                + "(SELECT COUNT(r) FROM Room r WHERE r.roomType = rt AND r.isDisabled = false)");
         query.setParameter("startDate", startDate);
         query.setParameter("endDate", endDate);
         query.setParameter("publishedRate", RateTypeEnum.PUBLISHED);
@@ -137,50 +139,48 @@ public class RoomTypeSessionBean implements RoomTypeSessionBeanRemote, RoomTypeS
     public List<RoomType> retrieveAllAvailRoomTypeOnline(Date checkIn, Date checkOut) throws RoomTypeErrorException {
         try {
             Query query = em.createQuery("SELECT rt FROM RoomType rt "
-                    + "WHERE rt.isDisabled = false " // Only include room types that are not disabled
+                    + "WHERE rt.isDisabled = false "
                     + "AND EXISTS (SELECT rr FROM RoomRate rr WHERE rr.roomType = rt AND rr.isDisabled = false AND rr.rateType = :normalRate) "
                     + "AND (SELECT COUNT(res) FROM Reservation res "
                     + "WHERE res.isDisabled = false AND res.roomType = rt "
-                    + "AND (res.checkInDate < :endDate AND res.checkOutDate > :startDate) "
-                    + "AND (res.checkOutDate != CURRENT_DATE OR res.roomAllocation.room.status != :occupiedStatus)) < "
-                    + "(SELECT COUNT(r) FROM Room r WHERE r.roomType = rt AND r.isDisabled = false)" // Ensure reservation count is less than room count
-            );
+                    + "AND ("
+                    + "(res.checkInDate < :endDate AND res.checkOutDate > :startDate) "
+                    + "OR (res.checkInDate = :startDate AND res.checkOutDate = :endDate AND res.roomAllocation.room.status = :occupiedStatus) "
+                    + "OR (res.checkOutDate = CURRENT_DATE AND :startDate = CURRENT_DATE AND res.roomAllocation.room.status = :occupiedStatus) "
+                    + ")) < "
+                    + "(SELECT COUNT(r) FROM Room r WHERE r.roomType = rt AND r.isDisabled = false)");
             query.setParameter("startDate", checkIn);
             query.setParameter("endDate", checkOut);
             query.setParameter("normalRate", RateTypeEnum.NORMAL);
             query.setParameter("occupiedStatus", RoomStatusEnum.OCCUPIED);
 
-            /*Integer noRooms = (int) Math.ceil((float) guests / rt.getCapacity());
-                long count = (long) q.getSingleResult();
-                if (count + noRooms <= rt.getRooms().size()) {
-                    avail.add(rt);
-                }*/
             return query.getResultList();
         } catch (Exception ex) {
-            throw new RoomTypeErrorException("Error occured while retrieving Available Room Type List!" + ex.getMessage());
+            throw new RoomTypeErrorException("Error occurred while retrieving Available Room Type List: " + ex.getMessage());
         }
     }
 
     @Override
     public String deleteRoomType(RoomType roomType) {
-        // Retrieve the managed RoomType instance
         RoomType managedRoomType = em.find(RoomType.class, roomType.getRoomTypeId());
 
         if (managedRoomType == null) {
             return "Room type not found";
         }
 
-        // Check for active reservations
         Query query = em.createQuery("SELECT COUNT(r) FROM Reservation r "
                 + "WHERE r.roomType = :roomType "
                 + "AND (r.checkOutDate > CURRENT_DATE "
                 + "OR (r.checkOutDate = CURRENT_DATE AND r.roomAllocation.room.status = :occupiedStatus))");
         query.setParameter("roomType", managedRoomType);
         query.setParameter("occupiedStatus", RoomStatusEnum.OCCUPIED);
-        Long count = (Long) query.getSingleResult();
+        Long activeReservationCount = (Long) query.getSingleResult();
 
-        if (count == 0) {
-            // No active reservations; delete room type, associated rooms, and room rates
+        if (activeReservationCount == 0) {
+            Query dissociateQuery = em.createQuery("UPDATE RoomType rt SET rt.nextHigherRoomType = NULL WHERE rt.nextHigherRoomType = :roomType");
+            dissociateQuery.setParameter("roomType", managedRoomType);
+            dissociateQuery.executeUpdate();
+
             for (RoomRate rate : managedRoomType.getRoomrates()) {
                 em.remove(rate);
             }
@@ -191,7 +191,6 @@ public class RoomTypeSessionBean implements RoomTypeSessionBeanRemote, RoomTypeS
             em.flush();
             return "Room type, associated rooms, and room rates deleted successfully.";
         } else {
-            // Active reservations exist; disable room type, associated rooms, and room rates
             managedRoomType.setIsDisabled(true);
             em.merge(managedRoomType);
 
