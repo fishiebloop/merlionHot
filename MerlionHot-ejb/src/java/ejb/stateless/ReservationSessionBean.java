@@ -118,8 +118,7 @@ public class ReservationSessionBean implements ReservationSessionBeanRemote, Res
         newR = em.find(Reservation.class, newRId);
         roomAllocationSessionBean.createAllocation(newR);
         return newR;
-    }
-    
+
     @Override
     public Reservation createSameDayReservation(RoomType type, Guest guest, Partner partner, Date in, Date out) throws NoAvailableRoomException, CannotUpgradeException {
         Reservation r = createReservation(type, guest, partner, in, out);
