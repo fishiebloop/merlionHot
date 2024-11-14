@@ -31,4 +31,6 @@ public interface GuestSessionBeanLocal {
     public Guest retrieveGuestById(Long id);
     
     public Guest retrieveGuestByEmail(String guestEmail);
+
+    Guest createGuestWeb(String name, String email) throws BeanValidationError;
 }

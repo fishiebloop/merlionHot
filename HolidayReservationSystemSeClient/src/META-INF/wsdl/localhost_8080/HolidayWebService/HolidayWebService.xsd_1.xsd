@@ -1,10 +1,32 @@
 <?xml version='1.0' encoding='UTF-8'?><!-- Published by JAX-WS RI (http://jax-ws.java.net). RI's version is Metro/2.4.3 (RELEASE-2.4.3-ad3323c; 2019-01-21T17:46:06+0000) JAXWS-RI/2.3.2 JAXWS-API/2.3.2 JAXB-RI/2.3.2 JAXB-API/2.3.2 git-revision#unknown. --><xs:schema xmlns:tns="http://ws.session.ejb/" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="1.0" targetNamespace="http://ws.session.ejb/">
 
+<xs:element name="BeanValidationError" type="tns:BeanValidationError"/>
+
+<xs:element name="CannotUpgradeException" type="tns:CannotUpgradeException"/>
+
+<xs:element name="DateValidationError" type="tns:DateValidationError"/>
+
 <xs:element name="InvalidLoginCredentialException" nillable="true" type="xs:string"/>
+
+<xs:element name="NoAvailableRoomException" type="tns:NoAvailableRoomException"/>
 
 <xs:element name="ReservationErrorException" type="tns:ReservationErrorException"/>
 
+<xs:element name="RoomAllocationNotFoundException" type="tns:RoomAllocationNotFoundException"/>
+
 <xs:element name="RoomTypeErrorException" type="tns:RoomTypeErrorException"/>
+
+<xs:element name="createGuest" type="tns:createGuest"/>
+
+<xs:element name="createGuestResponse" type="tns:createGuestResponse"/>
+
+<xs:element name="createReservation" type="tns:createReservation"/>
+
+<xs:element name="createReservationResponse" type="tns:createReservationResponse"/>
+
+<xs:element name="createSameDayReservation" type="tns:createSameDayReservation"/>
+
+<xs:element name="createSameDayReservationResponse" type="tns:createSameDayReservationResponse"/>
 
 <xs:element name="getAvailableRoomCountByTypeAndDate" type="tns:getAvailableRoomCountByTypeAndDate"/>
 
@@ -13,6 +35,10 @@
 <xs:element name="getPriceOfRoomTypeOnline" type="tns:getPriceOfRoomTypeOnline"/>
 
 <xs:element name="getPriceOfRoomTypeOnlineResponse" type="tns:getPriceOfRoomTypeOnlineResponse"/>
+
+<xs:element name="guestExist" type="tns:guestExist"/>
+
+<xs:element name="guestExistResponse" type="tns:guestExistResponse"/>
 
 <xs:element name="partnerLogin" type="tns:partnerLogin"/>
 
@@ -26,56 +52,57 @@
 
 <xs:element name="retrieveAllPartnerReservationResponse" type="tns:retrieveAllPartnerReservationResponse"/>
 
-<xs:element name="retrieveReservationByIdForGuest" type="tns:retrieveReservationByIdForGuest"/>
+<xs:element name="retrieveAllocationRoom" type="tns:retrieveAllocationRoom"/>
 
-<xs:element name="retrieveReservationByIdForGuestResponse" type="tns:retrieveReservationByIdForGuestResponse"/>
+<xs:element name="retrieveAllocationRoomResponse" type="tns:retrieveAllocationRoomResponse"/>
 
-<xs:complexType name="getAvailableRoomCountByTypeAndDate">
+<xs:element name="retrieveReservationDetails" type="tns:retrieveReservationDetails"/>
+
+<xs:element name="retrieveReservationDetailsResponse" type="tns:retrieveReservationDetailsResponse"/>
+
+<xs:complexType name="retrieveReservationDetails">
 <xs:sequence>
-<xs:element name="roomTypeID" type="xs:long" minOccurs="0"/>
-<xs:element name="in" type="xs:dateTime" minOccurs="0"/>
-<xs:element name="out" type="xs:dateTime" minOccurs="0"/>
+<xs:element name="reservationID" type="xs:long" minOccurs="0"/>
 </xs:sequence>
 </xs:complexType>
 
-<xs:complexType name="getAvailableRoomCountByTypeAndDateResponse">
+<xs:complexType name="retrieveReservationDetailsResponse">
 <xs:sequence>
-<xs:element name="return" type="xs:int" minOccurs="0"/>
+<xs:element name="return" type="tns:reservationDTO" minOccurs="0"/>
 </xs:sequence>
 </xs:complexType>
 
-<xs:complexType name="RoomTypeErrorException">
+<xs:complexType name="reservationDTO">
+<xs:sequence>
+<xs:element name="checkIn" type="xs:string" minOccurs="0"/>
+<xs:element name="checkOut" type="xs:string" minOccurs="0"/>
+<xs:element name="guestEmail" type="xs:string" minOccurs="0"/>
+<xs:element name="guestName" type="xs:string" minOccurs="0"/>
+<xs:element name="reservationId" type="xs:long" minOccurs="0"/>
+<xs:element name="roomTypeName" type="xs:string" minOccurs="0"/>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="ReservationErrorException">
 <xs:sequence>
 <xs:element name="message" type="xs:string" minOccurs="0"/>
 </xs:sequence>
 </xs:complexType>
 
-<xs:complexType name="retrieveAllAvailRoomTypeOnline">
+<xs:complexType name="createSameDayReservation">
 <xs:sequence>
-<xs:element name="in" type="xs:dateTime" minOccurs="0"/>
-<xs:element name="out" type="xs:dateTime" minOccurs="0"/>
+<xs:element name="roomTypeID" type="xs:long" minOccurs="0"/>
+<xs:element name="in" type="xs:anySimpleType" minOccurs="0"/>
+<xs:element name="out" type="xs:anySimpleType" minOccurs="0"/>
+<xs:element name="guestNo" type="xs:int" minOccurs="0"/>
+<xs:element name="guestEmail" type="xs:string" minOccurs="0"/>
+<xs:element name="partnerUser" type="xs:long" minOccurs="0"/>
 </xs:sequence>
 </xs:complexType>
 
-<xs:complexType name="retrieveAllAvailRoomTypeOnlineResponse">
+<xs:complexType name="createSameDayReservationResponse">
 <xs:sequence>
-<xs:element name="return" type="tns:roomType" minOccurs="0" maxOccurs="unbounded"/>
-</xs:sequence>
-</xs:complexType>
-
-<xs:complexType name="roomType">
-<xs:sequence>
-<xs:element name="amenities" type="xs:string" minOccurs="0"/>
-<xs:element name="bed" type="xs:string" minOccurs="0"/>
-<xs:element name="capacity" type="xs:int"/>
-<xs:element name="description" type="xs:string" minOccurs="0"/>
-<xs:element name="isDisabled" type="xs:boolean" minOccurs="0"/>
-<xs:element name="nextHigherRoomType" type="tns:roomType" minOccurs="0"/>
-<xs:element name="reservations" type="tns:reservation" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
-<xs:element name="roomTypeId" type="xs:long" minOccurs="0"/>
-<xs:element name="roomTypeName" type="xs:string" minOccurs="0"/>
-<xs:element name="roomrates" type="tns:roomRate" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
-<xs:element name="rooms" type="tns:room" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
+<xs:element name="return" type="tns:reservation" minOccurs="0"/>
 </xs:sequence>
 </xs:complexType>
 
@@ -131,6 +158,22 @@
 </xs:sequence>
 </xs:complexType>
 
+<xs:complexType name="roomType">
+<xs:sequence>
+<xs:element name="amenities" type="xs:string" minOccurs="0"/>
+<xs:element name="bed" type="xs:string" minOccurs="0"/>
+<xs:element name="capacity" type="xs:int"/>
+<xs:element name="description" type="xs:string" minOccurs="0"/>
+<xs:element name="isDisabled" type="xs:boolean" minOccurs="0"/>
+<xs:element name="nextHigherRoomType" type="tns:roomType" minOccurs="0"/>
+<xs:element name="reservations" type="tns:reservation" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
+<xs:element name="roomTypeId" type="xs:long" minOccurs="0"/>
+<xs:element name="roomTypeName" type="xs:string" minOccurs="0"/>
+<xs:element name="roomrates" type="tns:roomRate" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
+<xs:element name="rooms" type="tns:room" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
+</xs:sequence>
+</xs:complexType>
+
 <xs:complexType name="roomRate">
 <xs:sequence>
 <xs:element name="endDate" type="xs:dateTime" minOccurs="0"/>
@@ -141,6 +184,87 @@
 <xs:element name="roomRateId" type="xs:long" minOccurs="0"/>
 <xs:element name="roomType" type="tns:roomType" minOccurs="0"/>
 <xs:element name="startDate" type="xs:dateTime" minOccurs="0"/>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="RoomTypeErrorException">
+<xs:sequence>
+<xs:element name="message" type="xs:string" minOccurs="0"/>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="NoAvailableRoomException">
+<xs:sequence>
+<xs:element name="message" type="xs:string" minOccurs="0"/>
+<xs:element name="upgradeAvailable" type="xs:boolean"/>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="CannotUpgradeException">
+<xs:sequence>
+<xs:element name="message" type="xs:string" minOccurs="0"/>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="guestExist">
+<xs:sequence>
+<xs:element name="guestEmail" type="xs:string" minOccurs="0"/>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="guestExistResponse">
+<xs:sequence>
+<xs:element name="return" type="xs:boolean" minOccurs="0"/>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="getAvailableRoomCountByTypeAndDate">
+<xs:sequence>
+<xs:element name="roomTypeID" type="xs:long" minOccurs="0"/>
+<xs:element name="in" type="xs:anySimpleType" minOccurs="0"/>
+<xs:element name="out" type="xs:anySimpleType" minOccurs="0"/>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="getAvailableRoomCountByTypeAndDateResponse">
+<xs:sequence>
+<xs:element name="return" type="xs:int" minOccurs="0"/>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="createReservation">
+<xs:sequence>
+<xs:element name="roomTypeID" type="xs:long" minOccurs="0"/>
+<xs:element name="in" type="xs:anySimpleType" minOccurs="0"/>
+<xs:element name="out" type="xs:anySimpleType" minOccurs="0"/>
+<xs:element name="guestNo" type="xs:int" minOccurs="0"/>
+<xs:element name="guestEmail" type="xs:string" minOccurs="0"/>
+<xs:element name="partnerUser" type="xs:long" minOccurs="0"/>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="createReservationResponse">
+<xs:sequence>
+<xs:element name="return" type="tns:reservation" minOccurs="0"/>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="retrieveAllAvailRoomTypeOnline">
+<xs:sequence>
+<xs:element name="in" type="xs:anySimpleType" minOccurs="0"/>
+<xs:element name="out" type="xs:anySimpleType" minOccurs="0"/>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="retrieveAllAvailRoomTypeOnlineResponse">
+<xs:sequence>
+<xs:element name="return" type="tns:roomType" minOccurs="0" maxOccurs="unbounded"/>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="DateValidationError">
+<xs:sequence>
+<xs:element name="message" type="xs:string" minOccurs="0"/>
 </xs:sequence>
 </xs:complexType>
 
@@ -171,44 +295,54 @@
 </xs:sequence>
 </xs:complexType>
 
-<xs:complexType name="retrieveAllPartnerReservation">
+<xs:complexType name="retrieveAllocationRoom">
 <xs:sequence>
-<xs:element name="username" type="xs:string" minOccurs="0"/>
+<xs:element name="reservationId" type="xs:long" minOccurs="0"/>
 </xs:sequence>
 </xs:complexType>
 
-<xs:complexType name="retrieveAllPartnerReservationResponse">
+<xs:complexType name="retrieveAllocationRoomResponse">
 <xs:sequence>
-<xs:element name="return" type="tns:reservation" minOccurs="0" maxOccurs="unbounded"/>
+<xs:element name="return" type="tns:room" minOccurs="0"/>
 </xs:sequence>
 </xs:complexType>
 
-<xs:complexType name="retrieveReservationByIdForGuest">
-<xs:sequence>
-<xs:element name="reservationID" type="xs:long" minOccurs="0"/>
-<xs:element name="guestEmail" type="xs:string" minOccurs="0"/>
-</xs:sequence>
-</xs:complexType>
-
-<xs:complexType name="retrieveReservationByIdForGuestResponse">
-<xs:sequence>
-<xs:element name="return" type="tns:reservation" minOccurs="0"/>
-</xs:sequence>
-</xs:complexType>
-
-<xs:complexType name="ReservationErrorException">
+<xs:complexType name="RoomAllocationNotFoundException">
 <xs:sequence>
 <xs:element name="message" type="xs:string" minOccurs="0"/>
 </xs:sequence>
 </xs:complexType>
 
-<xs:simpleType name="roomStatusEnum">
-<xs:restriction base="xs:string">
-<xs:enumeration value="AVAIL"/>
-<xs:enumeration value="OCCUPIED"/>
-<xs:enumeration value="DISABLED"/>
-</xs:restriction>
-</xs:simpleType>
+<xs:complexType name="retrieveAllPartnerReservation">
+<xs:sequence>
+<xs:element name="partnerId" type="xs:long" minOccurs="0"/>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="retrieveAllPartnerReservationResponse">
+<xs:sequence>
+<xs:element name="return" type="tns:reservationDTO" minOccurs="0" maxOccurs="unbounded"/>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="createGuest">
+<xs:sequence>
+<xs:element name="guestName" type="xs:string" minOccurs="0"/>
+<xs:element name="guestEmail" type="xs:string" minOccurs="0"/>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="createGuestResponse">
+<xs:sequence>
+<xs:element name="return" type="tns:guest" minOccurs="0"/>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="BeanValidationError">
+<xs:sequence>
+<xs:element name="message" type="xs:string" minOccurs="0"/>
+</xs:sequence>
+</xs:complexType>
 
 <xs:simpleType name="rateTypeEnum">
 <xs:restriction base="xs:string">
@@ -216,6 +350,14 @@
 <xs:enumeration value="NORMAL"/>
 <xs:enumeration value="PEAK"/>
 <xs:enumeration value="PROMOTION"/>
+</xs:restriction>
+</xs:simpleType>
+
+<xs:simpleType name="roomStatusEnum">
+<xs:restriction base="xs:string">
+<xs:enumeration value="AVAIL"/>
+<xs:enumeration value="OCCUPIED"/>
+<xs:enumeration value="DISABLED"/>
 </xs:restriction>
 </xs:simpleType>
 </xs:schema>

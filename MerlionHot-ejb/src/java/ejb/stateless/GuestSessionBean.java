@@ -125,4 +125,12 @@ public class GuestSessionBean implements GuestSessionBeanRemote, GuestSessionBea
         em.remove(guest);
     }
 
+    @Override
+    public Guest createGuestWeb(String name, String email) throws BeanValidationError {
+        Guest g = new Guest(name, email);
+        validateGuest(g);
+        em.persist(g);
+        return g;
+    }
+
 }

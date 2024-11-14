@@ -29,4 +29,6 @@ public interface GuestSessionBeanRemote {
     public void updateGuest(Guest guest);
 
     public void deleteGuest(Guest guest);
+
+    Guest createGuestWeb(String name, String email) throws BeanValidationError;
 }

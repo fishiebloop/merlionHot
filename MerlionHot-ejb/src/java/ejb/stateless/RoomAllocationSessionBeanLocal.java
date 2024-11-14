@@ -12,6 +12,7 @@ import java.util.Date;
 import javax.ejb.Local;
 import util.exception.CannotUpgradeException;
 import util.exception.NoAvailableRoomException;
+import util.exception.ReservationErrorException;
 import util.exception.RoomAllocationNotFoundException;
 
 /**

@@ -5,6 +5,7 @@
 package ejb.stateless;
 
 import entity.Partner;
+import entity.Reservation;
 import java.util.List;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
@@ -39,9 +40,18 @@ public class PartnerSessionBean implements PartnerSessionBeanRemote, PartnerSess
     }
     
     @Override
-    public Partner retrieveEmployeeById(Long partnerId) {
-        
-        return null;
+    public List<Reservation> retrieveReservationsFromPID(Long partnerId) throws InvalidLoginCredentialException{
+        try {
+            Partner p = em.find(Partner.class, partnerId);
+        return p.getReservations();
+        } catch (Exception ex) {
+            throw new InvalidLoginCredentialException("Cannot find Partner");
+        }  
+    }
+    
+    @Override
+    public Partner retrievePartnerById(Long partnerId){
+        return em.find(Partner.class, partnerId);
         
     }
 

@@ -88,6 +88,8 @@ public class MainApp {
                     } catch (BeanValidationError ex) {
                         System.out.println("Validation failed. Please correct the following errors:\n" + ex.getMessage());
                         System.out.println("Please re-enter your details.");
+                    } catch (GuestErrorException ex) {
+                        System.out.println(ex.getMessage());
                     }
                 } else if (response == 3) {
                     try {
@@ -125,9 +127,8 @@ public class MainApp {
         }
     }
 
-    private void doRegister() throws BeanValidationError {
+    private void doRegister() throws BeanValidationError, GuestErrorException {
         OnlineGuest g = new OnlineGuest();
-
         System.out.println("*** HoRS Reservation System :: Register ***\n");
         System.out.print("Enter email> ");
         String email = scanner.nextLine().trim();
@@ -135,8 +136,7 @@ public class MainApp {
 
         Guest guest = guestSessionBean.retrieveGuestByEmail(email);
         if (guest != null) {
-            System.out.println("Existing guest with email!");
-            return;
+            throw new GuestErrorException("Existing guest with email!");
         }
         System.out.print("Enter password> ");
         g.setPassword(scanner.nextLine().trim());
@@ -264,6 +264,8 @@ public class MainApp {
                     } catch (BeanValidationError ex) {
                         System.out.println("Validation failed. Please correct the following errors:\n" + ex.getMessage());
                         System.out.println("Please re-enter your details.");
+                    }catch (GuestErrorException ex) {
+                        System.out.println(ex.getMessage());
                     }
                 } else {
                     System.out.println("Invalid option, please try again!\n");
