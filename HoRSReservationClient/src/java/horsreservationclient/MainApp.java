@@ -25,6 +25,8 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 import entity.Room;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import util.exception.DateValidationError;
 import util.exception.RoomTypeErrorException;
 
@@ -128,7 +130,14 @@ public class MainApp {
 
         System.out.println("*** HoRS Reservation System :: Register ***\n");
         System.out.print("Enter email> ");
-        g.setEmail(scanner.nextLine().trim());
+        String email = scanner.nextLine().trim();
+        g.setEmail(email);
+
+        Guest guest = guestSessionBean.retrieveGuestByEmail(email);
+        if (guest != null) {
+            System.out.println("Existing guest with email!");
+            return;
+        }
         System.out.print("Enter password> ");
         g.setPassword(scanner.nextLine().trim());
         System.out.print("Enter Name> ");
@@ -144,17 +153,27 @@ public class MainApp {
         Date in;
         System.out.println("*** HoRS Reservation System :: Search Hotel ***\n");
 
+        // Check-in date input and validation
         while (true) {
             System.out.print("Enter Check-in Date! Please format in dd-MM-yyyy > ");
             String checkIn = scanner.nextLine().trim();
             try {
                 in = DateUtil.convertToDate(checkIn);
+
+                // Check if the check-in date is before today
+                LocalDate today = LocalDate.now();
+                LocalDate checkInDate = in.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+                if (checkInDate.isBefore(today)) {
+                    throw new DateValidationError("Check-in date cannot be before today!");
+                }
+
                 break;
             } catch (ParseException ex) {
                 throw new DateValidationError("Date formatted wrongly! Try again!");
             }
         }
 
+        // Check-out date input and validation
         while (true) {
             System.out.print("Enter Check-out Date! Please format in dd-MM-yyyy > ");
             String checkOut = scanner.nextLine().trim();
@@ -168,7 +187,7 @@ public class MainApp {
 
         // Check if the check-in and check-out dates are valid
         if (!out.equals(in) && out.before(in)) {
-            throw new DateValidationError("Dates entered wrongly!");
+            throw new DateValidationError("Check-out date cannot be before check-in date!");
         }
 
         Boolean reselect = true;
@@ -188,7 +207,7 @@ public class MainApp {
                     System.out.println();
                 }
 
-                System.out.print("Enter Room Type Number for reservation (1 - " + li.size() + ")");
+                System.out.print("Enter Room Type Number for reservation (1 - " + li.size() + ")> ");
                 res = scanner.nextInt();
                 scanner.nextLine();
                 if (res > 0 && res <= li.size()) {
@@ -268,16 +287,14 @@ public class MainApp {
 
             if (!DateUtil.sameDayLaterThan2AM(new Date(), in)) {
                 Long newRId = reservationBean.createReservation(newR);
-                newR = reservationBean.retrieveReservationById(newRId);
                 System.out.println("Reservation No: " + newRId);
-                Room room = newR.getRoomAllocation().getRoom();
-                System.out.println("Allocated guest to room number " + allocatedRoom.getRoomNumber() + " of room type " + allocatedRoom.getRoomType().getRoomTypeName());
                 price = price.add(roomTypeBean.getPriceOfRoomTypeOnline(in, out, rt));
             } else {
                 try {
                     newR = reservationBean.createSameDayReservation(newR);
                     System.out.println("Reservation No: " + newR.getReservationId());
-                    
+                    Room allocatedRoom = newR.getRoomAllocation().getRoom();
+                    System.out.println("Allocated guest to room number " + allocatedRoom.getRoomNumber() + " of room type " + allocatedRoom.getRoomType().getRoomTypeName());
                     price = price.add(roomTypeBean.getPriceOfRoomTypeOnline(in, out, rt));
                 } catch (Exception ex) {
                     System.out.println("Exception thrown: " + ex.getMessage());

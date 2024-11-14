@@ -406,6 +406,16 @@ public class HotelOperationModule {
         type.setAmenities(scanner.nextLine().trim());
         System.out.println("Enter Next Higher Room Type ID (You may retrieve ID details from 'View All Room Types', please key in -1 if no next higher room type)> ");
         Long id = scanner.nextLong();
+        if (id == -1) {
+            try {
+                type = roomTypeBean.createRoomType(type);
+                System.out.println("Room Type " + type.getRoomTypeName() + " created successfully!\n");
+                return;
+            } catch (RoomTypeErrorException e) {
+                System.out.println("Error: " + e.getMessage() + "\n");
+                return;
+            }
+        }
         try {
             RoomType nextHigher = roomTypeBean.retrieveRoomTypeById(id);
             type.setNextHigherRoomType(nextHigher);

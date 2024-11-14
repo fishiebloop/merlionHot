@@ -120,6 +120,13 @@ public class FrontOfficeModule {
             String checkIn = scanner.nextLine().trim();
             try {
                 in = DateUtil.convertToDate(checkIn);
+
+                // Check if the check-in date is before today's date
+                LocalDate today = LocalDate.now();
+                LocalDate checkInDate = in.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+                if (checkInDate.isBefore(today)) {
+                    throw new DateValidationError("Check-in date cannot be before today!");
+                }
                 break;
             } catch (ParseException ex) {
                 throw new DateValidationError("Date formatted wrongly! Try again!");
@@ -352,7 +359,8 @@ public class FrontOfficeModule {
                     }
                 } catch (RoomAllocationNotFoundException ex) {
                     System.out.println("Room allocation not found for reservation ID: " + r.getReservationId());
-                    ExceptionReport exceptionReport = exceptionReportBean.retrieveExceptionByReservation(r); // edit 
+
+                    ExceptionReport exceptionReport = exceptionReportBean.retrieveExceptionByReservation(r);
                     if (exceptionReport != null && exceptionReport.getExceptionType() == ExceptionTypeEnum.NOHIGHERAVAIL) {
                         System.out.println("Unfortunately, no room was available for your reservation.");
                     }
@@ -365,9 +373,10 @@ public class FrontOfficeModule {
 
     public void doCheckout() {
         System.out.println("*** HoRS Management System :: Guest Relations :: Check Out ***\n");
-        System.out.println("Enter guest email> ");
+        System.out.print("Enter guest email> ");
         String email = scanner.nextLine().trim();
         Guest g = guestBean.retrieveGuestByEmail(email);
+
         if (g == null) {
             System.out.println("No guest found with the email: " + email);
             return;  // Exit if no guest is found
@@ -384,6 +393,11 @@ public class FrontOfficeModule {
                 RoomAllocation allocation = roomAllocationBean.retrieveAllocationByReservation(r);
                 Room allocatedRoom = allocation.getRoom();
                 String roomInfo = "Reservation ID: " + r.getReservationId() + ", Room Number: " + allocatedRoom.getRoomNumber();
+
+                // Check if the room is currently occupied
+                if (allocatedRoom.getStatus() != RoomStatusEnum.OCCUPIED) {
+                    continue;  // Skip to the next reservation if the room is not occupied
+                }
 
                 System.out.print("Do you want to check out for " + roomInfo + "? (Enter 'Y' for Yes) > ");
                 String ans = scanner.nextLine().trim();
