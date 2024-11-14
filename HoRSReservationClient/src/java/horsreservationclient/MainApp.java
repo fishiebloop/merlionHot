@@ -24,6 +24,7 @@ import java.math.BigDecimal;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
+import entity.Room;
 import util.exception.DateValidationError;
 import util.exception.RoomTypeErrorException;
 
@@ -269,7 +270,7 @@ public class MainApp {
                 Long newRId = reservationBean.createReservation(newR);
                 newR = reservationBean.retrieveReservationById(newRId);
                 System.out.println("Reservation No: " + newRId);
-                Room allocatedRoom = newR.getRoomAllocation().getRoom();
+                Room room = newR.getRoomAllocation().getRoom();
                 System.out.println("Allocated guest to room number " + allocatedRoom.getRoomNumber() + " of room type " + allocatedRoom.getRoomType().getRoomTypeName());
                 price = price.add(roomTypeBean.getPriceOfRoomTypeOnline(in, out, rt));
             } else {
