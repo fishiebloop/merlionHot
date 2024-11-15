@@ -67,8 +67,6 @@ public class DataInitSessionBean {
     }
 
     private void initializeData() {
-        //not in test data, delete
-        partnerSessionBean.createPartner(new Partner("partner", "password"));
 
         employeeSessionBeanLocal.createEmployee(new Employee("sysadmin", "password", EmployeeEnum.SYSADMIN));
         employeeSessionBeanLocal.createEmployee(new Employee("opmanager", "password", EmployeeEnum.OPMANAGER));
@@ -76,11 +74,11 @@ public class DataInitSessionBean {
         employeeSessionBeanLocal.createEmployee(new Employee("guestrelo", "password", EmployeeEnum.GUESTOFF));
 
         try {
-            RoomType grandSuite = roomTypeSessionBean.createRoomType(new RoomType("Grand Suite", 2));
-            RoomType junior = roomTypeSessionBean.createRoomType(new RoomType("Junior Suite", 2, grandSuite));
-            RoomType fam = roomTypeSessionBean.createRoomType(new RoomType("Family Room", 2, junior));
-            RoomType pre = roomTypeSessionBean.createRoomType(new RoomType("Premier Room", 2, fam));
-            RoomType deluxe = roomTypeSessionBean.createRoomType(new RoomType("Deluxe Room", 2, pre));
+            RoomType grandSuite = roomTypeSessionBean.createRoomType(new RoomType("Grand Suite"));
+            RoomType junior = roomTypeSessionBean.createRoomType(new RoomType("Junior Suite", grandSuite));
+            RoomType fam = roomTypeSessionBean.createRoomType(new RoomType("Family Room", junior));
+            RoomType pre = roomTypeSessionBean.createRoomType(new RoomType("Premier Room", fam));
+            RoomType deluxe = roomTypeSessionBean.createRoomType(new RoomType("Deluxe Room", pre));
 
             roomRateSessionBean.createRoomRate(new RoomRate("Grand Suite Normal", RateTypeEnum.NORMAL, BigDecimal.valueOf(250), grandSuite));
             roomRateSessionBean.createRoomRate(new RoomRate("Grand Suite Published", RateTypeEnum.PUBLISHED, BigDecimal.valueOf(500), grandSuite));

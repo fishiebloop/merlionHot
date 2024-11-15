@@ -166,6 +166,7 @@ public class HolidayWebService {
     @WebMethod(operationName = "retrieveReservationDetails")
     public ReservationDTO retrieveReservationDetails(@WebParam(name = "reservationID") Long reservationID) throws ReservationErrorException{
         Reservation r = reservationSessionBean.retrieveReservationById(reservationID);
+        em.refresh(r);
         r.getRoomType();
         if (r == null) {
             throw new ReservationErrorException("Reservation not found for ID: " + reservationID);
@@ -245,3 +246,4 @@ public class HolidayWebService {
         return r;
     }
 }
+    

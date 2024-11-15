@@ -89,26 +89,6 @@
 </xs:sequence>
 </xs:complexType>
 
-<xs:complexType name="getAvailableRoomCountByTypeAndDate">
-<xs:sequence>
-<xs:element name="roomTypeID" type="xs:long" minOccurs="0"/>
-<xs:element name="in" type="xs:anySimpleType" minOccurs="0"/>
-<xs:element name="out" type="xs:anySimpleType" minOccurs="0"/>
-</xs:sequence>
-</xs:complexType>
-
-<xs:complexType name="getAvailableRoomCountByTypeAndDateResponse">
-<xs:sequence>
-<xs:element name="return" type="xs:int" minOccurs="0"/>
-</xs:sequence>
-</xs:complexType>
-
-<xs:complexType name="RoomTypeErrorException">
-<xs:sequence>
-<xs:element name="message" type="xs:string" minOccurs="0"/>
-</xs:sequence>
-</xs:complexType>
-
 <xs:complexType name="createSameDayReservation">
 <xs:sequence>
 <xs:element name="roomTypeID" type="xs:long" minOccurs="0"/>
@@ -207,6 +187,12 @@
 </xs:sequence>
 </xs:complexType>
 
+<xs:complexType name="RoomTypeErrorException">
+<xs:sequence>
+<xs:element name="message" type="xs:string" minOccurs="0"/>
+</xs:sequence>
+</xs:complexType>
+
 <xs:complexType name="NoAvailableRoomException">
 <xs:sequence>
 <xs:element name="message" type="xs:string" minOccurs="0"/>
@@ -232,22 +218,17 @@
 </xs:sequence>
 </xs:complexType>
 
-<xs:complexType name="retrieveAllAvailRoomTypeOnline">
+<xs:complexType name="getAvailableRoomCountByTypeAndDate">
 <xs:sequence>
+<xs:element name="roomTypeID" type="xs:long" minOccurs="0"/>
 <xs:element name="in" type="xs:anySimpleType" minOccurs="0"/>
 <xs:element name="out" type="xs:anySimpleType" minOccurs="0"/>
 </xs:sequence>
 </xs:complexType>
 
-<xs:complexType name="retrieveAllAvailRoomTypeOnlineResponse">
+<xs:complexType name="getAvailableRoomCountByTypeAndDateResponse">
 <xs:sequence>
-<xs:element name="return" type="tns:roomType" minOccurs="0" maxOccurs="unbounded"/>
-</xs:sequence>
-</xs:complexType>
-
-<xs:complexType name="DateValidationError">
-<xs:sequence>
-<xs:element name="message" type="xs:string" minOccurs="0"/>
+<xs:element name="return" type="xs:int" minOccurs="0"/>
 </xs:sequence>
 </xs:complexType>
 
@@ -264,6 +245,25 @@
 <xs:complexType name="createReservationResponse">
 <xs:sequence>
 <xs:element name="return" type="tns:reservation" minOccurs="0"/>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="retrieveAllAvailRoomTypeOnline">
+<xs:sequence>
+<xs:element name="in" type="xs:anySimpleType" minOccurs="0"/>
+<xs:element name="out" type="xs:anySimpleType" minOccurs="0"/>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="retrieveAllAvailRoomTypeOnlineResponse">
+<xs:sequence>
+<xs:element name="return" type="tns:roomType" minOccurs="0" maxOccurs="unbounded"/>
+</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="DateValidationError">
+<xs:sequence>
+<xs:element name="message" type="xs:string" minOccurs="0"/>
 </xs:sequence>
 </xs:complexType>
 

@@ -10,6 +10,7 @@ import java.util.Date;
 import java.util.List;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -53,7 +54,7 @@ public class Reservation implements Serializable {
     private RoomAllocation roomAllocation;
     @ManyToOne
     private Partner partner;
-    @ManyToOne (optional = false)
+   @ManyToOne (fetch = FetchType.EAGER, optional = false)
     private RoomType roomType;
     private Boolean isPartnerReservation = false;
     private Boolean isWalkIn = false;

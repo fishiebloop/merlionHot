@@ -4,41 +4,23 @@
 <xsd:import namespace="http://ws.session.ejb/" schemaLocation="http://localhost:8080/HolidayWebService/HolidayWebService?xsd=1"/>
 </xsd:schema>
 </types>
-<message name="retrieveAllAvailRoomTypeOnline">
-<part name="parameters" element="tns:retrieveAllAvailRoomTypeOnline"/>
+<message name="partnerLogin">
+<part name="parameters" element="tns:partnerLogin"/>
 </message>
-<message name="retrieveAllAvailRoomTypeOnlineResponse">
-<part name="parameters" element="tns:retrieveAllAvailRoomTypeOnlineResponse"/>
-</message>
-<message name="RoomTypeErrorException">
-<part name="fault" element="tns:RoomTypeErrorException"/>
-</message>
-<message name="DateValidationError">
-<part name="fault" element="tns:DateValidationError"/>
-</message>
-<message name="retrieveReservationDetails">
-<part name="parameters" element="tns:retrieveReservationDetails"/>
-</message>
-<message name="retrieveReservationDetailsResponse">
-<part name="parameters" element="tns:retrieveReservationDetailsResponse"/>
-</message>
-<message name="ReservationErrorException">
-<part name="fault" element="tns:ReservationErrorException"/>
-</message>
-<message name="getAvailableRoomCountByTypeAndDate">
-<part name="parameters" element="tns:getAvailableRoomCountByTypeAndDate"/>
-</message>
-<message name="getAvailableRoomCountByTypeAndDateResponse">
-<part name="parameters" element="tns:getAvailableRoomCountByTypeAndDateResponse"/>
-</message>
-<message name="retrieveAllPartnerReservation">
-<part name="parameters" element="tns:retrieveAllPartnerReservation"/>
-</message>
-<message name="retrieveAllPartnerReservationResponse">
-<part name="parameters" element="tns:retrieveAllPartnerReservationResponse"/>
+<message name="partnerLoginResponse">
+<part name="parameters" element="tns:partnerLoginResponse"/>
 </message>
 <message name="InvalidLoginCredentialException">
 <part name="fault" element="tns:InvalidLoginCredentialException"/>
+</message>
+<message name="getPriceOfRoomTypeOnline">
+<part name="parameters" element="tns:getPriceOfRoomTypeOnline"/>
+</message>
+<message name="getPriceOfRoomTypeOnlineResponse">
+<part name="parameters" element="tns:getPriceOfRoomTypeOnlineResponse"/>
+</message>
+<message name="RoomTypeErrorException">
+<part name="fault" element="tns:RoomTypeErrorException"/>
 </message>
 <message name="createReservation">
 <part name="parameters" element="tns:createReservation"/>
@@ -58,12 +40,6 @@
 <message name="CannotUpgradeException">
 <part name="fault" element="tns:CannotUpgradeException"/>
 </message>
-<message name="getPriceOfRoomTypeOnline">
-<part name="parameters" element="tns:getPriceOfRoomTypeOnline"/>
-</message>
-<message name="getPriceOfRoomTypeOnlineResponse">
-<part name="parameters" element="tns:getPriceOfRoomTypeOnlineResponse"/>
-</message>
 <message name="createGuest">
 <part name="parameters" element="tns:createGuest"/>
 </message>
@@ -72,12 +48,6 @@
 </message>
 <message name="BeanValidationError">
 <part name="fault" element="tns:BeanValidationError"/>
-</message>
-<message name="partnerLogin">
-<part name="parameters" element="tns:partnerLogin"/>
-</message>
-<message name="partnerLoginResponse">
-<part name="parameters" element="tns:partnerLoginResponse"/>
 </message>
 <message name="guestExist">
 <part name="parameters" element="tns:guestExist"/>
@@ -91,31 +61,49 @@
 <message name="retrieveAllocationRoomResponse">
 <part name="parameters" element="tns:retrieveAllocationRoomResponse"/>
 </message>
+<message name="ReservationErrorException">
+<part name="fault" element="tns:ReservationErrorException"/>
+</message>
 <message name="RoomAllocationNotFoundException">
 <part name="fault" element="tns:RoomAllocationNotFoundException"/>
 </message>
+<message name="getAvailableRoomCountByTypeAndDate">
+<part name="parameters" element="tns:getAvailableRoomCountByTypeAndDate"/>
+</message>
+<message name="getAvailableRoomCountByTypeAndDateResponse">
+<part name="parameters" element="tns:getAvailableRoomCountByTypeAndDateResponse"/>
+</message>
+<message name="retrieveReservationDetails">
+<part name="parameters" element="tns:retrieveReservationDetails"/>
+</message>
+<message name="retrieveReservationDetailsResponse">
+<part name="parameters" element="tns:retrieveReservationDetailsResponse"/>
+</message>
+<message name="retrieveAllPartnerReservation">
+<part name="parameters" element="tns:retrieveAllPartnerReservation"/>
+</message>
+<message name="retrieveAllPartnerReservationResponse">
+<part name="parameters" element="tns:retrieveAllPartnerReservationResponse"/>
+</message>
+<message name="retrieveAllAvailRoomTypeOnline">
+<part name="parameters" element="tns:retrieveAllAvailRoomTypeOnline"/>
+</message>
+<message name="retrieveAllAvailRoomTypeOnlineResponse">
+<part name="parameters" element="tns:retrieveAllAvailRoomTypeOnlineResponse"/>
+</message>
+<message name="DateValidationError">
+<part name="fault" element="tns:DateValidationError"/>
+</message>
 <portType name="HolidayWebService">
-<operation name="retrieveAllAvailRoomTypeOnline">
-<input wsam:Action="http://ws.session.ejb/HolidayWebService/retrieveAllAvailRoomTypeOnlineRequest" message="tns:retrieveAllAvailRoomTypeOnline"/>
-<output wsam:Action="http://ws.session.ejb/HolidayWebService/retrieveAllAvailRoomTypeOnlineResponse" message="tns:retrieveAllAvailRoomTypeOnlineResponse"/>
-<fault message="tns:RoomTypeErrorException" name="RoomTypeErrorException" wsam:Action="http://ws.session.ejb/HolidayWebService/retrieveAllAvailRoomTypeOnline/Fault/RoomTypeErrorException"/>
-<fault message="tns:DateValidationError" name="DateValidationError" wsam:Action="http://ws.session.ejb/HolidayWebService/retrieveAllAvailRoomTypeOnline/Fault/DateValidationError"/>
+<operation name="partnerLogin">
+<input wsam:Action="http://ws.session.ejb/HolidayWebService/partnerLoginRequest" message="tns:partnerLogin"/>
+<output wsam:Action="http://ws.session.ejb/HolidayWebService/partnerLoginResponse" message="tns:partnerLoginResponse"/>
+<fault message="tns:InvalidLoginCredentialException" name="InvalidLoginCredentialException" wsam:Action="http://ws.session.ejb/HolidayWebService/partnerLogin/Fault/InvalidLoginCredentialException"/>
 </operation>
-<operation name="retrieveReservationDetails">
-<input wsam:Action="http://ws.session.ejb/HolidayWebService/retrieveReservationDetailsRequest" message="tns:retrieveReservationDetails"/>
-<output wsam:Action="http://ws.session.ejb/HolidayWebService/retrieveReservationDetailsResponse" message="tns:retrieveReservationDetailsResponse"/>
-<fault message="tns:ReservationErrorException" name="ReservationErrorException" wsam:Action="http://ws.session.ejb/HolidayWebService/retrieveReservationDetails/Fault/ReservationErrorException"/>
-</operation>
-<operation name="getAvailableRoomCountByTypeAndDate">
-<input wsam:Action="http://ws.session.ejb/HolidayWebService/getAvailableRoomCountByTypeAndDateRequest" message="tns:getAvailableRoomCountByTypeAndDate"/>
-<output wsam:Action="http://ws.session.ejb/HolidayWebService/getAvailableRoomCountByTypeAndDateResponse" message="tns:getAvailableRoomCountByTypeAndDateResponse"/>
-<fault message="tns:RoomTypeErrorException" name="RoomTypeErrorException" wsam:Action="http://ws.session.ejb/HolidayWebService/getAvailableRoomCountByTypeAndDate/Fault/RoomTypeErrorException"/>
-</operation>
-<operation name="retrieveAllPartnerReservation">
-<input wsam:Action="http://ws.session.ejb/HolidayWebService/retrieveAllPartnerReservationRequest" message="tns:retrieveAllPartnerReservation"/>
-<output wsam:Action="http://ws.session.ejb/HolidayWebService/retrieveAllPartnerReservationResponse" message="tns:retrieveAllPartnerReservationResponse"/>
-<fault message="tns:InvalidLoginCredentialException" name="InvalidLoginCredentialException" wsam:Action="http://ws.session.ejb/HolidayWebService/retrieveAllPartnerReservation/Fault/InvalidLoginCredentialException"/>
-<fault message="tns:ReservationErrorException" name="ReservationErrorException" wsam:Action="http://ws.session.ejb/HolidayWebService/retrieveAllPartnerReservation/Fault/ReservationErrorException"/>
+<operation name="getPriceOfRoomTypeOnline">
+<input wsam:Action="http://ws.session.ejb/HolidayWebService/getPriceOfRoomTypeOnlineRequest" message="tns:getPriceOfRoomTypeOnline"/>
+<output wsam:Action="http://ws.session.ejb/HolidayWebService/getPriceOfRoomTypeOnlineResponse" message="tns:getPriceOfRoomTypeOnlineResponse"/>
+<fault message="tns:RoomTypeErrorException" name="RoomTypeErrorException" wsam:Action="http://ws.session.ejb/HolidayWebService/getPriceOfRoomTypeOnline/Fault/RoomTypeErrorException"/>
 </operation>
 <operation name="createReservation">
 <input wsam:Action="http://ws.session.ejb/HolidayWebService/createReservationRequest" message="tns:createReservation"/>
@@ -131,20 +119,10 @@
 <fault message="tns:NoAvailableRoomException" name="NoAvailableRoomException" wsam:Action="http://ws.session.ejb/HolidayWebService/createSameDayReservation/Fault/NoAvailableRoomException"/>
 <fault message="tns:CannotUpgradeException" name="CannotUpgradeException" wsam:Action="http://ws.session.ejb/HolidayWebService/createSameDayReservation/Fault/CannotUpgradeException"/>
 </operation>
-<operation name="getPriceOfRoomTypeOnline">
-<input wsam:Action="http://ws.session.ejb/HolidayWebService/getPriceOfRoomTypeOnlineRequest" message="tns:getPriceOfRoomTypeOnline"/>
-<output wsam:Action="http://ws.session.ejb/HolidayWebService/getPriceOfRoomTypeOnlineResponse" message="tns:getPriceOfRoomTypeOnlineResponse"/>
-<fault message="tns:RoomTypeErrorException" name="RoomTypeErrorException" wsam:Action="http://ws.session.ejb/HolidayWebService/getPriceOfRoomTypeOnline/Fault/RoomTypeErrorException"/>
-</operation>
 <operation name="createGuest">
 <input wsam:Action="http://ws.session.ejb/HolidayWebService/createGuestRequest" message="tns:createGuest"/>
 <output wsam:Action="http://ws.session.ejb/HolidayWebService/createGuestResponse" message="tns:createGuestResponse"/>
 <fault message="tns:BeanValidationError" name="BeanValidationError" wsam:Action="http://ws.session.ejb/HolidayWebService/createGuest/Fault/BeanValidationError"/>
-</operation>
-<operation name="partnerLogin">
-<input wsam:Action="http://ws.session.ejb/HolidayWebService/partnerLoginRequest" message="tns:partnerLogin"/>
-<output wsam:Action="http://ws.session.ejb/HolidayWebService/partnerLoginResponse" message="tns:partnerLoginResponse"/>
-<fault message="tns:InvalidLoginCredentialException" name="InvalidLoginCredentialException" wsam:Action="http://ws.session.ejb/HolidayWebService/partnerLogin/Fault/InvalidLoginCredentialException"/>
 </operation>
 <operation name="guestExist">
 <input wsam:Action="http://ws.session.ejb/HolidayWebService/guestExistRequest" message="tns:guestExist"/>
@@ -156,49 +134,32 @@
 <fault message="tns:ReservationErrorException" name="ReservationErrorException" wsam:Action="http://ws.session.ejb/HolidayWebService/retrieveAllocationRoom/Fault/ReservationErrorException"/>
 <fault message="tns:RoomAllocationNotFoundException" name="RoomAllocationNotFoundException" wsam:Action="http://ws.session.ejb/HolidayWebService/retrieveAllocationRoom/Fault/RoomAllocationNotFoundException"/>
 </operation>
+<operation name="getAvailableRoomCountByTypeAndDate">
+<input wsam:Action="http://ws.session.ejb/HolidayWebService/getAvailableRoomCountByTypeAndDateRequest" message="tns:getAvailableRoomCountByTypeAndDate"/>
+<output wsam:Action="http://ws.session.ejb/HolidayWebService/getAvailableRoomCountByTypeAndDateResponse" message="tns:getAvailableRoomCountByTypeAndDateResponse"/>
+<fault message="tns:RoomTypeErrorException" name="RoomTypeErrorException" wsam:Action="http://ws.session.ejb/HolidayWebService/getAvailableRoomCountByTypeAndDate/Fault/RoomTypeErrorException"/>
+</operation>
+<operation name="retrieveReservationDetails">
+<input wsam:Action="http://ws.session.ejb/HolidayWebService/retrieveReservationDetailsRequest" message="tns:retrieveReservationDetails"/>
+<output wsam:Action="http://ws.session.ejb/HolidayWebService/retrieveReservationDetailsResponse" message="tns:retrieveReservationDetailsResponse"/>
+<fault message="tns:ReservationErrorException" name="ReservationErrorException" wsam:Action="http://ws.session.ejb/HolidayWebService/retrieveReservationDetails/Fault/ReservationErrorException"/>
+</operation>
+<operation name="retrieveAllPartnerReservation">
+<input wsam:Action="http://ws.session.ejb/HolidayWebService/retrieveAllPartnerReservationRequest" message="tns:retrieveAllPartnerReservation"/>
+<output wsam:Action="http://ws.session.ejb/HolidayWebService/retrieveAllPartnerReservationResponse" message="tns:retrieveAllPartnerReservationResponse"/>
+<fault message="tns:InvalidLoginCredentialException" name="InvalidLoginCredentialException" wsam:Action="http://ws.session.ejb/HolidayWebService/retrieveAllPartnerReservation/Fault/InvalidLoginCredentialException"/>
+<fault message="tns:ReservationErrorException" name="ReservationErrorException" wsam:Action="http://ws.session.ejb/HolidayWebService/retrieveAllPartnerReservation/Fault/ReservationErrorException"/>
+</operation>
+<operation name="retrieveAllAvailRoomTypeOnline">
+<input wsam:Action="http://ws.session.ejb/HolidayWebService/retrieveAllAvailRoomTypeOnlineRequest" message="tns:retrieveAllAvailRoomTypeOnline"/>
+<output wsam:Action="http://ws.session.ejb/HolidayWebService/retrieveAllAvailRoomTypeOnlineResponse" message="tns:retrieveAllAvailRoomTypeOnlineResponse"/>
+<fault message="tns:RoomTypeErrorException" name="RoomTypeErrorException" wsam:Action="http://ws.session.ejb/HolidayWebService/retrieveAllAvailRoomTypeOnline/Fault/RoomTypeErrorException"/>
+<fault message="tns:DateValidationError" name="DateValidationError" wsam:Action="http://ws.session.ejb/HolidayWebService/retrieveAllAvailRoomTypeOnline/Fault/DateValidationError"/>
+</operation>
 </portType>
 <binding name="HolidayWebServicePortBinding" type="tns:HolidayWebService">
 <soap:binding transport="http://schemas.xmlsoap.org/soap/http" style="document"/>
-<operation name="retrieveAllAvailRoomTypeOnline">
-<soap:operation soapAction=""/>
-<input>
-<soap:body use="literal"/>
-</input>
-<output>
-<soap:body use="literal"/>
-</output>
-<fault name="RoomTypeErrorException">
-<soap:fault name="RoomTypeErrorException" use="literal"/>
-</fault>
-<fault name="DateValidationError">
-<soap:fault name="DateValidationError" use="literal"/>
-</fault>
-</operation>
-<operation name="retrieveReservationDetails">
-<soap:operation soapAction=""/>
-<input>
-<soap:body use="literal"/>
-</input>
-<output>
-<soap:body use="literal"/>
-</output>
-<fault name="ReservationErrorException">
-<soap:fault name="ReservationErrorException" use="literal"/>
-</fault>
-</operation>
-<operation name="getAvailableRoomCountByTypeAndDate">
-<soap:operation soapAction=""/>
-<input>
-<soap:body use="literal"/>
-</input>
-<output>
-<soap:body use="literal"/>
-</output>
-<fault name="RoomTypeErrorException">
-<soap:fault name="RoomTypeErrorException" use="literal"/>
-</fault>
-</operation>
-<operation name="retrieveAllPartnerReservation">
+<operation name="partnerLogin">
 <soap:operation soapAction=""/>
 <input>
 <soap:body use="literal"/>
@@ -209,8 +170,17 @@
 <fault name="InvalidLoginCredentialException">
 <soap:fault name="InvalidLoginCredentialException" use="literal"/>
 </fault>
-<fault name="ReservationErrorException">
-<soap:fault name="ReservationErrorException" use="literal"/>
+</operation>
+<operation name="getPriceOfRoomTypeOnline">
+<soap:operation soapAction=""/>
+<input>
+<soap:body use="literal"/>
+</input>
+<output>
+<soap:body use="literal"/>
+</output>
+<fault name="RoomTypeErrorException">
+<soap:fault name="RoomTypeErrorException" use="literal"/>
 </fault>
 </operation>
 <operation name="createReservation">
@@ -249,18 +219,6 @@
 <soap:fault name="CannotUpgradeException" use="literal"/>
 </fault>
 </operation>
-<operation name="getPriceOfRoomTypeOnline">
-<soap:operation soapAction=""/>
-<input>
-<soap:body use="literal"/>
-</input>
-<output>
-<soap:body use="literal"/>
-</output>
-<fault name="RoomTypeErrorException">
-<soap:fault name="RoomTypeErrorException" use="literal"/>
-</fault>
-</operation>
 <operation name="createGuest">
 <soap:operation soapAction=""/>
 <input>
@@ -271,18 +229,6 @@
 </output>
 <fault name="BeanValidationError">
 <soap:fault name="BeanValidationError" use="literal"/>
-</fault>
-</operation>
-<operation name="partnerLogin">
-<soap:operation soapAction=""/>
-<input>
-<soap:body use="literal"/>
-</input>
-<output>
-<soap:body use="literal"/>
-</output>
-<fault name="InvalidLoginCredentialException">
-<soap:fault name="InvalidLoginCredentialException" use="literal"/>
 </fault>
 </operation>
 <operation name="guestExist">
@@ -307,6 +253,60 @@
 </fault>
 <fault name="RoomAllocationNotFoundException">
 <soap:fault name="RoomAllocationNotFoundException" use="literal"/>
+</fault>
+</operation>
+<operation name="getAvailableRoomCountByTypeAndDate">
+<soap:operation soapAction=""/>
+<input>
+<soap:body use="literal"/>
+</input>
+<output>
+<soap:body use="literal"/>
+</output>
+<fault name="RoomTypeErrorException">
+<soap:fault name="RoomTypeErrorException" use="literal"/>
+</fault>
+</operation>
+<operation name="retrieveReservationDetails">
+<soap:operation soapAction=""/>
+<input>
+<soap:body use="literal"/>
+</input>
+<output>
+<soap:body use="literal"/>
+</output>
+<fault name="ReservationErrorException">
+<soap:fault name="ReservationErrorException" use="literal"/>
+</fault>
+</operation>
+<operation name="retrieveAllPartnerReservation">
+<soap:operation soapAction=""/>
+<input>
+<soap:body use="literal"/>
+</input>
+<output>
+<soap:body use="literal"/>
+</output>
+<fault name="InvalidLoginCredentialException">
+<soap:fault name="InvalidLoginCredentialException" use="literal"/>
+</fault>
+<fault name="ReservationErrorException">
+<soap:fault name="ReservationErrorException" use="literal"/>
+</fault>
+</operation>
+<operation name="retrieveAllAvailRoomTypeOnline">
+<soap:operation soapAction=""/>
+<input>
+<soap:body use="literal"/>
+</input>
+<output>
+<soap:body use="literal"/>
+</output>
+<fault name="RoomTypeErrorException">
+<soap:fault name="RoomTypeErrorException" use="literal"/>
+</fault>
+<fault name="DateValidationError">
+<soap:fault name="DateValidationError" use="literal"/>
 </fault>
 </operation>
 </binding>
