@@ -61,16 +61,14 @@ public class RoomType implements Serializable {
         this.isDisabled = false;
     }
     
-    public RoomType(String roomTypeName, int capacity) {
+    public RoomType(String roomTypeName) {
         this();
         this.roomTypeName = roomTypeName;
-        this.capacity = capacity;
     }
     
-    public RoomType(String roomTypeName, int capacity, RoomType nextHigherRoomType) {
+    public RoomType(String roomTypeName, RoomType nextHigherRoomType) {
         this();
         this.roomTypeName = roomTypeName;
-        this.capacity = capacity;
         this.nextHigherRoomType = nextHigherRoomType;
     }
 

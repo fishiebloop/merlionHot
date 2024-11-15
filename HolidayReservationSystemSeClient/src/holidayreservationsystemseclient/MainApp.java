@@ -314,7 +314,7 @@ public class MainApp {
 
             response = 0;
             
-            while(response < 1 || response > 3)
+            while(response < 1 || response > 4)
             {
                 System.out.print("> ");
                 response = scanner.nextInt();
