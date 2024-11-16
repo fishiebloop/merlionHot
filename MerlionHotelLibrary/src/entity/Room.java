@@ -35,7 +35,7 @@ public class Room implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long roomId;
     @Column(length = 4, nullable = false, unique = true)
-    private Integer roomNumber;
+    private String roomNumber;
     @Enumerated(EnumType.STRING)
     private RoomStatusEnum status;
     @OneToMany (mappedBy = "room", fetch = FetchType.EAGER)
@@ -59,12 +59,12 @@ public class Room implements Serializable {
         this.status = RoomStatusEnum.AVAIL;
     }
 
-    public Room(Integer roomNumber) {
+    public Room(String roomNumber) {
         this();
         this.roomNumber = roomNumber;
     }
 
-    public Room(Integer roomNumber, RoomStatusEnum status, RoomType roomType) {
+    public Room(String roomNumber, RoomStatusEnum status, RoomType roomType) {
         this.roomNumber = roomNumber;
         this.status = status;
         this.roomType = roomType;
@@ -127,14 +127,14 @@ public class Room implements Serializable {
     /**
      * @return the roomNumber
      */
-    public Integer getRoomNumber() {
+    public String getRoomNumber() {
         return roomNumber;
     }
 
     /**
      * @param roomNumber the roomNumber to set
      */
-    public void setRoomNumber(Integer roomNumber) {
+    public void setRoomNumber(String roomNumber) {
         this.roomNumber = roomNumber;
     }
 

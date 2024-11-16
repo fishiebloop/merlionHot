@@ -30,7 +30,7 @@ public interface RoomSessionBeanLocal {
     
     //public int getAvailableRoomCountByTypeAndDate(RoomType roomType, Date startDate, Date endDate);
 
-    public Room retrieveRoomByNumber(Integer roomNumber) throws RoomErrorException;
+    public Room retrieveRoomByNumber(String roomNumber) throws RoomErrorException;
 
     public void updateRoomTypeOfRoom(Room room, RoomType newRt);
 
@@ -39,7 +39,5 @@ public interface RoomSessionBeanLocal {
     public void updateRoom(Room room);
     
     public int getAvailableRoomCountForWalkIn(RoomType roomType, Date startDate, Date endDate);
-
-    Room createRoom2(Room room);
     
 }

@@ -38,10 +38,10 @@ public class ExceptionReportSessionBean implements ExceptionReportSessionBeanLoc
 
     @Override
     public List<ExceptionReport> retrieveHigherAvailList() {
-        // Get the current date and time
+        // get the current date and time
         Date now = new Date();
 
-        // Calculate today's 12 am (start of the day)
+        // calculate today's 12 am (start of the day)
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(now);
         calendar.set(Calendar.HOUR_OF_DAY, 0);
@@ -50,7 +50,7 @@ public class ExceptionReportSessionBean implements ExceptionReportSessionBeanLoc
         calendar.set(Calendar.MILLISECOND, 0);
         Date todayStart = calendar.getTime();
 
-        // Retrieve reports created between 12 am today and now
+        // retrieve reports created between 12 am today and now
         return em.createQuery(
                 "SELECT e FROM ExceptionReport e WHERE e.timestamp BETWEEN :todayStart AND :now "
                 + "AND e.exceptionType = :exceptionType",
@@ -63,10 +63,8 @@ public class ExceptionReportSessionBean implements ExceptionReportSessionBeanLoc
 
     @Override
     public List<ExceptionReport> retrieveNoUpgradeList() {
-        // Get the current date and time
         Date now = new Date();
 
-        // Calculate today's 12 am (start of the day)
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(now);
         calendar.set(Calendar.HOUR_OF_DAY, 0);
@@ -75,7 +73,7 @@ public class ExceptionReportSessionBean implements ExceptionReportSessionBeanLoc
         calendar.set(Calendar.MILLISECOND, 0);
         Date todayStart = calendar.getTime();
 
-        // Retrieve reports created between 12 am today and now
+        // retrieve reports created between 12 am today and now
         return em.createQuery(
             "SELECT e FROM ExceptionReport e WHERE e.timestamp >= :todayStart "
             + "AND e.timestamp <= :now AND e.exceptionType = :exceptionType",

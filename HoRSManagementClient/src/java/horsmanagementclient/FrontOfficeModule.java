@@ -122,7 +122,7 @@ public class FrontOfficeModule {
             try {
                 in = DateUtil.convertToDate(checkIn);
 
-                // Check if the check-in date is before today's date
+                // check if the check-in date is before today's date
                 LocalDate today = LocalDate.now();
                 LocalDate checkInDate = in.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
                 if (checkInDate.isBefore(today)) {
@@ -207,10 +207,10 @@ public class FrontOfficeModule {
 
                 if (requestedRooms <= availableRooms) {
                     System.out.println("Sufficient rooms available for reservation.");
-                    BigDecimal chosenAmount = amounts[choiceIndex - 1].multiply(BigDecimal.valueOf(requestedRooms));
+                    BigDecimal chosenTotalAmount = amounts[choiceIndex - 1];
 
                     try {
-                        createReservations(requestedRooms, chosenType, in, out, name, email, chosenAmount);
+                        createReservations(requestedRooms, chosenType, in, out, name, email, chosenTotalAmount);
                     } catch (BeanValidationError ex) {
                         System.out.println("Validation failed. Please correct the following errors:\n" + ex.getMessage());
                         System.out.println("Please re-enter your details.");
@@ -221,10 +221,10 @@ public class FrontOfficeModule {
                     String partialRes = scanner.nextLine().trim();
 
                     if (partialRes.equalsIgnoreCase("Y")) {
-                        BigDecimal chosenAmount = amounts[choiceIndex - 1].multiply(BigDecimal.valueOf(availableRooms));
+                        BigDecimal chosenTotalAmount = amounts[choiceIndex - 1];
 
                         try {
-                            createReservations(availableRooms, chosenType, in, out, name, email, chosenAmount);
+                            createReservations(availableRooms, chosenType, in, out, name, email, chosenTotalAmount);
                         } catch (BeanValidationError ex) {
                             System.out.println("Validation failed. Please correct the following errors:\n" + ex.getMessage());
                             System.out.println("Please re-enter your details.");
@@ -241,7 +241,7 @@ public class FrontOfficeModule {
         }
     }
 
-    private void createReservations(int numRooms, RoomType roomType, Date startDate, Date endDate, String guestName, String guestEmail, BigDecimal chosenAmount) throws BeanValidationError {
+    private void createReservations(int numRooms, RoomType roomType, Date startDate, Date endDate, String guestName, String guestEmail, BigDecimal chosenTotalAmount) throws BeanValidationError {
         Guest guest = guestBean.retrieveGuestByEmail(guestEmail);
         boolean isNewGuest = false;
 
@@ -257,7 +257,7 @@ public class FrontOfficeModule {
         }
 
         LocalDate startLocalDate = startDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-        BigDecimal totalReservationFee = chosenAmount.multiply(BigDecimal.valueOf(numRooms));
+        BigDecimal totalReservationFee = chosenTotalAmount.multiply(BigDecimal.valueOf(numRooms));
 
         try {
             for (int i = 0; i < numRooms; i++) {
@@ -325,13 +325,13 @@ public class FrontOfficeModule {
 
         if (g == null) {
             System.out.println("No guest found with the email: " + email);
-            return;  // Exit the check-in method if no guest is found
+            return;  
         }
 
         List<Reservation> reservations = g.getReservation();
         if (reservations.isEmpty()) {
             System.out.println("No reservations found for the guest with email: " + email);
-            return;  // Exit if there are no reservations
+            return; 
         }
 
         for (Reservation r : reservations) {
@@ -395,16 +395,16 @@ public class FrontOfficeModule {
                 Room allocatedRoom = allocation.getRoom();
                 String roomInfo = "Reservation ID: " + r.getReservationId() + ", Room Number: " + allocatedRoom.getRoomNumber();
 
-                // Check if the room is currently occupied
+                // check if the room is currently occupied
                 if (allocatedRoom.getStatus() != RoomStatusEnum.OCCUPIED) {
-                    continue;  // Skip to the next reservation if the room is not occupied
+                    continue;  // skip to the next reservation if the room is not occupied
                 }
 
                 System.out.print("Do you want to check out for " + roomInfo + "? (Enter 'Y' for Yes) > ");
                 String ans = scanner.nextLine().trim();
                 if (!ans.equalsIgnoreCase("Y")) {
                     System.out.println("Skipping check-out for " + roomInfo);
-                    continue;  // Skip to the next reservation if they don't want to check out
+                    continue;  // skip to the next reservation if they don't want to check out
                 }
 
                 LocalDate checkoutDate = r.getCheckOutDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
@@ -412,7 +412,7 @@ public class FrontOfficeModule {
 
                 if (checkoutDate.equals(LocalDate.now())) {
                     if (currentTime.isAfter(LocalTime.of(12, 0))) {
-                        // Late check-out: only allow if no new reservation for this room today
+                        // late check-out: only allow if no new reservation for this room today
                         boolean isRoomAvailableLater = roomBean.isRoomAvailable(allocatedRoom, LocalDate.now(), r.getReservationId());
                         if (isRoomAvailableLater) {
                             allocatedRoom.setStatus(RoomStatusEnum.AVAIL);
@@ -422,7 +422,7 @@ public class FrontOfficeModule {
                             System.out.println("Late check-out not possible. Room is already reserved for another guest today.");
                         }
                     } else {
-                        // Regular check-out
+                        // normal check-out
                         allocatedRoom.setStatus(RoomStatusEnum.AVAIL);
                         roomBean.updateRoom(allocatedRoom);
                         System.out.println("Checked out. Room number " + allocatedRoom.getRoomNumber() + " is now available.");

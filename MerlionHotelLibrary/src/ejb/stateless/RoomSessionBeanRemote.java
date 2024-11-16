@@ -21,7 +21,7 @@ public interface RoomSessionBeanRemote {
 
     public Long createRoom(Room newRoom, RoomType rt);
 
-    public Room retrieveRoomByNumber(Integer roomNumber) throws RoomErrorException;
+    public Room retrieveRoomByNumber(String roomNumber) throws RoomErrorException;
 
     public void updateRoomTypeOfRoom(Room room, RoomType newRt);
 
@@ -34,7 +34,6 @@ public interface RoomSessionBeanRemote {
     public boolean isRoomAvailable(Room room, LocalDate date, Long currentReservationId);
     // public int getAvailableRoomCountByTypeAndDate(RoomType roomType, Date startDate, Date endDate);
 
-    Room createRoom2(Room room);
     public int getAvailableRoomCountForOnline(RoomType roomType, Date startDate, Date endDate);
 
     public int getAvailableRoomCountForWalkIn(RoomType roomType, Date startDate, Date endDate);

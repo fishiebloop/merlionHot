@@ -67,7 +67,7 @@ public class RoomSessionBean implements RoomSessionBeanRemote, RoomSessionBeanLo
     }
 
     @Override
-    public Room retrieveRoomByNumber(Integer roomNumber) throws RoomErrorException {
+    public Room retrieveRoomByNumber(String roomNumber) throws RoomErrorException {
         Query query = em.createQuery("SELECT r from Room r WHERE r.roomNumber = :no");
         query.setParameter("no", roomNumber);
         try {
@@ -195,12 +195,5 @@ public class RoomSessionBean implements RoomSessionBeanRemote, RoomSessionBeanLo
 
         Long count = (Long) query.getSingleResult();
         return count == 0;
-    }
-
-    @Override
-    public Room createRoom2(Room room) {
-        em.persist(room);
-        em.flush();
-        return room;
     }
 }

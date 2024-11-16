@@ -34,7 +34,6 @@ public class Main {
     @EJB
     private static GuestSessionBeanRemote guestSessionBean;
 
-    
 
     /**
      * @param args the command line arguments

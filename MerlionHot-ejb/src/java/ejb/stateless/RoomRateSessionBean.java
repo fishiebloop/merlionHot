@@ -33,11 +33,14 @@ public class RoomRateSessionBean implements RoomRateSessionBeanRemote, RoomRateS
 
     @PersistenceContext(unitName = "MerlionHot-ejbPU")
     private EntityManager em;
-
-    //throw room rate bean validation
+    
     @Override
-    public RoomRate createRoomRate(RoomRate newRoomRate) {
+    public RoomRate createRoomRate(RoomRate newRoomRate, RoomType roomType) {
+        newRoomRate.setRoomType(roomType);
+        roomType.getRoomrates().add(newRoomRate);
         em.persist(newRoomRate);
+        em.merge(roomType);
+        em.merge(newRoomRate);
         em.flush();
         return newRoomRate;
     }
@@ -74,20 +77,17 @@ public class RoomRateSessionBean implements RoomRateSessionBeanRemote, RoomRateS
 
     @Override
     public String deleteRoomRate(RoomRate rate) {
-        // Retrieve the managed RoomRate instance
         RoomRate managedRate = em.find(RoomRate.class, rate.getRoomRateId());
 
         if (managedRate == null) {
             return "Room rate not found";
         }
 
-        // Determine the rate type
         RateTypeEnum rateType = managedRate.getRateType();
 
-        // Construct the base query for active reservations based on rate type
         String reservationQueryStr = "SELECT COUNT(r) FROM Reservation r "
                 + "WHERE r.roomType = :roomType "
-                + "AND r.isWalkIn = :isWalkIn " // Check if reservation matches the type associated with the rate
+                + "AND r.isWalkIn = :isWalkIn " // check if reservation matches the type associated with the rate
                 + "AND (r.checkOutDate > CURRENT_DATE "
                 + "OR (r.checkOutDate = CURRENT_DATE AND r.roomAllocation.room.status = :occupiedStatus))";
 
@@ -95,25 +95,24 @@ public class RoomRateSessionBean implements RoomRateSessionBeanRemote, RoomRateS
         query.setParameter("roomType", managedRate.getRoomType());
         query.setParameter("occupiedStatus", RoomStatusEnum.OCCUPIED);
 
-        // Determine whether to filter for walk-in or online reservations
         boolean isWalkIn;
         if (rateType == RateTypeEnum.PUBLISHED) {
             isWalkIn = true;  // PUBLISHED rates apply only to walk-in reservations
         } else {
-            isWalkIn = false; // Other rates apply only to online reservations
+            isWalkIn = false; // other rates apply only to online reservations
         }
         query.setParameter("isWalkIn", isWalkIn);
 
-        // Check if there are active reservations that would prevent deletion
+        // check if there are active reservations that would prevent deletion
         Long activeReservationCount = (Long) query.getSingleResult();
 
         if (activeReservationCount == 0) {
-            // No active reservations; delete the room rate
+            // no active reservations; delete the room rate
             em.remove(managedRate);
             em.flush();
             return "Room rate deleted successfully.";
         } else {
-            // Active reservations exist; disable the room rate instead
+            // active reservations exist, disable the room rate 
             managedRate.setIsDisabled(true);
             em.merge(managedRate);
             em.flush();
@@ -126,7 +125,6 @@ public class RoomRateSessionBean implements RoomRateSessionBeanRemote, RoomRateS
         ValidatorFactory validatorFactory = Validation.buildDefaultValidatorFactory();
         Validator validator = validatorFactory.getValidator();
 
-        // Validate the Guest object and store violations
         Set<ConstraintViolation<RoomRate>> violations = validator.validate(rr);
 
         if (!violations.isEmpty()) {

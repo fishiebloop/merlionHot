@@ -19,7 +19,6 @@ import util.exception.RoomRateErrorException;
  */
 @Remote
 public interface RoomRateSessionBeanRemote {
-    public RoomRate createRoomRate(RoomRate newRoomRate);
     public void updateRoomRate(RoomRate newRoomRate);
     public List<RoomRate> retrieveAllRoomRates();
     public RoomRate retrieveRoomRateByName(String roomRateName) throws RoomRateErrorException;
@@ -27,4 +26,6 @@ public interface RoomRateSessionBeanRemote {
     public String deleteRoomRate(RoomRate rate);
 
     Boolean validateRoomRate(RoomRate rr) throws BeanValidationError;
+
+    public RoomRate createRoomRate(RoomRate newRoomRate, RoomType roomType);
 }

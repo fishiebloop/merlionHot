@@ -60,12 +60,6 @@ public class RoomTypeSessionBean implements RoomTypeSessionBeanRemote, RoomTypeS
 
     }
 
-    /*@Override
-    public RoomType retrieveRoomTypeById(Long roomTypeId) {
-        Query query = em.createQuery("SELECT rt from RoomType rt WHERE rt.roomTypeId = :inID");
-        query.setParameter("inID", roomTypeId);
-        return (RoomType) query.getSingleResult();
-    }*/
     @Override
     public RoomType retrieveRoomTypeById(Long roomTypeId) throws RoomTypeErrorException {
 
@@ -211,52 +205,67 @@ public class RoomTypeSessionBean implements RoomTypeSessionBeanRemote, RoomTypeS
 
     public BigDecimal getPriceOfRoomTypeOnline(Date checkIn, Date checkOut, RoomType rt) {
         BigDecimal totalPrice = BigDecimal.ZERO;
-        rt = em.merge(rt);  // Ensures the RoomType is properly merged into the current persistence context
+        rt = em.merge(rt); 
 
-        // Create a query that includes date filtering for PEAK and PROMOTION rates
-        String queryStr = "SELECT rr.ratePerNight FROM RoomRate rr WHERE rr.roomType = :rt "
-                + "AND rr.isDisabled = false ";
-
-        // Add date range filtering only for PEAK and PROMOTION rates
-        queryStr += "AND ((rr.rateType = util.enumeration.RateTypeEnum.PROMOTION "
-                + "AND rr.startDate <= :checkOut AND rr.endDate >= :checkIn) "
-                + "OR (rr.rateType = util.enumeration.RateTypeEnum.PEAK "
-                + "AND rr.startDate <= :checkOut AND rr.endDate >= :checkIn) "
-                + "OR (rr.rateType NOT IN (util.enumeration.RateTypeEnum.PROMOTION, "
-                + "util.enumeration.RateTypeEnum.PEAK))) ";
-
-        // Order by rateType priority (PROMOTION > PEAK > NORMAL > others)
-        queryStr += "ORDER BY CASE "
-                + "WHEN rr.rateType = util.enumeration.RateTypeEnum.PROMOTION THEN 1 "
-                + "WHEN rr.rateType = util.enumeration.RateTypeEnum.PEAK THEN 2 "
-                + "WHEN rr.rateType = util.enumeration.RateTypeEnum.NORMAL THEN 3 "
-                + "ELSE 4 END";
-
-        Query q = em.createQuery(queryStr)
-                .setParameter("rt", rt)
-                .setParameter("checkIn", checkIn)
-                .setParameter("checkOut", checkOut)
-                .setMaxResults(1);
-
-        // Get the selected rate based on rateType priority
-        BigDecimal dailyPrice = (BigDecimal) q.getSingleResult();
-
+        // check if it is a same-day stay 
         if (checkIn.equals(checkOut)) {
-            // If the dates are the same, count as 1 night
-            totalPrice = totalPrice.add(dailyPrice);
+            // Query to get the rate for the single day
+            String queryStr = "SELECT rr.ratePerNight FROM RoomRate rr WHERE rr.roomType = :rt "
+                    + "AND rr.isDisabled = false "
+                    + "AND ((rr.rateType = util.enumeration.RateTypeEnum.PROMOTION "
+                    + "AND rr.startDate <= :currentDay AND rr.endDate >= :currentDay) "
+                    + "OR (rr.rateType = util.enumeration.RateTypeEnum.PEAK "
+                    + "AND rr.startDate <= :currentDay AND rr.endDate >= :currentDay) "
+                    + "OR (rr.rateType = util.enumeration.RateTypeEnum.NORMAL)) "
+                    + "ORDER BY CASE "
+                    + "WHEN rr.rateType = util.enumeration.RateTypeEnum.PROMOTION THEN 1 "
+                    + "WHEN rr.rateType = util.enumeration.RateTypeEnum.PEAK THEN 2 "
+                    + "WHEN rr.rateType = util.enumeration.RateTypeEnum.NORMAL THEN 3 "
+                    + "ELSE 4 END";
+
+            Query q = em.createQuery(queryStr)
+                    .setParameter("rt", rt)
+                    .setParameter("currentDay", checkIn)
+                    .setMaxResults(1);
+
+            BigDecimal dailyPrice = (BigDecimal) q.getSingleResult();
+            totalPrice = totalPrice.add(dailyPrice); // Count as 1 night
         } else {
-            // Loop through each day between checkIn and checkOut to accumulate the price
+            // loop through each day between checkIn and checkOut (excluding checkOut)
             Calendar calendar = Calendar.getInstance();
             calendar.setTime(checkIn);
 
-            while (!calendar.getTime().after(checkOut)) {
-                // Add the price for each day
+            while (!calendar.getTime().equals(checkOut)) {
+                Date currentDay = calendar.getTime();
+
+                // calculate rate for the current day
+                String queryStr = "SELECT rr.ratePerNight FROM RoomRate rr WHERE rr.roomType = :rt "
+                        + "AND rr.isDisabled = false "
+                        + "AND ((rr.rateType = util.enumeration.RateTypeEnum.PROMOTION "
+                        + "AND rr.startDate <= :currentDay AND rr.endDate >= :currentDay) "
+                        + "OR (rr.rateType = util.enumeration.RateTypeEnum.PEAK "
+                        + "AND rr.startDate <= :currentDay AND rr.endDate >= :currentDay) "
+                        + "OR (rr.rateType = util.enumeration.RateTypeEnum.NORMAL)) "
+                        + "ORDER BY CASE "
+                        + "WHEN rr.rateType = util.enumeration.RateTypeEnum.PROMOTION THEN 1 "
+                        + "WHEN rr.rateType = util.enumeration.RateTypeEnum.PEAK THEN 2 "
+                        + "WHEN rr.rateType = util.enumeration.RateTypeEnum.NORMAL THEN 3 "
+                        + "ELSE 4 END";
+
+                Query q = em.createQuery(queryStr)
+                        .setParameter("rt", rt)
+                        .setParameter("currentDay", currentDay)
+                        .setMaxResults(1);
+
+                BigDecimal dailyPrice = (BigDecimal) q.getSingleResult();
+                
+                // add the price for day
                 totalPrice = totalPrice.add(dailyPrice);
+
                 calendar.add(Calendar.DAY_OF_MONTH, 1); // Move to the next day
             }
         }
 
         return totalPrice;
     }
-
 }

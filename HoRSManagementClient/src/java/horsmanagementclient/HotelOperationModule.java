@@ -99,7 +99,7 @@ public class HotelOperationModule {
                     doViewRoomAllocationReport();
                 } else if (response == 9) {
                     roomAllocationSessionBean.performRoomAllocations();
-                    System.out.println("Room allocation process.");
+                    System.out.println("Performing manual room allocation.");
                 } else if (response == 10) {
                     break;
                 } else {
@@ -304,7 +304,7 @@ public class HotelOperationModule {
                 System.out.print("Enter new Room Type Name> ");
                 String newRoomTypeName = scanner.nextLine().trim();
 
-                // Check if room type name already exists
+                // check if room type name already exists
                 try {
                     RoomType existingRoomType = roomTypeBean.retrieveRoomTypeByName(newRoomTypeName);
                     System.out.println("Error: Room type name '" + newRoomTypeName + "' already exists. Update canceled.");
@@ -362,7 +362,7 @@ public class HotelOperationModule {
 
         if (res.equalsIgnoreCase("Y")) {
             String resultMessage = roomTypeBean.deleteRoomType(roomType);
-            System.out.println(resultMessage); // Display the result to the client
+            System.out.println(resultMessage);
         } else {
             System.out.println("Room type deletion canceled.");
         }
@@ -371,7 +371,7 @@ public class HotelOperationModule {
     public void doDeleteRoom() {
         System.out.println("*** HoRS Management System :: Room Operations :: Delete Room ***\n");
         System.out.print("Enter room number> ");
-        Integer roomNum = scanner.nextInt();
+        String roomNum = scanner.nextLine().trim();
         try {
             Room room = roomBean.retrieveRoomByNumber(roomNum);
             String res = "";
@@ -381,7 +381,7 @@ public class HotelOperationModule {
             if (res.equalsIgnoreCase("Y")) {
                 String resultMessage = roomBean.deleteRoom(room);
 
-                System.out.println(resultMessage); // Display the result to the client
+                System.out.println(resultMessage);
             } else {
                 System.out.println("Room deletion canceled.");
             }
@@ -463,9 +463,8 @@ public class HotelOperationModule {
                 RoomType rt = li.get(rtNo - 1);
 
                 System.out.print("Enter Room Number> ");
-                r.setRoomNumber(scanner.nextInt());
-                scanner.nextLine();
-
+                r.setRoomNumber(scanner.nextLine().trim());
+   
                 Long newRoom = roomBean.createRoom(r, rt);
                 if (newRoom != null) {
                     System.out.println("Room Number " + r.getRoomNumber() + " created successfully!\n");
@@ -534,7 +533,7 @@ public class HotelOperationModule {
                 scanner.nextLine();
                 RateTypeEnum newRateType = RateTypeEnum.values()[choice - 1];
 
-                // Check if rate type already exists for this room type
+                // check if rate type already exists for this room type
                 if (roomTypeBean.roomRateExistsForType(rate.getRoomType().getRoomTypeId(), newRateType)) {
                     System.out.println("Error: Rate type '" + newRateType + "' already exists for this room type. Update canceled.");
                 } else {
@@ -579,8 +578,7 @@ public class HotelOperationModule {
         System.out.print("Enter Room Number> ");
 
         try {
-            Room r = roomBean.retrieveRoomByNumber(scanner.nextInt());
-            scanner.nextLine();
+            Room r = roomBean.retrieveRoomByNumber(scanner.nextLine().trim());
 
             while (true) {
                 System.out.println("1: Change Room Number");
@@ -594,10 +592,9 @@ public class HotelOperationModule {
 
                 if (response == 1) {
                     System.out.print("Enter new Room number> ");
-                    Integer newRoomNumber = scanner.nextInt();
-                    scanner.nextLine();
+                    String newRoomNumber = scanner.nextLine().trim();
 
-                    // Check if room number already exists
+                    // check if room number already exists
                     try {
                         Room existingRoom = roomBean.retrieveRoomByNumber(newRoomNumber);
                         System.out.println("Error: Room number " + newRoomNumber + " already exists. Update canceled.");
@@ -700,14 +697,13 @@ public class HotelOperationModule {
             scanner.nextLine();
             RateTypeEnum rateType = RateTypeEnum.values()[response - 1];
 
-            // Check if a RoomRate of the chosen RateType already exists for this RoomType
+            // check if a RoomRate of the chosen RateType already exists for this RoomType
             boolean rateExists = roomTypeBean.roomRateExistsForType(rt.getRoomTypeId(), rateType);
             if (rateExists) {
                 System.out.println("A room rate of type " + rateType + " already exists for the selected room type.\n");
                 return;
             }
 
-            r.setRoomType(rt);
             r.setRateType(rateType);
 
             String rateName = rt.getRoomTypeName() + " " + rateType;
@@ -723,8 +719,7 @@ public class HotelOperationModule {
                 r.setEndDate(parseDate(scanner.nextLine().trim(), formatter));
             }
 
-            // Persist the RoomRate if no duplicate rate type exists
-            RoomRate newRateId = rateBean.createRoomRate(r);
+            RoomRate newRateId = rateBean.createRoomRate(r, rt);
             if (newRateId.getRoomRateId() != null) {
                 RoomRate roomrate = rateBean.retrieveRoomRateById(newRateId.getRoomRateId());
                 rt.getRoomrates().add(roomrate);
@@ -738,7 +733,6 @@ public class HotelOperationModule {
         }
     }
 
-// Helper method for parsing dates
     private Date parseDate(String dateStr, SimpleDateFormat formatter1) {
         try {
             DateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
@@ -809,7 +803,7 @@ public class HotelOperationModule {
 
         if (res.equalsIgnoreCase("Y")) {
             String resultMessage = rateBean.deleteRoomRate(rate);
-            System.out.println(resultMessage); // Display the result to the client
+            System.out.println(resultMessage); 
         } else {
             System.out.println("Room rate deletion canceled.");
         }

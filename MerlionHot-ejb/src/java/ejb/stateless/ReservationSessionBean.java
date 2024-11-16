@@ -59,25 +59,7 @@ public class ReservationSessionBean implements ReservationSessionBeanRemote, Res
             throw new ReservationErrorException("Reservation with ID " + id + " not found.");
         }
     }
-
-    /* @Override
-    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)    
-    public Reservation createReservation(Reservation newR, Guest guest, RoomType rt) {
-        guest = em.merge(guest);
-        rt = em.merge(rt);
-        em.persist(newR);
-        newR.setGuest(guest);
-        List<Reservation> li = guest.getReservation();
-        li.add(newR);
-        guest.setReservation(li);
-        
-        newR.setRoomType(rt);
-        li = rt.getReservations();
-        li.add(newR);
-        rt.setReservations(li);
-        em.flush();
-        return newR;
-    }  */
+    
     @Override
     public Reservation createReservation(RoomType type, Guest guest, Partner partner, Date in, Date out) {
         Reservation r = new Reservation();

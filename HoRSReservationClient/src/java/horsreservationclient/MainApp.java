@@ -151,6 +151,7 @@ public class MainApp {
         BigDecimal totalPrice = BigDecimal.ZERO;
         Date out;
         Date in;
+
         System.out.println("*** HoRS Reservation System :: Search Hotel ***\n");
 
         // Check-in date input and validation
@@ -160,20 +161,19 @@ public class MainApp {
             try {
                 in = DateUtil.convertToDate(checkIn);
 
-                // Check if the check-in date is before today
+                // check if the check-in date is before today
                 LocalDate today = LocalDate.now();
                 LocalDate checkInDate = in.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
                 if (checkInDate.isBefore(today)) {
                     throw new DateValidationError("Check-in date cannot be before today!");
                 }
-
                 break;
             } catch (ParseException ex) {
                 throw new DateValidationError("Date formatted wrongly! Try again!");
             }
         }
 
-        // Check-out date input and validation
+        // check-out date input and validation
         while (true) {
             System.out.print("Enter Check-out Date! Please format in dd-MM-yyyy > ");
             String checkOut = scanner.nextLine().trim();
@@ -185,7 +185,7 @@ public class MainApp {
             }
         }
 
-        // Check if the check-in and check-out dates are valid
+        // validate that check-out date is not before check-in date
         if (!out.equals(in) && out.before(in)) {
             throw new DateValidationError("Check-out date cannot be before check-in date!");
         }
@@ -195,86 +195,92 @@ public class MainApp {
             List<RoomType> li = roomTypeBean.retrieveAllAvailRoomTypeOnline(in, out);
             if (li.isEmpty()) {
                 System.out.println("No Room Types Available!\n");
+                return;
             } else {
                 System.out.println("List of Room Types: ");
                 for (int i = 1; i <= li.size(); i++) {
-                    System.out.println(i + ": " + li.get(i - 1).getRoomTypeName());
-                    System.out.println("    Description: " + li.get(i - 1).getDescription());
-                    System.out.println("    Bed Description: " + li.get(i - 1).getBed());
-                    System.out.println("    Capacity: " + li.get(i - 1).getCapacity());
-                    System.out.println("    Amenities: " + li.get(i - 1).getAmenities() + "\n");
-                    System.out.println("    Price for entire stay: $" + roomTypeBean.getPriceOfRoomTypeOnline(in, out, li.get(i - 1)) + "\n");
-                    System.out.println();
+                    RoomType roomType = li.get(i - 1);
+                    System.out.println(i + ": " + roomType.getRoomTypeName());
+                    System.out.println("    Description: " + roomType.getDescription());
+                    System.out.println("    Bed Description: " + roomType.getBed());
+                    System.out.println("    Capacity: " + roomType.getCapacity());
+                    System.out.println("    Amenities: " + roomType.getAmenities() + "\n");
+                    System.out.println("    Price for entire stay: $" + roomTypeBean.getPriceOfRoomTypeOnline(in, out, roomType) + "\n");
                 }
 
-                System.out.print("Enter Room Type Number for reservation (1 - " + li.size() + ")> ");
-                res = scanner.nextInt();
-                scanner.nextLine();
-                if (res > 0 && res <= li.size()) {
-                    type = li.get(res - 1);
+                System.out.print("Reserve a room? Type Y to reserve, N to exit > ");
+                String reserve = scanner.nextLine().trim();
 
-                    System.out.print("Enter number of rooms you want to reserve> ");
-                    Integer requestedRooms = scanner.nextInt();
+                if (reserve.equalsIgnoreCase("Y")) {
+                    System.out.print("Enter Room Type Number for reservation (1 - " + li.size() + ") > ");
+                    res = scanner.nextInt();
                     scanner.nextLine();
 
-                    Integer availableRooms = roomSessionBean.getAvailableRoomCountForOnline(type, in, out);
-                    if (requestedRooms <= availableRooms) {
-                        reselect = false;
-                        
-                        if (currentGuest == null) {
-                            System.out.println("*** You are not logged in yet! Log in/Register to reserve a room! ***\n");
-                            System.out.println("1: Login");
-                            System.out.println("2: Register");
+                    if (res > 0 && res <= li.size()) {
+                        type = li.get(res - 1);
 
-                            Integer response;
-                            while (true) {
-                                System.out.print("> ");
-                                response = scanner.nextInt();
-                                scanner.nextLine();
+                        System.out.print("Enter number of rooms you want to reserve > ");
+                        Integer requestedRooms = scanner.nextInt();
+                        scanner.nextLine();
 
-                                if (response == 1) {
-                                    try {
-                                        doLogin();
-                                        System.out.println("Login successful! Logged in as: " + currentGuest.getName() + "\n");
-                                        break;
-                                    } catch (InvalidLoginCredentialException | GuestErrorException ex) {
-                                        System.out.println("Login failed: " + ex.getMessage() + "\n");
+                        Integer availableRooms = roomSessionBean.getAvailableRoomCountForOnline(type, in, out);
+                        if (requestedRooms <= availableRooms) {
+                            reselect = false;
+
+                            if (currentGuest == null) {
+                                System.out.println("*** You are not logged in yet! Log in/Register to reserve a room! ***\n");
+                                System.out.println("1: Login");
+                                System.out.println("2: Register");
+
+                                while (true) {
+                                    System.out.print("> ");
+                                    Integer response = scanner.nextInt();
+                                    scanner.nextLine();
+
+                                    if (response == 1) {
+                                        try {
+                                            doLogin();
+                                            System.out.println("Login successful! Logged in as: " + currentGuest.getName() + "\n");
+                                            break;
+                                        } catch (InvalidLoginCredentialException | GuestErrorException ex) {
+                                            System.out.println("Login failed: " + ex.getMessage() + "\n");
+                                        }
+                                    } else if (response == 2) {
+                                        try {
+                                            doRegister();
+                                            System.out.println("Register was successful! Logged in as: " + currentGuest.getName() + "\n");
+                                            break;
+                                        } catch (BeanValidationError ex) {
+                                            System.out.println("Validation failed. Please correct the following errors:\n" + ex.getMessage());
+                                            System.out.println("Please re-enter your details.");
+                                        } catch (GuestErrorException ex) {
+                                            System.out.println(ex.getMessage());
+                                        }
+                                    } else {
+                                        System.out.println("Invalid option, please try again!\n");
                                     }
-                                } else if (response == 2) {
-                                    try {
-                                        doRegister();
-                                        System.out.println("Register was successful! Logged in as: " + currentGuest.getName() + "\n");
-                                        break;
-                                    } catch (BeanValidationError ex) {
-                                        System.out.println("Validation failed. Please correct the following errors:\n" + ex.getMessage());
-                                        System.out.println("Please re-enter your details.");
-                                    }catch (GuestErrorException ex) {
-                                        System.out.println(ex.getMessage());
-                                    }
-                                } else {
-                                    System.out.println("Invalid option, please try again!\n");
                                 }
                             }
-                        }
-                        
-                        totalPrice = totalPrice.add(reserveRoom(type, in, out, requestedRooms));
-                    } else {
-                        System.out.print("Only " + availableRooms + " rooms are available for the chosen room type. Do you want to reserve all available rooms? (Enter Y for Yes) > ");
-                        String ans = scanner.nextLine().trim();
-                        if (ans.equalsIgnoreCase("Y")) {
-                            totalPrice = totalPrice.add(reserveRoom(type, in, out, availableRooms));
+
+                            totalPrice = totalPrice.add(reserveRoom(type, in, out, requestedRooms));
                         } else {
-                            System.out.println("Reservation canceled.");
+                            System.out.print("Only " + availableRooms + " rooms are available for the chosen room type. Do you want to reserve all available rooms? (Enter Y for Yes) > ");
+                            String ans = scanner.nextLine().trim();
+                            if (ans.equalsIgnoreCase("Y")) {
+                                totalPrice = totalPrice.add(reserveRoom(type, in, out, availableRooms));
+                            } else {
+                                System.out.println("Reservation canceled.");
+                            }
                         }
+                    } else {
+                        System.out.println("Invalid option, please try again!\n");
                     }
-                    break;
                 } else {
-                    System.out.println("Invalid option, please try again!\n");
+                    System.out.println("Reservation process exited.");
+                    return;
                 }
             }
         } while (reselect);
-
-        
 
         System.out.println("Booking successful! Total price for all rooms purchased: $" + totalPrice);
         loggedInMenu();
@@ -311,40 +317,40 @@ public class MainApp {
 
     private void loggedInMenu() {
         Integer response = 0;
+
         while (true) {
+            if (currentGuest == null) {
+                // Ensure no further operations if the guest is logged out
+                System.out.println("No guest logged in. Returning to main menu.");
+                break;
+            }
+
             System.out.println("*** Welcome, " + currentGuest.getName() + "! ***\n");
             System.out.println("1: Search Hotel ");
             System.out.println("2: View All My Reservations");
             System.out.println("3: View Reservation Details");
             System.out.println("4: Log Out\n");
 
-            response = 0;
+            System.out.print("> ");
+            response = scanner.nextInt();
+            scanner.nextLine();
 
-            while (response < 1 || response > 3) {
-                System.out.print("> ");
-                response = scanner.nextInt();
-                scanner.nextLine();
-
-                if (response == 1) {
-                    try {
-                        doSearchHotel();
-                    } catch (RoomTypeErrorException | DateValidationError ex) {
-                        System.out.println(ex.getMessage() + "\n");
-                    }
-                } else if (response == 2) {
-                    doViewAllReservations();
-                } else if (response == 3) {
-                    doViewReservationDetails();
-                } else if (response == 4) {
-                    currentGuest = null;
-                    break;
-                } else {
-                    System.out.println("Invalid option, please try again!\n");
+            if (response == 1) {
+                try {
+                    doSearchHotel();
+                } catch (RoomTypeErrorException | DateValidationError ex) {
+                    System.out.println(ex.getMessage() + "\n");
                 }
-            }
-            if (response == 4) {
+            } else if (response == 2) {
+                doViewAllReservations();
+            } else if (response == 3) {
+                doViewReservationDetails();
+            } else if (response == 4) {
                 System.out.println("Logging Out.");
-                break;
+                currentGuest = null; 
+                break; 
+            } else {
+                System.out.println("Invalid option, please try again!\n");
             }
         }
     }
@@ -354,7 +360,7 @@ public class MainApp {
             List<Reservation> allReservations = guestSessionBean.retrieveAllReservations(currentGuest.getGuestId());
             List<Reservation> guestReservations = new ArrayList<>();
 
-            // Filter out partner reservations
+            // filter out partner reservations
             for (Reservation r : allReservations) {
                 if (!r.getIsPartnerReservation()) {
                     guestReservations.add(r);
@@ -387,7 +393,7 @@ public class MainApp {
         try {
             Reservation r = reservationBean.retrieveReservationByIdForGuest(id, currentGuest);
 
-            // Check if the reservation is a partner reservation
+            // check if the reservation is a partner reservation
             if (r.getIsPartnerReservation()) {
                 System.out.println("You do not have access to view details of this reservation.");
             } else {

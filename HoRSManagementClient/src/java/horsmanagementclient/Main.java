@@ -45,12 +45,6 @@ public class Main {
     @EJB
     private static GuestSessionBeanRemote guestSessionBean;
     
-    
-    
-    
-    
-    
-    
     private Employee currentEmployee;
     private HotelOperationModule hotelOpsModule;
     private FrontOfficeModule frontOffModule;

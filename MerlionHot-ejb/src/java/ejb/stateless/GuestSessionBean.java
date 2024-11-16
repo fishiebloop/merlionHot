@@ -44,15 +44,12 @@ public class GuestSessionBean implements GuestSessionBeanRemote, GuestSessionBea
         }
     }
 
-    // Add business logic below. (Right-click in editor and choose
-    // "Insert Code > Add Business Method")
     @Override
     public Boolean validateGuest(Guest g) throws BeanValidationError {
         // Initialize ValidatorFactory and Validator
         ValidatorFactory validatorFactory = Validation.buildDefaultValidatorFactory();
         Validator validator = validatorFactory.getValidator();
 
-        // Validate the Guest object and store violations
         Set<ConstraintViolation<Guest>> violations = validator.validate(g);
 
         if (!violations.isEmpty()) {
@@ -87,7 +84,7 @@ public class GuestSessionBean implements GuestSessionBeanRemote, GuestSessionBea
 
             return (Guest) query.getSingleResult();
         } catch (NoResultException e) {
-            return null;  // Return null if no guest with that email is found
+            return null;  
         }
     }
 
@@ -97,7 +94,7 @@ public class GuestSessionBean implements GuestSessionBeanRemote, GuestSessionBea
             Guest g = em.find(Guest.class, guestId);
             em.refresh(g);
             if (g != null) {
-                g.getReservation().size();  // Ensure lazy-loading occurs here
+                g.getReservation().size();  
                 return g.getReservation();
             } else {
                 throw new GuestErrorException("Guest not found!");
@@ -115,7 +112,7 @@ public class GuestSessionBean implements GuestSessionBeanRemote, GuestSessionBea
 
             return (Guest) query.getSingleResult();
         } catch (NoResultException e) {
-            return null;  // Return null if no guest with that email is found
+            return null;  
         }
     }
 

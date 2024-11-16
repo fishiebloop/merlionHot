@@ -19,8 +19,8 @@ import util.exception.RoomRateErrorException;
  */
 @Local
 public interface RoomRateSessionBeanLocal {
-
-    public RoomRate createRoomRate(RoomRate newRoomRate);
+    
+     public RoomRate createRoomRate(RoomRate newRoomRate, RoomType roomType);
 
     public List<RoomRate> retrieveAllRoomRates();
 

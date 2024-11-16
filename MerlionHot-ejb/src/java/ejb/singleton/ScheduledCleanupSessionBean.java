@@ -43,7 +43,7 @@ public class ScheduledCleanupSessionBean {
         List<RoomType> roomTypesToDelete = query.getResultList();
 
         for (RoomType roomType : roomTypesToDelete) {
-            // Check if the room type has active reservations as per the deleteRoomType logic
+            // check if the room type has active reservations 
             Long activeReservationCount = (Long) em.createQuery("SELECT COUNT(r) FROM Reservation r "
                     + "WHERE r.roomType = :roomType "
                     + "AND (r.checkOutDate > CURRENT_DATE "
@@ -53,12 +53,11 @@ public class ScheduledCleanupSessionBean {
                     .getSingleResult();
 
             if (activeReservationCount == 0) {
-                // Dissociate next higher room type relationships
+               
                 em.createQuery("UPDATE RoomType rt SET rt.nextHigherRoomType = NULL WHERE rt.nextHigherRoomType = :roomType")
                         .setParameter("roomType", roomType)
                         .executeUpdate();
 
-                // Delete associated rooms and rates
                 roomType.getRooms().forEach(em::remove);
                 roomType.getRoomrates().forEach(em::remove);
                 em.remove(roomType);
@@ -83,7 +82,6 @@ public class ScheduledCleanupSessionBean {
         List<RoomRate> ratesToDelete = query.getResultList();
 
         for (RoomRate rate : ratesToDelete) {
-            // Check if there are active reservations that would prevent deletion, per deleteRoomRate logic
             Long activeReservationCount = (Long) em.createQuery("SELECT COUNT(r) FROM Reservation r "
                     + "WHERE r.roomType = :roomType "
                     + "AND r.isWalkIn = :isWalkIn "
@@ -111,7 +109,6 @@ public class ScheduledCleanupSessionBean {
         List<Room> roomsToDelete = query.getResultList();
 
         for (Room room : roomsToDelete) {
-            // Check if there are active allocations that would prevent deletion, per deleteRoom logic
             Long activeAllocationCount = (Long) em.createQuery("SELECT COUNT(a) FROM RoomAllocation a "
                     + "WHERE a.room = :room "
                     + "AND (a.reservation.checkOutDate > CURRENT_DATE "
